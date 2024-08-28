@@ -3,9 +3,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
+from matplotlib.colors import LinearSegmentedColormap
 from scipy.spatial import cKDTree as KDTree
-
-from utils import get_BGYR_colourmap
 
 
 def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray):
@@ -36,9 +35,21 @@ def get_recon_metrics(
     }
 
 
-def save_error_cloud(
-    input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"
-):
+def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"):
+    def get_BGYR_colourmap():
+        colours = [
+            (0, 0, 255),  # Blue
+            (0, 255, 0),  # Green (as specified)
+            (255, 255, 0),  # Yellow (as specified)
+            (255, 0, 0),  # Red
+        ]
+        colours = [(r / 255, g / 255, b / 255) for r, g, b in colours]
+
+        # Create the custom colormap
+        n_bins = 100  # Number of color segments
+        cmap = LinearSegmentedColormap.from_list("custom_cmap", colours, N=n_bins)
+        return cmap
+
     distances = compute_p2p_distance(input_cloud, reference_cloud)
     distances = np.clip(distances, 0, 1)
     if cmap == "bgyr":
@@ -66,9 +77,7 @@ if __name__ == "__main__":
 
     for input_cloud_path in input_cloud_paths:
         input_cloud = o3d.io.read_point_cloud(input_cloud_path)
-        save_error_cloud_path = str(
-            Path(input_cloud_path).parent / (Path(input_cloud_path).stem + "_error.ply")
-        )
+        save_error_cloud_path = str(Path(input_cloud_path).parent / (Path(input_cloud_path).stem + "_error.ply"))
         input_cloud_np = np.array(input_cloud.points)
         gt_cloud_np = np.array(gt_cloud.points)
         print(get_recon_metrics(input_cloud_np, gt_cloud_np))
