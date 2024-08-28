@@ -1,4 +1,5 @@
 import numpy as np
+
 from oxford_spires_utils.transformations import quaternion_from_matrix, quaternion_matrix
 
 
