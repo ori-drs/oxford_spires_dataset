@@ -1,6 +1,8 @@
 from pathlib import Path
-from tqdm import tqdm
+
 import open3d as o3d
+from tqdm import tqdm
+
 from oxford_spires_utils.io import read_pcd_with_viewpoint
 
 if __name__ == "__main__":
@@ -23,4 +25,3 @@ if __name__ == "__main__":
     final_cloud = final_cloud.voxel_down_sample(voxel_size=downsample_resolution)
     print(f"Saving merged cloud to {final_cloud_path} ...")
     o3d.io.write_point_cloud(str(final_cloud_path), final_cloud)
-        
