@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation
 
 from oxford_spires_utils.se3 import se3_matrix_to_xyz_quat_xyzw, xyz_quat_xyzw_to_se3_matrix
@@ -78,3 +79,35 @@ def test_roundtrip_conversion():
     reconstructed_se3 = xyz_quat_xyzw_to_se3_matrix(xyz, quat)
 
     assert np.allclose(original_se3, reconstructed_se3)
+
+
+@pytest.mark.parametrize("num_tests", [1000])  # Number of random tests
+def test_roundtrip_conversion_rand(num_tests):
+    for _ in range(num_tests):
+        # Generate a random translation vector (XYZ)
+        xyz = np.random.uniform(-10, 10, size=3)
+
+        # Generate a random rotation as a quaternion (XYZW)
+        random_quat = Rotation.random().as_quat()  # Generates a random quaternion
+        equiv_quat = -random_quat
+
+        # Create the SE(3) matrix from the random translation and quaternion
+        original_se3_matrix = xyz_quat_xyzw_to_se3_matrix(xyz, random_quat)
+        test_se3_matrix_1 = xyz_quat_xyzw_to_se3_matrix(xyz, equiv_quat)
+        np.testing.assert_allclose(original_se3_matrix, test_se3_matrix_1, rtol=1e-5, atol=1e-8)
+
+        # Convert the SE(3) matrix back to (xyz, quat_xyzw)
+        extracted_xyz, extracted_quat_xyzw = se3_matrix_to_xyz_quat_xyzw(original_se3_matrix)
+
+        # Check if the extracted XYZ matches the original
+        np.testing.assert_allclose(extracted_xyz, xyz, rtol=1e-5, atol=1e-8)
+        # Check if the extracted quaternion matches the original quaternion up to sign
+        # Since q and -q represent the same rotation, we check both
+        assert np.allclose(extracted_quat_xyzw, random_quat, rtol=1e-5, atol=1e-8) or np.allclose(
+            extracted_quat_xyzw, -random_quat, rtol=1e-5, atol=1e-8
+        ), f"Quaternions do not match: {extracted_quat_xyzw} vs {random_quat} (or its negation)"
+
+        # Reconstruct the SE(3) matrix from the extracted values
+        reconstructed_se3_matrix = xyz_quat_xyzw_to_se3_matrix(extracted_xyz, extracted_quat_xyzw)
+        # Check if the original and reconstructed SE(3) matrices are the same
+        np.testing.assert_allclose(reconstructed_se3_matrix, original_se3_matrix, rtol=1e-5, atol=1e-8)
