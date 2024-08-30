@@ -19,14 +19,17 @@ def get_recon_metrics(
     precision_threshold=0.05,
     recall_threshold=0.05,
 ):
+    print("Computing Accuracy and Precision ...")
     distances = compute_p2p_distance(input_cloud, gt_cloud)
     accuracy = np.mean(distances)
     precision = np.sum(distances < precision_threshold) / len(distances)
 
+    print("Computing Completeness and Recall ...")
     distances = compute_p2p_distance(gt_cloud, input_cloud)
     completeness = np.mean(distances)
     recall = np.sum(distances < recall_threshold) / len(distances)
 
+    print("Done!")
     return {
         "accuracy": accuracy,
         "precision": precision,
