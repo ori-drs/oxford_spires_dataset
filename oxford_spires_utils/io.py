@@ -50,7 +50,7 @@ def modify_pcd_viewpoint(file_path: str, new_file_path: str, new_viewpoint_xyz_w
         file.write(binary_data)
 
 
-def convert_e57_to_pcd(e57_file_path, pcd_file_path):
+def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     # Load E57 file
     e57_file_path, pcd_file_path = str(e57_file_path), str(pcd_file_path)
     e57_file = pye57.E57(e57_file_path)
@@ -90,3 +90,10 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path):
     o3d.io.write_point_cloud(pcd_file_path, pcd)
     print(f"PCD file saved to {pcd_file_path}")
     modify_pcd_viewpoint(pcd_file_path, pcd_file_path, viewpoint)
+
+    if check_output:
+        saved_cloud = read_pcd_with_viewpoint(pcd_file_path)
+        saved_cloud_np = np.array(saved_cloud.points)
+        assert np.allclose(saved_cloud_np, points_np, rtol=1e-5, atol=1e-6)
+        colours_np = np.array(saved_cloud.colors)
+        assert np.allclose(colours_np, colours / 255, rtol=1e-5, atol=1e-8)
