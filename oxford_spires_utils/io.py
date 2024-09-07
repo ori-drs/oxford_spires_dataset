@@ -55,9 +55,6 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     e57_file_path, pcd_file_path = str(e57_file_path), str(pcd_file_path)
     e57_file = pye57.E57(e57_file_path)
 
-    # Get the first point cloud (assuming the E57 file contains at least one)
-    data = e57_file.read_scan(0, intensity=True, colors=True)
-
     header = e57_file.get_header(0)
     t_xyz = header.translation
     quat_wxyz = header.rotation
@@ -67,6 +64,10 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
 
     viewpoint_matrix = xyz_quat_xyzw_to_se3_matrix(t_xyz, quat_xyzw)
     viewpoint = np.concatenate((t_xyz, quat_wxyz))
+
+    has_colour = "colorRed" in header.point_fields
+    # Get the first point cloud (assuming the E57 file contains at least one)
+    data = e57_file.read_scan(0, intensity=False, colors=has_colour)
 
     # Extract Cartesian coordinates
     x = data["cartesianX"]
@@ -78,13 +79,15 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     points_homogeneous = np.hstack((points_np, np.ones((points_np.shape[0], 1))))
     points_sensor_frame = (np.linalg.inv(viewpoint_matrix) @ points_homogeneous.T).T[:, :3]
 
-    colours = np.vstack((data["colorRed"], data["colorGreen"], data["colorBlue"])).T
+    if has_colour:
+        colours = np.vstack((data["colorRed"], data["colorGreen"], data["colorBlue"])).T
 
     # Create an Open3D PointCloud object
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points_sensor_frame)
     # pcd.points = o3d.utility.Vector3dVector(points_np)
-    pcd.colors = o3d.utility.Vector3dVector(colours / 255)
+    if has_colour:
+        pcd.colors = o3d.utility.Vector3dVector(colours / 255)
 
     # Save the point cloud as a PCD file
     o3d.io.write_point_cloud(pcd_file_path, pcd)
@@ -95,5 +98,6 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
         saved_cloud = read_pcd_with_viewpoint(pcd_file_path)
         saved_cloud_np = np.array(saved_cloud.points)
         assert np.allclose(saved_cloud_np, points_np, rtol=1e-5, atol=1e-6)
-        colours_np = np.array(saved_cloud.colors)
-        assert np.allclose(colours_np, colours / 255, rtol=1e-5, atol=1e-8)
+        if has_colour:
+            colours_np = np.array(saved_cloud.colors)
+            assert np.allclose(colours_np, colours / 255, rtol=1e-5, atol=1e-8)
