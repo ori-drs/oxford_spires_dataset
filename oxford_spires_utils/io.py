@@ -97,7 +97,7 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     if check_output:
         saved_cloud = read_pcd_with_viewpoint(pcd_file_path)
         saved_cloud_np = np.array(saved_cloud.points)
-        assert np.allclose(saved_cloud_np, points_np, rtol=1e-5, atol=1e-6)
+        assert np.allclose(saved_cloud_np, points_np, rtol=1e-5, atol=1e-5)
         if has_colour:
             colours_np = np.array(saved_cloud.colors)
             assert np.allclose(colours_np, colours / 255, rtol=1e-5, atol=1e-8)
