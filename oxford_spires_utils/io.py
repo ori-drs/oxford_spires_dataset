@@ -52,6 +52,7 @@ def modify_pcd_viewpoint(file_path: str, new_file_path: str, new_viewpoint_xyz_w
 
 def convert_e57_to_pcd(e57_file_path, pcd_file_path):
     # Load E57 file
+    e57_file_path, pcd_file_path = str(e57_file_path), str(pcd_file_path)
     e57_file = pye57.E57(e57_file_path)
 
     # Get the first point cloud (assuming the E57 file contains at least one)
