@@ -5,8 +5,6 @@ from scipy.spatial.transform import Rotation
 
 from oxford_spires_utils.se3 import xyz_quat_xyzw_to_se3_matrix
 
-np.set_printoptions(suppress=True, precision=4)
-
 
 def read_pcd_with_viewpoint(file_path: str):
     assert file_path.endswith(".pcd")
