@@ -66,8 +66,9 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     viewpoint = np.concatenate((t_xyz, quat_wxyz))
 
     has_colour = "colorRed" in header.point_fields
+    has_intensity = "intensity" in header.point_fields
     # Get the first point cloud (assuming the E57 file contains at least one)
-    data = e57_file.read_scan(0, intensity=False, colors=has_colour)
+    data = e57_file.read_scan(0, intensity=has_intensity, colors=has_colour)
 
     # Extract Cartesian coordinates
     x = data["cartesianX"]
