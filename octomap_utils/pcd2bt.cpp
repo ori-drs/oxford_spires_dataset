@@ -90,7 +90,7 @@ void processPCDFolder(const std::string& folderPath, double resolution = 0.1) {
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> <pcd/e75> [resolution]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> [resolution]" << std::endl;
         return 1;
     }
 
