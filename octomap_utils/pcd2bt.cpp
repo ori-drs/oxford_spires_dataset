@@ -27,7 +27,7 @@ std::vector<std::string> listFiles(const std::string& folderPath) {
     return files;
 }
 
-void processPCDFolder(const std::string& folderPath, double resolution = 0.1) {
+void processPCDFolder(const std::string& folderPath, double resolution = 0.1, std::string save_path = "result_octomap.bt") {
     octomap::OcTree tree(resolution);
 
     std::vector<std::string> pcdFiles = listFiles(folderPath);
@@ -84,22 +84,27 @@ void processPCDFolder(const std::string& folderPath, double resolution = 0.1) {
     }
 
     // Optionally, you can save the resulting octomap
-    tree.writeBinary("result_octomap.bt");
-    std::cout << "Octomap saved to result_octomap.bt" << std::endl;
+    tree.writeBinary(save_path);
+    std::cout << std::endl;
+    std::cout << "Octomap saved to " << save_path << std::endl;
 }
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> [resolution]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> [resolution] [saved_path]" << std::endl;
         return 1;
     }
-
+    std::cout << "pcd_folder: " << argv[1] << std::endl;
     double resolution = 0.1;
-    if (argc > 2) {
+    std::cout << "resolution: " << argv[2] << std::endl;
+    if (argc == 3) {
         resolution = std::stod(argv[2]);
     }
-
-    processPCDFolder(argv[1], resolution);
+    std::string save_path = "result_octomap.bt";
+    if (argc == 4) {
+        save_path = argv[3];
+    }
+    processPCDFolder(argv[1], resolution, save_path);
 
     return 0;
 }
