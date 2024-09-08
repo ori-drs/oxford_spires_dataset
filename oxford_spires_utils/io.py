@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 import pye57
+from pypcd4 import PointCloud
 from scipy.spatial.transform import Rotation
 
 from oxford_spires_utils.se3 import xyz_quat_xyzw_to_se3_matrix
@@ -50,7 +51,7 @@ def modify_pcd_viewpoint(file_path: str, new_file_path: str, new_viewpoint_xyz_w
         file.write(binary_data)
 
 
-def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
+def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib="pypcd4"):
     # Load E57 file
     e57_file_path, pcd_file_path = str(e57_file_path), str(pcd_file_path)
     e57_file = pye57.E57(e57_file_path)
@@ -83,17 +84,43 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True):
     if has_colour:
         colours = np.vstack((data["colorRed"], data["colorGreen"], data["colorBlue"])).T
 
-    # Create an Open3D PointCloud object
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points_sensor_frame)
-    # pcd.points = o3d.utility.Vector3dVector(points_np)
-    if has_colour:
-        pcd.colors = o3d.utility.Vector3dVector(colours / 255)
+    if pcd_lib == "open3d":
+        # cannot save intensity to pcd file using open3d
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(points_sensor_frame)
+        # pcd.points = o3d.utility.Vector3dVector(points_np)
+        if has_colour:
+            pcd.colors = o3d.utility.Vector3dVector(colours / 255)
+        o3d.io.write_point_cloud(pcd_file_path, pcd)
+        print(f"PCD file saved to {pcd_file_path}")
+        modify_pcd_viewpoint(pcd_file_path, pcd_file_path, viewpoint)
+    elif pcd_lib == "pypcd4":
+        # supported fields: x, y, z, rgb, intensity
+        fields = ["x", "y", "z"]
+        types = [np.float32, np.float32, np.float32]
 
-    # Save the point cloud as a PCD file
-    o3d.io.write_point_cloud(pcd_file_path, pcd)
-    print(f"PCD file saved to {pcd_file_path}")
-    modify_pcd_viewpoint(pcd_file_path, pcd_file_path, viewpoint)
+        pcd_data = points_np
+
+        if has_colour:
+            fields += ["rgb"]
+            types += [np.float32]
+            encoded_colour = PointCloud.encode_rgb(colours)
+            encoded_colour = encoded_colour.reshape(-1, 1)
+            pcd_data = np.hstack((pcd_data, encoded_colour))
+        #     pcd_data = np.hstack((pcd_data, colours / 255))
+
+        if has_intensity:
+            fields += ["intensity"]
+            types += [np.float32]
+            pcd_data = np.hstack((pcd_data, data["intensity"].reshape(-1, 1)))
+
+        fields = tuple(fields)
+        types = tuple(types)
+        pcd = PointCloud.from_points(pcd_data, fields, types)
+        pcd.viewpoint = tuple(viewpoint)
+        pcd.save(pcd_file_path)
+    else:
+        raise ValueError(f"Unsupported pcd library: {pcd_lib}")
 
     if check_output:
         saved_cloud = read_pcd_with_viewpoint(pcd_file_path)
