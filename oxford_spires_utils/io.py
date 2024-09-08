@@ -99,7 +99,7 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         fields = ["x", "y", "z"]
         types = [np.float32, np.float32, np.float32]
 
-        pcd_data = points_np
+        pcd_data = points_sensor_frame
 
         if has_colour:
             fields += ["rgb"]
@@ -117,7 +117,7 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         fields = tuple(fields)
         types = tuple(types)
         pcd = PointCloud.from_points(pcd_data, fields, types)
-        pcd.viewpoint = tuple(viewpoint)
+        pcd.metadata.viewpoint = tuple(viewpoint)
         pcd.save(pcd_file_path)
     else:
         raise ValueError(f"Unsupported pcd library: {pcd_lib}")
