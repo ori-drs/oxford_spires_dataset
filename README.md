@@ -24,6 +24,18 @@ cmake ..
 make
 ```
 
+## Usage
+### octomap_utils
+```bash
+cd <oxford_spires_dataset>/octomap_utils/build
+./pcd2bt <path_to_pcd_folder> -r [resolution] -s [saved_path] -tf [x,y,z, quat_w, quat_x, quat_y, quat_z]
+```
+
+```bash
+cd <oxford_spires_dataset>/octomap_utils/build
+./traverse_bt <path_to_bt_file> 
+```
+
 ## Contributing
 Please refer to Angular's guide for contributing(https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md).
 
