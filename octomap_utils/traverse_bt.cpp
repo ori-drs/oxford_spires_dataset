@@ -26,6 +26,35 @@ void displayProgressBar(size_t current, size_t total) {
     cout.flush();
 }
 
+void convertOctreeToPointCloud(const OcTree& tree, PointCloud::Ptr& free_cloud, PointCloud::Ptr& occupied_cloud) {
+    // Get the total number of leaf nodes for the progress bar
+    size_t total_leafs = tree.getNumLeafNodes();
+    size_t processed_leafs = 0;
+
+    // Iterate through all leaf nodes
+    for (OcTree::leaf_iterator it = tree.begin_leafs(), end = tree.end_leafs(); it != end; ++it) {
+        point3d coord = it.getCoordinate();
+
+        // Classify voxel as free, occupied, or unknown and add to corresponding cloud
+        if (tree.isNodeOccupied(*it)) {
+            occupied_cloud->points.emplace_back(coord.x(), coord.y(), coord.z());
+        } 
+        else {
+            free_cloud->points.emplace_back(coord.x(), coord.y(), coord.z());
+        }
+
+        // Update the progress bar
+        processed_leafs++;
+        if (processed_leafs % 100 == 0 || processed_leafs == total_leafs) {  // Update every 100 iterations
+            displayProgressBar(processed_leafs, total_leafs);
+        }
+    }
+
+    // Final progress bar completion
+    displayProgressBar(total_leafs, total_leafs);
+    cout << endl;
+}
+
 int main(int argc, char** argv) {
     // Check if a file path is provided
     if (argc < 2) {
@@ -55,32 +84,7 @@ int main(int argc, char** argv) {
     PointCloud::Ptr occupied_cloud(new PointCloud);
     // PointCloud::Ptr unknown_cloud(new PointCloud);
 
-    // Get the total number of leaf nodes for the progress bar
-    size_t total_leafs = tree.getNumLeafNodes();
-    size_t processed_leafs = 0;
-
-    // Iterate through all leaf nodes
-    for (OcTree::leaf_iterator it = tree.begin_leafs(), end = tree.end_leafs(); it != end; ++it) {
-        point3d coord = it.getCoordinate();
-
-        // Classify voxel as free, occupied, or unknown and add to corresponding cloud
-        if (tree.isNodeOccupied(*it)) {
-            occupied_cloud->points.emplace_back(coord.x(), coord.y(), coord.z());
-        } 
-        else {
-            free_cloud->points.emplace_back(coord.x(), coord.y(), coord.z());
-        }
-
-        // Update the progress bar
-        processed_leafs++;
-        if (processed_leafs % 100 == 0 || processed_leafs == total_leafs) {  // Update every 100 iterations
-            displayProgressBar(processed_leafs, total_leafs);
-        }
-    }
-
-    // Final progress bar completion
-    displayProgressBar(total_leafs, total_leafs);
-    cout << endl;
+    convertOctreeToPointCloud(tree, free_cloud, occupied_cloud);
 
     cout << "size of free_cloud: " << free_cloud->points.size() << endl;
     cout << "size of occupied_cloud: " << occupied_cloud->points.size() << endl;
