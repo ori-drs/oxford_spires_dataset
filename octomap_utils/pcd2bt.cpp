@@ -27,7 +27,7 @@ std::vector<std::string> listFiles(const std::string& folderPath) {
     return files;
 }
 
-void processPCDFolder(const std::string& folderPath, double resolution, const std::string& save_path, const Eigen::Affine3f& custom_transform) {
+void processPCDFolder(const std::string& folderPath, double resolution, const std::string& save_path) {
     octomap::OcTree tree(resolution);
     std::vector<std::string> pcdFiles = listFiles(folderPath);
 
@@ -71,7 +71,6 @@ void processPCDFolder(const std::string& folderPath, double resolution, const st
         // Apply the transformation to the point cloud
         pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::transformPointCloud(*cloud, *transformed_cloud, transform);
-        pcl::transformPointCloud(*transformed_cloud, *transformed_cloud, custom_transform);
 
         // Convert transformed PCL cloud to OctoMap point cloud
         octomap::Pointcloud octomap_cloud;
@@ -91,14 +90,12 @@ void processPCDFolder(const std::string& folderPath, double resolution, const st
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path] -tf [transform_path]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path]" << std::endl;
         return 1;
     }
     std::string folderPath = argv[1];
     double resolution = 0.1;
     std::string save_path = "result_octomap.bt";
-    Eigen::Affine3f custom_transform = Eigen::Affine3f::Identity();
-    bool transform_set = false;
 
     // Parse command line arguments
     for (int i = 2; i < argc; ++i) {
@@ -107,39 +104,14 @@ int main(int argc, char** argv) {
             resolution = std::stod(argv[++i]);
         } else if (arg == "-s" && i + 1 < argc) {
             save_path = argv[++i];
-        } else if (arg == "-tf" && i + 7 < argc) {
-            float tx = std::stof(argv[++i]);
-            float ty = std::stof(argv[++i]);
-            float tz = std::stof(argv[++i]);
-            float qw = std::stof(argv[++i]);
-            float qx = std::stof(argv[++i]);
-            float qy = std::stof(argv[++i]);
-            float qz = std::stof(argv[++i]);
-
-            custom_transform = Eigen::Affine3f::Identity();
-            custom_transform.translation() << tx, ty, tz;
-            Eigen::Quaternionf quaternion(qw, qx, qy, qz);
-            custom_transform.rotate(quaternion);
-
-            std::cout << "Applied custom transform: "
-                      << "t(" << tx << ", " << ty << ", " << tz << ") "
-                      << "quat(" << qw << ", " << qx << ", " << qy << ", " << qz << ")" << std::endl;
-
-            transform_set = true;
         } else {
             std::cerr << "Unknown argument or missing value: " << arg << std::endl;
-            std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path] -tf x y z quat_wxyz" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path]" << std::endl;
             return 1;
         }
     }
 
-    // If no transformation is provided, use the identity matrix
-    if (!transform_set) {
-        std::cout << "No custom transform provided. Using identity transformation." << std::endl;
-    }
-    std::cout << " transformation:\n" << custom_transform.matrix() << std::endl;
-
-    processPCDFolder(folderPath, resolution, save_path, custom_transform);
+    processPCDFolder(folderPath, resolution, save_path);
 
     return 0;
 }
