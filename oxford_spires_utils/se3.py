@@ -9,6 +9,13 @@ def quat_xyzw_to_quat_wxyz(quat_xyzw):
     return quat_xyzw[[3, 0, 1, 2]]
 
 
+def quat_wxyz_to_quat_xyzw(quat_wxyz):
+    if isinstance(quat_wxyz, list):
+        quat_wxyz = np.array(quat_wxyz)
+    assert is_quaternion(quat_wxyz), f"{quat_wxyz} is not a valid quaternion"
+    return quat_wxyz[[1, 2, 3, 0]]
+
+
 def se3_matrix_to_xyz_quat_xyzw(se3_matrix):
     assert is_se3_matrix(se3_matrix)[0], f"{se3_matrix} not valid, {is_se3_matrix(se3_matrix)[1]}"
     xyz = se3_matrix[:3, 3]
@@ -32,6 +39,11 @@ def xyz_quat_xyzw_to_se3_matrix(xyz, quat_xyzw):
     se3_matrix[:3, :3] = Rotation.from_quat(quat_xyzw).as_matrix()
     assert is_se3_matrix(se3_matrix)[0], f"{se3_matrix} not valid, {is_se3_matrix(se3_matrix)[1]}"
     return se3_matrix
+
+
+def xyz_quat_wxyz_to_se3_matrix(xyz, quat_wxyz):
+    quat_xyzw = quat_wxyz_to_quat_xyzw(quat_wxyz)
+    return xyz_quat_xyzw_to_se3_matrix(xyz, quat_xyzw)
 
 
 def is_se3_matrix(se3_matrix):
