@@ -27,3 +27,6 @@ target_link_libraries(pcd2bt ${PROJECT_NAME})
 
 add_executable(get_occ_free_from_bt get_occ_free_from_bt.cpp)
 target_link_libraries(get_occ_free_from_bt ${PROJECT_NAME})
+
+add_executable(filter_pcd_with_bt filter_pcd_with_bt.cpp )
+target_link_libraries(filter_pcd_with_bt ${PROJECT_NAME})
