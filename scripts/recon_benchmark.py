@@ -5,10 +5,20 @@ from typing import List
 from oxford_spires_utils.bash_command import run_command
 
 
-def run_pcd2bt(cloud_folder: str, cloud_bt_path: str, transform: List[float]):
-    pcd2bt_command = [str(pcd2bt_path), cloud_folder, "-s", str(cloud_bt_path), "-tf", *map(str, transform)]
+def run_pcd2bt(cloud_folder: str, cloud_bt_path: str, pcd2bt_path: str, traverse_bt_path: str, transform: List[float]):
+    cloud_folder, cloud_bt_path = str(cloud_folder), str(cloud_bt_path)
+    pcd2bt_path, traverse_bt_path = str(pcd2bt_path), str(traverse_bt_path)
+
+    pcd2bt_command = [pcd2bt_path, cloud_folder, "-s", str(cloud_bt_path), "-tf", *map(str, transform)]
     pcd2bt_command = " ".join(pcd2bt_command)
     run_command(pcd2bt_command)
+
+    saved_occ_pcd_path = str(Path(cloud_bt_path).with_name(f"{Path(cloud_bt_path).stem}_occ.pcd"))
+    saved_free_pcd_path = str(Path(cloud_bt_path).with_name(f"{Path(cloud_bt_path).stem}_free.pcd"))
+    traverse_bt_command = [traverse_bt_path, cloud_bt_path, "-so", saved_occ_pcd_path, "-sf", saved_free_pcd_path]
+    print(traverse_bt_command)
+    traverse_bt_command = " ".join(traverse_bt_command)
+    run_command(traverse_bt_command)
 
 
 input_cloud_folder_path = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/raw/individual_clouds"
@@ -24,6 +34,7 @@ gt_cloud_bt_path = Path(project_folder) / "gt_cloud.bt"
 
 octomap_utils_path = Path(__file__).parent.parent / "octomap_utils"
 pcd2bt_path = octomap_utils_path / "build" / "pcd2bt"
+traverse_bt_path = octomap_utils_path / "build" / "traverse_bt"
 
 processes = []
 for cloud_folder, cloud_bt_path, transform in zip(
@@ -31,7 +42,9 @@ for cloud_folder, cloud_bt_path, transform in zip(
     [input_cloud_bt_path, gt_cloud_bt_path, gt_cloud_bt_path],
     [input_cloud_tf, gt_cloud_tf],
 ):
-    process = multiprocessing.Process(target=run_pcd2bt, args=(cloud_folder, cloud_bt_path, transform))
+    process = multiprocessing.Process(
+        target=run_pcd2bt, args=(cloud_folder, cloud_bt_path, pcd2bt_path, traverse_bt_path, transform)
+    )
     processes.append(process)
 
 for process in processes:
