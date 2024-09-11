@@ -6,25 +6,11 @@
 #include <pcl/point_types.h>
 #include <chrono>
 
+#include "progress_bar.h"
+
 using namespace std;
 using namespace octomap;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
-
-// Function to display a simple progress bar
-void displayProgressBar(size_t current, size_t total) {
-    const int barWidth = 50; // Width of the progress bar
-    float progress = static_cast<float>(current) / total;
-    int pos = static_cast<int>(barWidth * progress);
-
-    cout << "[";
-    for (int i = 0; i < barWidth; ++i) {
-        if (i < pos) cout << "=";
-        else if (i == pos) cout << ">";
-        else cout << " ";
-    }
-    cout << "] " << int(progress * 100.0) << "%\r";
-    cout.flush();
-}
 
 void convertOctreeToPointCloud(const OcTree& tree, PointCloud::Ptr& free_cloud, PointCloud::Ptr& occupied_cloud) {
     // Get the total number of leaf nodes for the progress bar

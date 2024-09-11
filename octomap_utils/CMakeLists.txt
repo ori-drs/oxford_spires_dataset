@@ -10,13 +10,20 @@ find_package(Octomap REQUIRED)
 find_package(PCL REQUIRED)
 
 
-# Include the OctoMap headers
-include_directories(${OCTOMAP_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(
+    include
+    ${OCTOMAP_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
+)
 
+add_library(${PROJECT_NAME} SHARED
+  progress_bar.cpp
+)
+target_link_libraries(${PROJECT_NAME} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 add_executable(pcd2bt pcd2bt.cpp)
-target_link_libraries(pcd2bt ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(pcd2bt ${PROJECT_NAME})
 
 add_executable(get_occ_free_from_bt get_occ_free_from_bt.cpp)
-target_link_libraries(get_occ_free_from_bt ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(get_occ_free_from_bt ${PROJECT_NAME})
