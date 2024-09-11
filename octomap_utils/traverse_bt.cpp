@@ -55,15 +55,29 @@ void convertOctreeToPointCloud(const OcTree& tree, PointCloud::Ptr& free_cloud, 
     cout << endl;
 }
 
-int main(int argc, char** argv) {
-    // Check if a file path is provided
+int main(int argc, char **argv) {
+    // Default paths for saving the point clouds
+    string free_pcd_path = "free_voxels.pcd";
+    string occupied_pcd_path = "occupied_voxels.pcd";
+
+    // Check if the correct number of arguments is provided
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <path_to_bt_file>" << endl;
+        cerr << "Usage: " << argv[0] << " <path_to_bt_file> -sf <path_to_free_pcd> -so <path_to_occupied_pcd>" << endl;
         return 1;
     }
 
-    // Load the .bt file into an OcTree
+    // Parse arguments
     string bt_file = argv[1];
+    for (int i = 2; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-sf" && i + 1 < argc) {
+            free_pcd_path = argv[++i];
+        } else if (arg == "-so" && i + 1 < argc) {
+            occupied_pcd_path = argv[++i];
+        }
+    }
+
+    // Load the .bt file into an OcTree
     OcTree tree(bt_file);
 
     if (!tree.size()) {
@@ -73,22 +87,20 @@ int main(int argc, char** argv) {
 
     // Retrieve and print the thresholds
     double occupancyThreshold = tree.getOccupancyThres();
-    double freeThreshold = tree.getProbMiss();  // ProbMiss is related to how free space is handled
+    double freeThreshold = tree.getProbMiss(); // ProbMiss is related to how free space is handled
 
     cout << "Occupancy threshold: " << occupancyThreshold << endl;  // Default is 0.5
     cout << "Free threshold (probMiss): " << freeThreshold << endl; // Default is 0.12
 
-
-    // Point clouds for free, occupied, and unknown voxels
+    // Point clouds for free and occupied voxels
     PointCloud::Ptr free_cloud(new PointCloud);
     PointCloud::Ptr occupied_cloud(new PointCloud);
-    // PointCloud::Ptr unknown_cloud(new PointCloud);
 
+    // Convert octree to point clouds
     convertOctreeToPointCloud(tree, free_cloud, occupied_cloud);
 
-    cout << "size of free_cloud: " << free_cloud->points.size() << endl;
-    cout << "size of occupied_cloud: " << occupied_cloud->points.size() << endl;
-
+    cout << "Size of free_cloud: " << free_cloud->points.size() << endl;
+    cout << "Size of occupied_cloud: " << occupied_cloud->points.size() << endl;
 
     // Set cloud properties
     free_cloud->width = free_cloud->points.size();
@@ -99,17 +111,16 @@ int main(int argc, char** argv) {
     occupied_cloud->height = 1;
     occupied_cloud->is_dense = true;
 
+    // Save the point clouds as PCD files with specified file paths
+    cout << "Saving free cloud with " << free_cloud->points.size() << " points to " << free_pcd_path << "..." << endl;
+    pcl::io::savePCDFileASCII(free_pcd_path, *free_cloud);
 
-    // Save the point clouds as PCD files
-    cout << "Saving free cloud with " << free_cloud->points.size() << " points..." << endl;
-    pcl::io::savePCDFileASCII("free_voxels.pcd", *free_cloud);
-    cout << "Saving occupied cloud with " << occupied_cloud->points.size() << " points..." << endl;
-    pcl::io::savePCDFileASCII("occupied_voxels.pcd", *occupied_cloud);
-
+    cout << "Saving occupied cloud with " << occupied_cloud->points.size() << " points to " << occupied_pcd_path << "..." << endl;
+    pcl::io::savePCDFileASCII(occupied_pcd_path, *occupied_cloud);
 
     cout << "\nPoint clouds saved as:" << endl;
-    cout << "Free voxels: free_voxels.pcd (" << free_cloud->points.size() << " points)" << endl;
-    cout << "Occupied voxels: occupied_voxels.pcd (" << occupied_cloud->points.size() << " points)" << endl;
+    cout << "Free voxels: " << free_pcd_path << " (" << free_cloud->points.size() << " points)" << endl;
+    cout << "Occupied voxels: " << occupied_pcd_path << " (" << occupied_cloud->points.size() << " points)" << endl;
 
     return 0;
 }
