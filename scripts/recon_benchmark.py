@@ -38,6 +38,7 @@ gt_cloud_bt_path = Path(project_folder) / "gt_cloud.bt"
 octomap_utils_path = Path(__file__).parent.parent / "octomap_utils"
 pcd2bt_path = octomap_utils_path / "build" / "pcd2bt"
 get_occ_free_from_bt_path = octomap_utils_path / "build" / "get_occ_free_from_bt"
+filter_pcd_with_bt_path = octomap_utils_path / "build" / "filter_pcd_with_bt"
 
 processes = []
 for cloud_folder, cloud_bt_path in zip(
@@ -53,3 +54,14 @@ for process in processes:
 
 for process in processes:
     process.join()
+
+input_occ_pcd_path = str(Path(input_cloud_bt_path).with_name(f"{Path(input_cloud_bt_path).stem}_occ.pcd"))
+input_occ_filtered_path = str(Path(input_cloud_bt_path).with_name(f"{Path(input_cloud_bt_path).stem}_occ_filtered.pcd"))
+gt_occ_pcd_path = str(Path(gt_cloud_bt_path).with_name(f"{Path(gt_cloud_bt_path).stem}_occ.pcd"))
+gt_occ_filtered_path = str(Path(gt_cloud_bt_path).with_name(f"{Path(gt_cloud_bt_path).stem}_occ_filtered.pcd"))
+filter_pcd_command = [str(filter_pcd_with_bt_path), str(gt_cloud_bt_path), input_occ_pcd_path, input_occ_filtered_path]
+filter_pcd_command = " ".join(filter_pcd_command)
+run_command(filter_pcd_command)
+filter_pcd_command = [str(filter_pcd_with_bt_path), str(input_cloud_bt_path), gt_occ_pcd_path, gt_occ_filtered_path]
+filter_pcd_command = " ".join(filter_pcd_command)
+run_command(filter_pcd_command)
