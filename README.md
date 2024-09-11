@@ -33,7 +33,7 @@ cd <oxford_spires_dataset>/octomap_utils/build
 
 ```bash
 cd <oxford_spires_dataset>/octomap_utils/build
-./traverse_bt <path_to_bt_file> 
+./octomap_utils/get_occ_free_from_bt.cpp <path_to_bt_file> -sf <path_to_free_pcd> -so <path_to_occupied_pcd>
 ```
 
 ## Contributing

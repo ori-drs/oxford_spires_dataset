@@ -18,5 +18,5 @@ include_directories(${PCL_INCLUDE_DIRS})
 add_executable(pcd2bt pcd2bt.cpp)
 target_link_libraries(pcd2bt ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
 
-add_executable(traverse_bt traverse_bt.cpp)
-target_link_libraries(traverse_bt ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(get_occ_free_from_bt get_occ_free_from_bt.cpp)
+target_link_libraries(get_occ_free_from_bt ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
