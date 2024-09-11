@@ -1,9 +1,26 @@
 from pathlib import Path
 
+import numpy as np
 import open3d as o3d
 from tqdm import tqdm
 
 from oxford_spires_utils.io import read_pcd_with_viewpoint
+from oxford_spires_utils.se3 import is_se3_matrix
+
+
+def transform_3d_cloud(cloud_np, transform_matrix):
+    """Apply a transformation to the point cloud."""
+    # Convert points to homogeneous coordinates
+    assert isinstance(cloud_np, np.ndarray)
+    assert cloud_np.shape[1] == 3
+    assert is_se3_matrix(transform_matrix)[0], is_se3_matrix(transform_matrix)[1]
+
+    ones = np.ones((cloud_np.shape[0], 1))
+    homogenous_points = np.hstack((cloud_np, ones))
+
+    transformed_points = homogenous_points @ transform_matrix.T
+
+    return transformed_points[:, :3]
 
 
 def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel_size=0.05):
