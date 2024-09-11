@@ -24,6 +24,9 @@ def se3_matrix_to_xyz_quat_wxyz(se3_matrix):
 
 
 def xyz_quat_xyzw_to_se3_matrix(xyz, quat_xyzw):
+    if isinstance(quat_xyzw, list):
+        quat_xyzw = np.array(quat_xyzw)
+    assert is_quaternion(quat_xyzw), f"{quat_xyzw} is not a valid quaternion"
     se3_matrix = np.eye(4)
     se3_matrix[:3, 3] = xyz
     se3_matrix[:3, :3] = Rotation.from_quat(quat_xyzw).as_matrix()
