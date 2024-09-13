@@ -1,14 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <dirent.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/common/transforms.h> 
-#include <octomap/octomap.h>
-#include <octomap/OcTree.h>
-#include <Eigen/Geometry>
+#include "pcd2bt.h"
 
 // Function to list files in a directory
 std::vector<std::string> listFiles(const std::string& folderPath) {
@@ -88,30 +78,3 @@ void processPCDFolder(const std::string& folderPath, double resolution, const st
     std::cout << "Octomap saved to " << save_path << std::endl;
 }
 
-int main(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path]" << std::endl;
-        return 1;
-    }
-    std::string folderPath = argv[1];
-    double resolution = 0.1;
-    std::string save_path = "result_octomap.bt";
-
-    // Parse command line arguments
-    for (int i = 2; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "-r" && i + 1 < argc) {
-            resolution = std::stod(argv[++i]);
-        } else if (arg == "-s" && i + 1 < argc) {
-            save_path = argv[++i];
-        } else {
-            std::cerr << "Unknown argument or missing value: " << arg << std::endl;
-            std::cerr << "Usage: " << argv[0] << " <path_to_pcd_folder> -r [resolution] -s [saved_path]" << std::endl;
-            return 1;
-        }
-    }
-
-    processPCDFolder(folderPath, resolution, save_path);
-
-    return 0;
-}

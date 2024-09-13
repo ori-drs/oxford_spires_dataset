@@ -14,12 +14,25 @@ project(
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(PCL REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(octomap REQUIRED)
 
 # Add a library using FindPython's tooling (pybind11 also provides a helper like
 # this)
-include_directories(${PCL_INCLUDE_DIRS})
-python_add_library(_core MODULE src/spires_cpp/main.cpp WITH_SOABI)
-target_link_libraries(_core PRIVATE pybind11::headers ${PCL_LIBRARIES})
+include_directories(${PCL_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+set(SOURCES
+    src/spires_cpp/main.cpp
+    src/spires_cpp/octomap/pcd2bt.cpp
+)
+
+python_add_library(_core MODULE ${SOURCES} WITH_SOABI)
+target_link_libraries(_core PRIVATE 
+  pybind11::headers
+  ${PCL_LIBRARIES}
+  ${OCTOMAP_LIBRARIES}
+)
 
 # This is passing in the version as a define just as an example
 target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
