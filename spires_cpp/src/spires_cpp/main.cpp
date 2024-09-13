@@ -27,8 +27,8 @@ PYBIND11_MODULE(_core, m) {
     )pbdoc";
   m.def("processPCDFolder", &processPCDFolder, "Process PCD files and save to OctoMap", py::arg("folderPath"),
         py::arg("resolution"), py::arg("save_path"));
-  m.def("removeUnknownPoints", &removeUnknownPoints, "Remove unknown points from PCD file", py::arg("cloud"),
-        py::arg("tree"), py::arg("output_file"));
+  m.def("removeUnknownPoints", &removeUnknownPoints, "Remove unknown points from PCD file", py::arg("input_pcd_path"),
+        py::arg("input_bt_path"), py::arg("output_file_path"));
   py::class_<octomap::OcTree>(m, "OcTree")
       .def(py::init<double>(), py::arg("resolution"))
       .def(py::init<std::string>(), py::arg("filename"))

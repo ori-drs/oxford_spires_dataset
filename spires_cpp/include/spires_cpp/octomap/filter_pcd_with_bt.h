@@ -3,5 +3,5 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-void removeUnknownPoints(pcl::PointCloud<pcl::PointXYZ> &cloud, const octomap::OcTree &tree,
-                         const std::string &output_file);
+void removeUnknownPoints(const std::string input_pcd_path, const std::string input_bt_path,
+                         const std::string output_file_path);
