@@ -10,3 +10,9 @@ repos:
       # Run the formatter.
       - id: ruff-format
         types_or: [python, pyi, jupyter]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8  # Replace with the latest version
+    hooks:
+      - id: clang-format
+        args: ["--style={BasedOnStyle: LLVM, ColumnLimit: 120}"]  # This makes it use your .clang-format file, if present
