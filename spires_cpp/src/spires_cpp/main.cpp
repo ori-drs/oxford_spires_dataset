@@ -1,6 +1,6 @@
-#include "filter_pcd_with_bt.h"
-#include "pcd2bt.h"
-#include "progress_bar.h"
+#include "spires_cpp/octomap/filter_pcd_with_bt.h"
+#include "spires_cpp/octomap/pcd2bt.h"
+#include "spires_cpp/octomap/progress_bar.h"
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pybind11/pybind11.h>

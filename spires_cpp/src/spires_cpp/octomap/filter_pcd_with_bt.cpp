@@ -1,4 +1,4 @@
-#include "filter_pcd_with_bt.h"
+#include "spires_cpp/octomap/filter_pcd_with_bt.h"
 
 // Function to check if a point is unknown in the octree
 bool isUnknownInOctree(const octomap::OcTree &tree, const octomap::point3d &point) {
