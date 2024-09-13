@@ -18,7 +18,7 @@ find_package(PCL REQUIRED)
 # Add a library using FindPython's tooling (pybind11 also provides a helper like
 # this)
 include_directories(${PCL_INCLUDE_DIRS})
-python_add_library(_core MODULE src/spires_cpp/my_lib/main.cpp WITH_SOABI)
+python_add_library(_core MODULE src/spires_cpp/main.cpp WITH_SOABI)
 target_link_libraries(_core PRIVATE pybind11::headers ${PCL_LIBRARIES})
 
 # This is passing in the version as a define just as an example
