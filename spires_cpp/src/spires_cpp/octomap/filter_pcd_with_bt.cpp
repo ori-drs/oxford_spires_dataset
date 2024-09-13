@@ -1,7 +1,4 @@
-#include <octomap/OcTree.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <iostream>
+#include "filter_pcd_with_bt.h"
 
 // Function to check if a point is unknown in the octree
 bool isUnknownInOctree(const octomap::OcTree& tree, const octomap::point3d& point) {

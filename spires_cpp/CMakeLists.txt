@@ -17,14 +17,13 @@ find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(octomap REQUIRED)
 
-# Add a library using FindPython's tooling (pybind11 also provides a helper like
-# this)
 include_directories(${PCL_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SOURCES
     src/spires_cpp/main.cpp
     src/spires_cpp/octomap/pcd2bt.cpp
+    src/spires_cpp/octomap/filter_pcd_with_bt.cpp
 )
 
 python_add_library(_core MODULE ${SOURCES} WITH_SOABI)

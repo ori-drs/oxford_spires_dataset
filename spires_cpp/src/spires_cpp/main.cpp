@@ -3,6 +3,7 @@
 #include <pcl/point_types.h>
 #include "progress_bar.h"
 #include "pcd2bt.h"
+#include "filter_pcd_with_bt.h"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -28,8 +29,10 @@ PYBIND11_MODULE(_core, m) {
     )pbdoc";
     m.def("processPCDFolder", &processPCDFolder, "Process PCD files and save to OctoMap",
         py::arg("folderPath"), py::arg("resolution"), py::arg("save_path"));
-    // m.def("processPCDFolder", &processPCDFolder, "Process PCD files and save to OctoMap",
-    //     py::arg("folderPath"), py::arg("resolution"), py::arg("save_path"));
+    m.def("removeUnknownPoints", &removeUnknownPoints, "Remove unknown points from PCD file",
+        py::arg("cloud"), py::arg("tree"), py::arg("output_file"));
+    
+
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
