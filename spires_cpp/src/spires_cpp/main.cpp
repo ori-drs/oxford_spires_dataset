@@ -31,7 +31,14 @@ PYBIND11_MODULE(_core, m) {
         py::arg("folderPath"), py::arg("resolution"), py::arg("save_path"));
     m.def("removeUnknownPoints", &removeUnknownPoints, "Remove unknown points from PCD file",
         py::arg("cloud"), py::arg("tree"), py::arg("output_file"));
-    
+    py::class_<octomap::OcTree>(m, "OcTree")
+        .def(py::init<double>(), py::arg("resolution"))
+        .def(py::init<std::string>(), py::arg("filename"))
+        .def("readBinary", static_cast<bool (octomap::OcTree::*)(const std::string&)>(&octomap::OcTree::readBinary))
+        .def("writeBinary", static_cast<bool (octomap::OcTree::*)(const std::string&)>(&octomap::OcTree::writeBinary))
+        .def("getResolution", &octomap::OcTree::getResolution)
+        .def("size", &octomap::OcTree::size)
+        .def("getTreeDepth", &octomap::OcTree::getTreeDepth);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
