@@ -22,8 +22,10 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SOURCES
     src/spires_cpp/main.cpp
-    src/spires_cpp/octomap/pcd2bt.cpp
     src/spires_cpp/octomap/filter_pcd_with_bt.cpp
+    src/spires_cpp/octomap/get_occ_free_from_bt.cpp
+    src/spires_cpp/octomap/pcd2bt.cpp
+    src/spires_cpp/octomap/progress_bar.cpp
 )
 
 python_add_library(_core MODULE ${SOURCES} WITH_SOABI)

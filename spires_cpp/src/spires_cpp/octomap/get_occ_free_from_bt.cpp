@@ -1,10 +1,30 @@
-
+#include "spires_cpp/octomap/get_occ_free_from_bt.h"
 
 using namespace std;
 using namespace octomap;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
-void convertOctreeToPointCloud(const OcTree &tree, PointCloud::Ptr &free_cloud, PointCloud::Ptr &occupied_cloud) {
+void convertOctreeToPointCloud(const std::string bt_file_path, const std::string free_pcd_path,
+                               const std::string occupied_pcd_path) {
+  // Load the .bt file into an OcTree
+  OcTree tree(bt_file_path);
+
+  if (!tree.size()) {
+    cerr << "Failed to load the .bt file or the tree is empty." << endl;
+    return;
+  }
+
+  // Retrieve and print the thresholds
+  double occupancyThreshold = tree.getOccupancyThres();
+  double freeThreshold = tree.getProbMiss(); // ProbMiss is related to how free space is handled
+
+  cout << "Occupancy threshold: " << occupancyThreshold << endl;  // Default is 0.5
+  cout << "Free threshold (probMiss): " << freeThreshold << endl; // Default is 0.12
+
+  // Point clouds for free and occupied voxels
+  PointCloud::Ptr free_cloud(new PointCloud);
+  PointCloud::Ptr occupied_cloud(new PointCloud);
+
   // Get the total number of leaf nodes for the progress bar
   size_t total_leafs = tree.getNumLeafNodes();
   size_t processed_leafs = 0;
@@ -30,51 +50,6 @@ void convertOctreeToPointCloud(const OcTree &tree, PointCloud::Ptr &free_cloud, 
   // Final progress bar completion
   displayProgressBar(total_leafs, total_leafs);
   cout << endl;
-}
-
-int main(int argc, char **argv) {
-  // Default paths for saving the point clouds
-  string free_pcd_path = "free_voxels.pcd";
-  string occupied_pcd_path = "occupied_voxels.pcd";
-
-  // Check if the correct number of arguments is provided
-  if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <path_to_bt_file> -sf <path_to_free_pcd> -so <path_to_occupied_pcd>" << endl;
-    return 1;
-  }
-
-  // Parse arguments
-  string bt_file = argv[1];
-  for (int i = 2; i < argc; ++i) {
-    string arg = argv[i];
-    if (arg == "-sf" && i + 1 < argc) {
-      free_pcd_path = argv[++i];
-    } else if (arg == "-so" && i + 1 < argc) {
-      occupied_pcd_path = argv[++i];
-    }
-  }
-
-  // Load the .bt file into an OcTree
-  OcTree tree(bt_file);
-
-  if (!tree.size()) {
-    cerr << "Failed to load the .bt file or the tree is empty." << endl;
-    return 1;
-  }
-
-  // Retrieve and print the thresholds
-  double occupancyThreshold = tree.getOccupancyThres();
-  double freeThreshold = tree.getProbMiss(); // ProbMiss is related to how free space is handled
-
-  cout << "Occupancy threshold: " << occupancyThreshold << endl;  // Default is 0.5
-  cout << "Free threshold (probMiss): " << freeThreshold << endl; // Default is 0.12
-
-  // Point clouds for free and occupied voxels
-  PointCloud::Ptr free_cloud(new PointCloud);
-  PointCloud::Ptr occupied_cloud(new PointCloud);
-
-  // Convert octree to point clouds
-  convertOctreeToPointCloud(tree, free_cloud, occupied_cloud);
 
   cout << "Size of free_cloud: " << free_cloud->points.size() << endl;
   cout << "Size of occupied_cloud: " << occupied_cloud->points.size() << endl;
@@ -99,6 +74,4 @@ int main(int argc, char **argv) {
   cout << "\nPoint clouds saved as:" << endl;
   cout << "Free voxels: " << free_pcd_path << " (" << free_cloud->points.size() << " points)" << endl;
   cout << "Occupied voxels: " << occupied_pcd_path << " (" << occupied_cloud->points.size() << " points)" << endl;
-
-  return 0;
 }

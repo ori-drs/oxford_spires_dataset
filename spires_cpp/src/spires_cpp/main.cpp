@@ -1,4 +1,5 @@
 #include "spires_cpp/octomap/filter_pcd_with_bt.h"
+#include "spires_cpp/octomap/get_occ_free_from_bt.h"
 #include "spires_cpp/octomap/pcd2bt.h"
 #include "spires_cpp/octomap/progress_bar.h"
 #include <pcl/io/pcd_io.h>
@@ -29,6 +30,8 @@ PYBIND11_MODULE(_core, m) {
         py::arg("resolution"), py::arg("save_path"));
   m.def("removeUnknownPoints", &removeUnknownPoints, "Remove unknown points from PCD file", py::arg("input_pcd_path"),
         py::arg("input_bt_path"), py::arg("output_file_path"));
+  m.def("convertOctreeToPointCloud", &convertOctreeToPointCloud, "Convert Octree to PointCloud",
+        py::arg("bt_file_path"), py::arg("free_pcd_path"), py::arg("occupied_pcd_path"));
   py::class_<octomap::OcTree>(m, "OcTree")
       .def(py::init<double>(), py::arg("resolution"))
       .def(py::init<std::string>(), py::arg("filename"))
