@@ -108,26 +108,6 @@ def run_openmvs(
     ]
     run_command(" ".join(texture_cmd), print_command=True)
 
-    # Estimate disparity-maps
-    estimate_disparity_cmd = [
-        f"{openmvs_bin}/DensifyPointCloud",
-        "scene.mvs",
-        "--dense-config-file Densify.ini",
-        "--fusion-mode -1",
-        f"-w {mvs_dir}",
-    ]
-    run_command(" ".join(estimate_disparity_cmd), print_command=True)
-
-    # Fuse disparity-maps
-    fuse_disparity_cmd = [
-        f"{openmvs_bin}/DensifyPointCloud",
-        "scene.mvs",
-        "--dense-config-file Densify.ini",
-        "--fusion-mode -2",
-        f"-w {mvs_dir}",
-    ]
-    run_command(" ".join(fuse_disparity_cmd), print_command=True)
-
 
 if __name__ == "__main__":
     image_path = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/raw"
