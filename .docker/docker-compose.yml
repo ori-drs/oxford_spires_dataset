@@ -1,0 +1,21 @@
+services:
+  spires:
+    container_name: spires_container
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
+      target: deploy
+      args:
+        - USERNAME=${USER:-user}
+        - UID=${UID}
+        - GID=${GID}
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    runtime: nvidia
+    network_mode: "host"
+    tty: true
+    volumes:
+      - ../scripts:${SPIRES_DIR}/scripts
+      - ../tests:${SPIRES_DIR}/tests
+
