@@ -28,7 +28,7 @@ RUN apt-get update && \
     wget && \
     rm -rf /var/lib/apt/lists/*
 
- RUN python -m pip install --no-cache-dir --upgrade pip setuptools pathtools promise pybind11
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools pathtools promise pybind11
 
 
 RUN apt-get update && \
