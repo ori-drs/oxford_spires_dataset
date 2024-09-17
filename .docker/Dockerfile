@@ -30,13 +30,17 @@ RUN apt-get update && \
 
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools pathtools promise pybind11
 
-
+##############
+# spires_cpp #
+##############
+from base as spires_cpp
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libeigen3-dev \
     libpcl-dev &&\
     rm -rf /var/lib/apt/lists/*
 
+# Octomap
 RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 ${HOME_DIR}/octomap &&\
     cd ${HOME_DIR}/octomap &&\
     mkdir build &&\
@@ -45,10 +49,34 @@ RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 ${HOME_DIR
     make &&\
     make install
 
+##############
+#   OpenMVS  #
+##############
+from spires_cpp as openmvs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    # Boost
+    libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-serialization-dev \
+    # OpenCV
+    libopencv-dev \
+    # CGAL
+    libcgal-dev libcgal-qt5-dev &&\
+    rm -rf /var/lib/apt/lists/*
+
+ARG OPENMVS_BUILD_ARG="-DOpenMVS_USE_CUDA=ON -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/ -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/ -DCUDA_INCLUDE_DIRS=/usr/local/cuda/include/ -DCUDA_CUDART_LIBRARY=/usr/local/cuda/lib64 -DCUDA_NVCC_EXECUTABLE=/usr/local/cuda/bin/"
+RUN git clone https://github.com/cdcseacave/VCG.git  ${HOME_DIR}/vcglib &&\
+    git clone --recurse-submodules https://github.com/cdcseacave/openMVS.git ${HOME_DIR}/openMVS &&\
+    cd ${HOME_DIR}/openMVS &&\
+    mkdir make &&\
+    cd make &&\
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT=${HOME_DIR}/vcglib $OPENMVS_BUILD_ARG &&\
+    make &&\
+    make install
+
 ####################
 # Deployment image #
 ####################
-FROM base as deploy
+FROM openmvs as deploy
 
 ARG GID
 ARG UID
