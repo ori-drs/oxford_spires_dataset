@@ -2,7 +2,13 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
-from oxford_spires_utils.se3 import se3_matrix_to_xyz_quat_xyzw, xyz_quat_xyzw_to_se3_matrix
+from oxford_spires_utils.se3 import (
+    quat_xyzw_to_quat_wxyz,
+    se3_matrix_to_xyz_quat_wxyz,
+    se3_matrix_to_xyz_quat_xyzw,
+    xyz_quat_wxyz_to_se3_matrix,
+    xyz_quat_xyzw_to_se3_matrix,
+)
 
 
 def test_se3_matrix_to_xyz_quat_xyzw():
@@ -67,6 +73,27 @@ def test_xyz_quat_xyzw_to_se3_matrix():
     expected[:3, :3] = Rotation.from_euler("xyz", [30, 60, 90], degrees=True).as_matrix()
     expected[:3, 3] = xyz
     assert np.allclose(se3, expected)
+
+
+def test_se3_matrix_to_xyz_quat_wxyz():
+    # Test conversion from SE(3) matrix to XYZ + quaternion (WXYZ)
+    se3 = np.eye(4)
+    se3[:3, 3] = [1, 2, 3]
+    se3[:3, :3] = Rotation.from_euler("xyz", [45, 45, 45], degrees=True).as_matrix()
+    xyz, quat = se3_matrix_to_xyz_quat_wxyz(se3)
+    expected_quat = quat_xyzw_to_quat_wxyz(Rotation.from_euler("xyz", [45, 45, 45], degrees=True).as_quat())
+    assert np.allclose(xyz, [1, 2, 3], atol=1e-6)
+    assert np.allclose(quat, expected_quat, atol=1e-6)
+
+
+def test_xyz_quat_wxyz_to_se3_matrix():
+    # Test conversion from XYZ + quaternion (WXYZ) to SE(3) matrix
+    xyz = [1, 2, 3]
+    quat = [1, 0, 0, 0]  # Identity quaternion WXYZ
+    se3 = xyz_quat_wxyz_to_se3_matrix(xyz, quat)
+    expected = np.eye(4)
+    expected[:3, 3] = xyz
+    assert np.allclose(se3, expected, atol=1e-6)
 
 
 def test_roundtrip_conversion():
