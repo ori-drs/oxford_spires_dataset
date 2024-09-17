@@ -17,4 +17,5 @@ services:
     tty: true
     volumes:
       - ../scripts:${SPIRES_DIR}/scripts
+      - ../tests:${SPIRES_DIR}/tests
 
