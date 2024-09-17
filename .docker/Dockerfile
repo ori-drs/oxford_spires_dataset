@@ -56,7 +56,7 @@ ENV UNAME=docker_dev
 RUN addgroup --gid $GID $UNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $UNAME
 
-ARG SPIRES_DIR=/home/docker_dev/oxford_spires_dataset
+ARG SPIRES_DIR=/home/oxford_spires_dataset
 WORKDIR ${SPIRES_DIR}
 
 COPY ./requirements.txt ${SPIRES_DIR}/requirements.txt
