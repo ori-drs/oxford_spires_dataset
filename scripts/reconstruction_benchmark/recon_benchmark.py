@@ -1,6 +1,7 @@
 import multiprocessing
 from pathlib import Path
 
+from oxford_spires_utils.eval import get_recon_metrics, merge_downsample_vilens_slam_clouds, save_error_cloud
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 
@@ -40,6 +41,12 @@ def evaluate_lidar_cloud(project_folder, lidar_cloud_folder_path, gt_folder_path
 
     removeUnknownPoints(input_occ_pcd_path, str(gt_cloud_bt_path), input_occ_filtered_path)
     removeUnknownPoints(gt_occ_pcd_path, str(input_cloud_bt_path), gt_occ_filtered_path)
+
+    downsample_voxel_size = 0.03
+    input_cloud_np = np.asarray(merge_downsample_vilens_slam_clouds(lidar_cloud_folder_path, downsample_voxel_size))
+    gt_cloud_np = np.asarray(merge_downsample_vilens_slam_clouds(gt_folder_path, downsample_voxel_size))
+    print(get_recon_metrics(input_cloud_np, gt_cloud_np))
+    save_error_cloud(input_cloud_np, gt_cloud_np, str(Path(project_folder) / "error_cloud_input.ply"))
 
 
 if __name__ == "__main__":
