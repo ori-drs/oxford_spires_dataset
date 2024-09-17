@@ -7,34 +7,13 @@ This repository contains scripts that are used to evaluate Lidar/Visual SLAM on 
 pip install -e .
 ```
 
-### octomap_utils (C++)
-Install octomap to your system
+### spires_cpp
+Install [octomap](https://github.com/OctoMap/octomap) and [PCL](https://github.com/PointCloudLibrary/pcl) to your system, then
 ```bash
-git clone https://github.com/OctoMap/octomap.git && cd octomap
-mkdir build && cd build
-cmake ..
-make
-sudo make install
-```
-Then install the sripts in Spires.
-```bash
-cd <oxford_spires_dataset>/octomap_utils
-mkdir build && cd build
-cmake ..
-make
+cd spires_cpp
+pip install -e .
 ```
 
-## Usage
-### octomap_utils
-```bash
-cd <oxford_spires_dataset>/octomap_utils/build
-./pcd2bt <path_to_pcd_folder> -r [resolution] -s [saved_path] -tf [x,y,z, quat_w, quat_x, quat_y, quat_z]
-```
-
-```bash
-cd <oxford_spires_dataset>/octomap_utils/build
-./octomap_utils/get_occ_free_from_bt.cpp <path_to_bt_file> -sf <path_to_free_pcd> -so <path_to_occupied_pcd>
-```
 
 ## Contributing
 Please refer to Angular's guide for contributing(https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md).
