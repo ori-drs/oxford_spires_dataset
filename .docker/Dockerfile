@@ -73,10 +73,55 @@ RUN git clone https://github.com/cdcseacave/VCG.git  ${HOME_DIR}/vcglib &&\
     make &&\
     make install
 
+##############
+#   COLMAP   #
+##############
+from openmvs as colmap
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ninja-build \
+    build-essential \
+    libboost-program-options-dev \
+    libboost-filesystem-dev \
+    libboost-graph-dev \
+    libboost-system-dev \
+    libeigen3-dev \
+    libflann-dev \
+    libfreeimage-dev \
+    libmetis-dev \
+    libgoogle-glog-dev \
+    libgtest-dev \
+    libgmock-dev \
+    libsqlite3-dev \
+    libglew-dev \
+    qtbase5-dev \
+    libqt5opengl5-dev \
+    libcgal-dev \
+    libceres-dev &&\
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc-10 g++-10
+RUN export CC=/usr/bin/gcc-10 &&\
+    export CXX=/usr/bin/g++-10 &&\
+    export CUDAHOSTCXX=/usr/bin/g++-10
+
+# TODO: You might have to change this to your specific GPU architecture. Ideally should not need to specify CUDA_ARCHITECTURES. 
+ARG CUDA_ARCHITECTURES=90 
+RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colmap &&\
+    cd ${HOME_DIR}/colmap &&\
+    mkdir build &&\
+    cd build &&\
+    cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} &&\
+    ninja &&\
+    ninja install
+
+
 ####################
 # Deployment image #
 ####################
-FROM openmvs as deploy
+FROM colmap as deploy
 
 ARG GID
 ARG UID
