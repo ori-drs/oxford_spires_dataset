@@ -30,6 +30,21 @@ RUN apt-get update && \
 
  RUN python -m pip install --no-cache-dir --upgrade pip setuptools pathtools promise pybind11
 
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libeigen3-dev \
+    libpcl-dev &&\
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 ${HOME_DIR}/octomap &&\
+    cd ${HOME_DIR}/octomap &&\
+    mkdir build &&\
+    cd build &&\
+    cmake .. &&\
+    make &&\
+    make install
+
 ####################
 # Deployment image #
 ####################
@@ -47,7 +62,9 @@ WORKDIR ${SPIRES_DIR}
 COPY ./requirements.txt ${SPIRES_DIR}/requirements.txt
 RUN pip install -r requirements.txt
 COPY ./oxford_spires_utils/ ${SPIRES_DIR}/oxford_spires_utils/
+COPY ./spires_cpp ${SPIRES_DIR}/spires_cpp/
 COPY ./pyproject.toml ${SPIRES_DIR}/pyproject.toml
+RUN cd ${SPIRES_DIR}/spires_cpp && pip install -e . 
 RUN pip install -e .
 
 # Make the outputs of the container match the host
