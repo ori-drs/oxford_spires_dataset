@@ -12,7 +12,6 @@ def evaluate_lidar_cloud(project_folder, lidar_cloud_folder_path, gt_folder_path
     Path(project_folder).mkdir(parents=True, exist_ok=True)
     input_cloud_bt_path = Path(project_folder) / "input_cloud.bt"
     gt_cloud_bt_path = Path(project_folder) / "gt_cloud.bt"
-
     processes = []
     for cloud_folder, cloud_bt_path in zip(
         [lidar_cloud_folder_path, gt_folder_path], [input_cloud_bt_path, gt_cloud_bt_path]
@@ -46,7 +45,9 @@ def evaluate_lidar_cloud(project_folder, lidar_cloud_folder_path, gt_folder_path
     removeUnknownPoints(gt_occ_pcd_path, str(input_cloud_bt_path), gt_occ_filtered_path)
 
     downsample_voxel_size = 0.03
-    input_cloud_np = np.asarray(merge_downsample_vilens_slam_clouds(lidar_cloud_folder_path, downsample_voxel_size))
-    gt_cloud_np = np.asarray(merge_downsample_vilens_slam_clouds(gt_folder_path, downsample_voxel_size))
+    input_cloud_np = np.asarray(
+        merge_downsample_vilens_slam_clouds(lidar_cloud_folder_path, downsample_voxel_size).points
+    )
+    gt_cloud_np = np.asarray(merge_downsample_vilens_slam_clouds(gt_folder_path, downsample_voxel_size).points)
     print(get_recon_metrics(input_cloud_np, gt_cloud_np))
     save_error_cloud(input_cloud_np, gt_cloud_np, str(Path(project_folder) / "error_cloud_input.ply"))
