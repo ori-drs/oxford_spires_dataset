@@ -60,4 +60,5 @@ if __name__ == "__main__":
     project_folder = "/home/oxford_spires_dataset/data/2024-03-13-maths_1"
     recon_benchmark = ReconstructionBenchmark(project_folder)
     recon_benchmark.process_gt_cloud()
+    recon_benchmark.tranform_lidar_clouds()
     recon_benchmark.evaluate_lidar_clouds()
