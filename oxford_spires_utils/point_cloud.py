@@ -45,9 +45,10 @@ def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel
     return final_cloud
 
 
-def merge_downsample_vilens_slam_clouds(vilens_slam_clouds_folder, downsample_voxel_size=0.05):
+def merge_downsample_vilens_slam_clouds(vilens_slam_clouds_folder, downsample_voxel_size=0.05, output_cloud_path=None):
     cloud_paths = list(Path(vilens_slam_clouds_folder).rglob("*.pcd"))
-    output_cloud_path = Path(vilens_slam_clouds_folder).parent / f"merged_{downsample_voxel_size}m.ply"
+    if not output_cloud_path:
+        output_cloud_path = Path(vilens_slam_clouds_folder).parent / f"merged_{downsample_voxel_size}m.ply"
     return merge_downsample_clouds(cloud_paths, output_cloud_path, downsample_voxel_size)
 
 
