@@ -29,10 +29,11 @@ def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel
     print("Merging clouds ...")
     final_cloud = o3d.geometry.PointCloud()
     for cloud_path in tqdm(cloud_path_list):
+        cloud_path = str(cloud_path)
         if cloud_path.endswith(".pcd"):
-            cloud = read_pcd_with_viewpoint(str(cloud_path))
+            cloud = read_pcd_with_viewpoint(cloud_path)
         elif cloud_path.endswith(".ply"):
-            cloud = o3d.io.read_point_cloud(str(cloud_path))
+            cloud = o3d.io.read_point_cloud(cloud_path)
         else:
             raise ValueError(f"Unsupported file format: {cloud_path}")
         final_cloud += cloud
