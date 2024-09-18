@@ -16,7 +16,7 @@ class ReconstructionBenchmark:
         self.image_folder = self.project_folder / "images"
         self.gt_individual_folder = self.project_folder / "gt_clouds"
         self.individual_clouds_folder = self.project_folder / "lidar_clouds"
-        self.output_folder = self.project_folder / "output"
+        self.output_folder = self.project_folder / "outputs"
         self.output_folder.mkdir(exist_ok=True)
         # TODO: check lidar cloud folder has viewpoints and is pcd, check gt folder is pcd, check image folder is jpg/png
         self.octomap_resolution = 0.1
