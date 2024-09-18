@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from lidar_cloud_eval import evaluate_lidar_cloud
-from utils import convert_e57_folder_to_pcd_folder
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
+from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder
 
 
