@@ -19,6 +19,8 @@ def get_recon_metrics(
     precision_threshold=0.05,
     recall_threshold=0.05,
 ):
+    assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
+    assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
     print("Computing Accuracy and Precision ...")
     distances = compute_p2p_distance(input_cloud, gt_cloud)
     accuracy = np.mean(distances)
