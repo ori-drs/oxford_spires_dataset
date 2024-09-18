@@ -18,4 +18,4 @@ services:
     volumes:
       - ../scripts:${SPIRES_DIR}/scripts
       - ../tests:${SPIRES_DIR}/tests
-
+      - ${HOST_SPIRES_DATA_DIR}:${SPIRES_DATA_DIR}
