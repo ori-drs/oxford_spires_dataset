@@ -3,6 +3,7 @@ from pathlib import Path
 from lidar_cloud_eval import evaluate_lidar_cloud
 from utils import convert_e57_folder_to_pcd_folder
 
+from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder
 
@@ -20,6 +21,7 @@ class ReconstructionBenchmark:
         self.cloud_downsample_voxel_size = 0.05
 
     def process_gt_cloud(self):
+        print_with_colour("Creating Octree and merged cloud from ground truth clouds")
         self.gt_octree_path = self.project_folder / "gt_cloud.bt"
         self.gt_cloud_merged_path = self.project_folder / "gt_cloud_merged.ply"
         processPCDFolder(str(self.gt_individual_folder), self.octomap_resolution, str(self.gt_octree_path))
