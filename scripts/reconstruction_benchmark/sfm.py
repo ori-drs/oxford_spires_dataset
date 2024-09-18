@@ -48,7 +48,7 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     colmap_feature_extractor_cmd = " ".join(colmap_feature_extractor_cmd)
     run_command(colmap_feature_extractor_cmd, print_command=True)
 
-    image_num = len(list(image_path.glob("*")))
+    image_num = len(list(image_path.rglob("*")))
     colmap_vocab_tree_matcher_cmd = [
         "colmap vocab_tree_matcher",
         f"--database_path {database_path}",
