@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 from lidar_cloud_eval import evaluate_lidar_cloud
+from mvs import run_openmvs
 from sfm import run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
@@ -27,6 +28,12 @@ class ReconstructionBenchmark:
         self.cloud_downsample_voxel_size = 0.05
         self.gt_octree_path = self.output_folder / "gt_cloud.bt"
         self.gt_cloud_merged_path = self.output_folder / "gt_cloud_merged.pcd"
+
+        self.colmap_sparse_folder = self.colmap_output_folder / "sparse" / "0"
+        self.openmvs_bin = "/usr/local/bin/OpenMVS"
+        self.mvs_output_folder = self.output_folder / "mvs"
+        self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
+        self.mvs_max_image_size = 600
 
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
@@ -59,6 +66,20 @@ class ReconstructionBenchmark:
     def run_colmap(self):
         run_colmap(self.image_folder, self.colmap_output_folder)
 
+    def run_openmvs(self):
+        # check if multiple sparse folders exist
+        num_sparse_folders = len(list(self.colmap_sparse_folder.glob("*")))
+        if num_sparse_folders > 1:
+            print_with_colour(f"Multiple sparse folders found in {self.colmap_output_folder}. Using the first one.")
+        run_openmvs(
+            self.image_folder,
+            self.colmap_output_folder,
+            self.colmap_sparse_folder,
+            self.mvs_output_folder,
+            self.mvs_max_image_size,
+            self.openmvs_bin,
+        )
+
 
 if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
@@ -70,3 +91,4 @@ if __name__ == "__main__":
     recon_benchmark.tranform_lidar_clouds()
     recon_benchmark.evaluate_lidar_clouds()
     recon_benchmark.run_colmap()
+    recon_benchmark.run_openmvs()
