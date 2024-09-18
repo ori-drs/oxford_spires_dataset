@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oxford_spires_utils.io import convert_e57_to_pcd
+from oxford_spires_utils.point_cloud import convert_e57_to_pcd
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
