@@ -30,7 +30,7 @@ class ReconstructionBenchmark:
         gt_cloud_free_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_free.pcd"))
         gt_cloud_occ_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_occ.pcd"))
         convertOctreeToPointCloud(str(self.gt_octree_path), str(gt_cloud_free_path), str(gt_cloud_occ_path))
-        self.gt_cloud_merged = merge_downsample_vilens_slam_clouds(
+        _ = merge_downsample_vilens_slam_clouds(
             self.gt_individual_folder, self.cloud_downsample_voxel_size, self.gt_cloud_merged_path
         )
 
