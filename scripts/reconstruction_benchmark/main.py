@@ -1,6 +1,7 @@
 import multiprocessing
 from pathlib import Path
 
+import numpy as np
 from utils import convert_e57_folder_to_pcd_folder
 
 from oxford_spires_utils.eval import get_recon_metrics, save_error_cloud
