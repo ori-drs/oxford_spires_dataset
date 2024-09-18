@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 from lidar_cloud_eval import evaluate_lidar_cloud
+from sfm import run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
@@ -17,7 +18,10 @@ class ReconstructionBenchmark:
         self.gt_individual_folder = self.project_folder / "gt_clouds"
         self.individual_clouds_folder = self.project_folder / "lidar_clouds"
         self.output_folder = self.project_folder / "outputs"
-        self.output_folder.mkdir(exist_ok=True)
+        self.lidar_output_folder = self.output_folder / "lidar"
+        self.lidar_output_folder.mkdir(exist_ok=True, parents=True)
+        self.colmap_output_folder = self.output_folder / "colmap"
+        self.colmap_output_folder.mkdir(exist_ok=True, parents=True)
         # TODO: check lidar cloud folder has viewpoints and is pcd, check gt folder is pcd, check image folder is jpg/png
         self.octomap_resolution = 0.1
         self.cloud_downsample_voxel_size = 0.05
@@ -36,7 +40,7 @@ class ReconstructionBenchmark:
 
     def evaluate_lidar_clouds(self):
         evaluate_lidar_cloud(
-            self.output_folder,
+            self.lidar_output_folder,
             self.individual_clouds_folder,
             self.gt_octree_path,
             self.gt_cloud_merged_path,
@@ -52,6 +56,9 @@ class ReconstructionBenchmark:
         transform_pcd_folder(self.individual_clouds_folder, new_individual_clouds_folder, transform_matrix)
         self.individual_clouds_folder = new_individual_clouds_folder
 
+    def run_colmap(self):
+        run_colmap(self.image_folder, self.colmap_output_folder)
+
 
 if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
@@ -62,3 +69,4 @@ if __name__ == "__main__":
     recon_benchmark.process_gt_cloud()
     recon_benchmark.tranform_lidar_clouds()
     recon_benchmark.evaluate_lidar_clouds()
+    recon_benchmark.run_colmap()
