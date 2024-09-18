@@ -38,6 +38,15 @@ class ReconstructionBenchmark:
             self.output_folder, self.individual_clouds_folder, self.gt_individual_folder, self.octomap_resolution
         )
 
+    def tranform_lidar_clouds(self, transform_matrix_path=None):
+        if transform_matrix_path is None:
+            transform_matrix_path = self.project_folder / "T_gt_lidar.txt"
+        assert transform_matrix_path.exists(), f"Transform matrix not found at {transform_matrix_path}"
+        transform_matrix = np.loadtxt(transform_matrix_path)
+        new_individual_clouds_folder = self.project_folder / "lidar_clouds_transformed"
+        transform_pcd_folder(self.individual_clouds_folder, new_individual_clouds_folder, transform_matrix)
+        self.individual_clouds_folder = new_individual_clouds_folder
+
 
 if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
