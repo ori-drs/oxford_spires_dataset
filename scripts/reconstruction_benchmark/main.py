@@ -22,8 +22,8 @@ class ReconstructionBenchmark:
 
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
-        self.gt_octree_path = self.project_folder / "gt_cloud.bt"
-        self.gt_cloud_merged_path = self.project_folder / "gt_cloud_merged.ply"
+        self.gt_octree_path = self.output_folder / "gt_cloud.bt"
+        self.gt_cloud_merged_path = self.output_folder / "gt_cloud_merged.ply"
         processPCDFolder(str(self.gt_individual_folder), self.octomap_resolution, str(self.gt_octree_path))
         gt_cloud_free_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_free.pcd"))
         gt_cloud_occ_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_occ.pcd"))
