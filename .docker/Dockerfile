@@ -108,7 +108,7 @@ RUN export CC=/usr/bin/gcc-10 &&\
     export CUDAHOSTCXX=/usr/bin/g++-10
 
 # TODO: You might have to change this to your specific GPU architecture. Ideally should not need to specify CUDA_ARCHITECTURES. 
-ARG CUDA_ARCHITECTURES=90 
+ARG CUDA_ARCHITECTURES=89
 RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colmap &&\
     cd ${HOME_DIR}/colmap &&\
     mkdir build &&\
