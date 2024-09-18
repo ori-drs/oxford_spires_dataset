@@ -1,7 +1,10 @@
 import multiprocessing
 from pathlib import Path
 
-from oxford_spires_utils.eval import get_recon_metrics, merge_downsample_vilens_slam_clouds, save_error_cloud
+from utils import convert_e57_folder_to_pcd_folder
+
+from oxford_spires_utils.eval import get_recon_metrics, save_error_cloud
+from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 
@@ -50,9 +53,9 @@ def evaluate_lidar_cloud(project_folder, lidar_cloud_folder_path, gt_folder_path
 
 
 if __name__ == "__main__":
-    # input_cloud_folder_path = "/home/yifu/workspace/Spires_2025/2024-03-13-maths_1/input_cloud_test"
-    # gt_cloud_folder_path = "/home/yifu/workspace/Spires_2025/2024-03-13-maths_1/gt_cloud_test"
-    input_cloud_folder_path = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/raw/individual_clouds_new"
-    gt_cloud_folder_path = "/media/yifu/Samsung_T71/oxford_spires/2024-03-13-maths/gt/individual_pcd"
-    project_folder = "/home/yifu/workspace/Spires_2025/2024-03-13-maths_1"
-    evaluate_lidar_cloud(project_folder, input_cloud_folder_path, gt_cloud_folder_path)
+    input_cloud_folder_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/individual_clouds"
+    gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
+    gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_pcd"
+    project_folder = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/recon_benchmark"
+    convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
+    evaluate_lidar_cloud(project_folder, input_cloud_folder_path, gt_cloud_folder_pcd_path)
