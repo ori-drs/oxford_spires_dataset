@@ -22,7 +22,7 @@ class ReconstructionBenchmark:
         self.octomap_resolution = 0.1
         self.cloud_downsample_voxel_size = 0.05
         self.gt_octree_path = self.output_folder / "gt_cloud.bt"
-        self.gt_cloud_merged_path = self.output_folder / "gt_cloud_merged.ply"
+        self.gt_cloud_merged_path = self.output_folder / "gt_cloud_merged.pcd"
 
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
