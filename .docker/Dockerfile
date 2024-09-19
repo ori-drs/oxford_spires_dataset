@@ -142,7 +142,7 @@ RUN pip install -e .
 
 # Make the outputs of the container match the host
 
-RUN chown -R ${UID}:${GID} ${SPIRES_DIR}/*
+RUN chown -R ${UID}:${GID} ${SPIRES_DIR}
 USER ${UNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
 
