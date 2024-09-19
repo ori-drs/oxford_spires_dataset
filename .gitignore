@@ -163,3 +163,5 @@ cython_debug/
 
 .vscode
 *test.py
+
+vocab_tree*.bin
