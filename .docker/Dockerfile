@@ -117,11 +117,19 @@ RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colm
     ninja &&\
     ninja install
 
+####################
+#    nerfstudio    #
+####################
+
+FROM colmap as nerfstudio
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir torch==2.1.2+cu118 torchvision==0.16.2+cu118 'numpy<2.0.0' --extra-index-url https://download.pytorch.org/whl/cu118
+RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
 
 ####################
 # Deployment image #
 ####################
-FROM colmap as deploy
+FROM nerfstudio as deploy
 
 ARG GID
 ARG UID
