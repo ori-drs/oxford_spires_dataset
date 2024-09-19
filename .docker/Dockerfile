@@ -65,7 +65,7 @@ RUN apt-get update && \
 
 ARG OPENMVS_BUILD_ARG="-DOpenMVS_USE_CUDA=ON -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/ -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/ -DCUDA_INCLUDE_DIRS=/usr/local/cuda/include/ -DCUDA_CUDART_LIBRARY=/usr/local/cuda/lib64 -DCUDA_NVCC_EXECUTABLE=/usr/local/cuda/bin/"
 RUN git clone https://github.com/cdcseacave/VCG.git  ${HOME_DIR}/vcglib &&\
-    git clone --recurse-submodules https://github.com/cdcseacave/openMVS.git ${HOME_DIR}/openMVS &&\
+    git clone --recurse-submodules https://github.com/cdcseacave/openMVS.git --branch v2.3.0 ${HOME_DIR}/openMVS  &&\
     cd ${HOME_DIR}/openMVS &&\
     mkdir make &&\
     cd make &&\
