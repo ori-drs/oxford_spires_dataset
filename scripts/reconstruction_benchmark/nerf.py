@@ -6,11 +6,12 @@ from nerfstudio.scripts.train import entrypoint
 from oxford_spires_utils.bash_command import print_with_colour
 
 
-def generate_nerfstudio_config(method, data_dir, vis="wandb", cam_opt_mode="off"):
+def generate_nerfstudio_config(method, data_dir, iterations=30000, vis="wandb", cam_opt_mode="off"):
     ns_config = {
         "method": method,
         "data": str(data_dir),
         "vis": vis,
+        "max-num-iterations": iterations,
         "pipeline.model.camera-optimizer.mode": cam_opt_mode,
     }
     return ns_config
