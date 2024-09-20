@@ -64,6 +64,7 @@ def run_nerfstudio_exporter(config_file):
         "method": "pointcloud",
         "load-config": config_file,
         "output-dir": config_file.parent,
+        "normal-method": "open3d",
     }
     update_argv(exporter_config)
     exporter_entrypoint()
