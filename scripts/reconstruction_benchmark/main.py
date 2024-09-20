@@ -8,6 +8,8 @@ from sfm import run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
+from oxford_spires_utils.trajectory.align import align
+from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder
 
@@ -84,6 +86,16 @@ class ReconstructionBenchmark:
             self.mvs_max_image_size,
             self.openmvs_bin,
         )
+
+    def compute_sim3(self):
+        lidar_slam_traj_file = self.project_folder / "slam_poses_robotics.csv"
+        colmap_traj_file = self.colmap_output_folder / "transforms.json"
+        # colmap_traj = align_colmap_lidarslam(colmap_traj, slam_traj)
+        breakpoint()
+        lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
+        colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
+        align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
+        pass
 
     def run_nerfstudio(self, method="nerfacto"):
         assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
