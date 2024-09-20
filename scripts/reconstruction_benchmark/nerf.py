@@ -1,7 +1,8 @@
 import sys
 from pathlib import Path
 
-from nerfstudio.scripts.train import entrypoint
+from nerfstudio.scripts.exporter import entrypoint as exporter_entrypoint
+from nerfstudio.scripts.train import entrypoint as train_entrypoint
 
 from oxford_spires_utils.bash_command import print_with_colour
 
@@ -50,5 +51,20 @@ def update_argv(nerfstudio_config):
 
 def run_nerfstudio(ns_config):
     update_argv(ns_config)
-    entrypoint()
+    train_entrypoint()
+    sys.argv = [sys.argv[0]]
+    output_log_dir = Path(ns_config["output-dir"]) / Path(ns_config["data"]).name / ns_config["method"]
+    lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
+    latest_output_config = lastest_output_folder / "config.yml"
+    run_nerfstudio_exporter(latest_output_config)
+
+
+def run_nerfstudio_exporter(config_file):
+    exporter_config = {
+        "method": "pointcloud",
+        "load-config": config_file,
+        "output-dir": config_file.parent,
+    }
+    update_argv(exporter_config)
+    exporter_entrypoint()
     sys.argv = [sys.argv[0]]
