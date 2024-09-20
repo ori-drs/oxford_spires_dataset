@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 from lidar_cloud_eval import evaluate_lidar_cloud
 from mvs import run_openmvs
+from nerf import create_nerfstudio_dir, run_nerfacto
 from sfm import run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
@@ -80,6 +81,11 @@ class ReconstructionBenchmark:
             self.openmvs_bin,
         )
 
+    def run_nerf(self):
+        ns_dir = self.output_folder / "nerfstudio"
+        create_nerfstudio_dir(self.colmap_output_folder, ns_dir, self.image_folder)
+        run_nerfacto(ns_dir)
+
 
 if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
@@ -92,3 +98,4 @@ if __name__ == "__main__":
     recon_benchmark.evaluate_lidar_clouds()
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
+    recon_benchmark.run_nerf()
