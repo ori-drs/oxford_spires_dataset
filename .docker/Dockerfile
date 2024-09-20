@@ -117,11 +117,19 @@ RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colm
     ninja &&\
     ninja install
 
+####################
+#    nerfstudio    #
+####################
+
+FROM colmap as nerfstudio
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir torch==2.1.2+cu118 torchvision==0.16.2+cu118 'numpy<2.0.0' --extra-index-url https://download.pytorch.org/whl/cu118
+RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
 
 ####################
 # Deployment image #
 ####################
-FROM colmap as deploy
+FROM nerfstudio as deploy
 
 ARG GID
 ARG UID
@@ -142,8 +150,9 @@ RUN pip install -e .
 
 # Make the outputs of the container match the host
 
-RUN chown -R ${UID}:${GID} ${SPIRES_DIR}/*
+RUN chown -R ${UID}:${GID} ${SPIRES_DIR}
 USER ${UNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
+RUN echo "alias recon_benchmark=\"python ${SPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
 
 CMD ["/bin/bash"]

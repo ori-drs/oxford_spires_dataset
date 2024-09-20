@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 from lidar_cloud_eval import evaluate_lidar_cloud
 from mvs import run_openmvs
+from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
@@ -35,6 +36,9 @@ class ReconstructionBenchmark:
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
         self.mvs_max_image_size = 600
 
+        self.ns_data_dir = self.output_folder / "nerfstudio"
+        self.ns_model_dir = self.ns_data_dir / "trained_models"
+
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
         processPCDFolder(str(self.gt_individual_folder), self.octomap_resolution, str(self.gt_octree_path))
@@ -65,6 +69,7 @@ class ReconstructionBenchmark:
 
     def run_colmap(self):
         run_colmap(self.image_folder, self.colmap_output_folder)
+        create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
 
     def run_openmvs(self):
         # check if multiple sparse folders exist
@@ -80,6 +85,11 @@ class ReconstructionBenchmark:
             self.openmvs_bin,
         )
 
+    def run_nerfstudio(self, method="nerfacto"):
+        assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
+        ns_config = generate_nerfstudio_config(method, self.ns_data_dir, self.ns_model_dir)
+        run_nerfstudio(ns_config)
+
 
 if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
@@ -92,3 +102,5 @@ if __name__ == "__main__":
     recon_benchmark.evaluate_lidar_clouds()
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
+    recon_benchmark.run_nerfstudio("nerfacto")
+    recon_benchmark.run_nerfstudio("splatfacto")
