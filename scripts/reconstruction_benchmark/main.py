@@ -102,4 +102,5 @@ if __name__ == "__main__":
     recon_benchmark.evaluate_lidar_clouds()
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
-    recon_benchmark.run_nerfstudio()
+    recon_benchmark.run_nerfstudio("nerfacto")
+    recon_benchmark.run_nerfstudio("splatfacto")
