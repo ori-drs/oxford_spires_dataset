@@ -56,16 +56,20 @@ def run_nerfstudio(ns_config):
     output_log_dir = Path(ns_config["output-dir"]) / Path(ns_config["data"]).name / ns_config["method"]
     lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
     latest_output_config = lastest_output_folder / "config.yml"
-    run_nerfstudio_exporter(latest_output_config)
+    export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
+    run_nerfstudio_exporter(latest_output_config, export_method)
 
 
-def run_nerfstudio_exporter(config_file):
+def run_nerfstudio_exporter(config_file, export_method):
     exporter_config = {
-        "method": "pointcloud",
+        "method": export_method,
         "load-config": config_file,
         "output-dir": config_file.parent,
-        "normal-method": "open3d",
     }
+    if export_method == "pointcloud":
+        exporter_config["normal-method"] = "open3d"
+    if export_method == "gaussian-splat":
+        exporter_config["ply-color-mode"] = "rgb"
     update_argv(exporter_config)
     exporter_entrypoint()
     sys.argv = [sys.argv[0]]
