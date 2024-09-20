@@ -153,5 +153,6 @@ RUN pip install -e .
 RUN chown -R ${UID}:${GID} ${SPIRES_DIR}
 USER ${UNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
+RUN echo "alias recon_benchmark=\"python ${SPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
 
 CMD ["/bin/bash"]
