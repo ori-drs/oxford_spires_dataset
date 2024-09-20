@@ -36,6 +36,7 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     assert camera_model in camera_model_list, f"{camera_model} not supported. Supported models: {camera_model_list}"
     database_path = output_path / "database.db"
     sparse_path = output_path / "sparse"
+    sparse_0_path = sparse_path / "0"
     sparse_path.mkdir(parents=True, exist_ok=True)
 
     colmap_feature_extractor_cmd = [
@@ -66,3 +67,12 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     ]
     colmap_mapper_cmd = " ".join(colmap_mapper_cmd)
     run_command(colmap_mapper_cmd, print_command=True)
+
+    colmap_ba_cmd = [
+        "colmap bundle_adjuster",
+        f"--input_path {sparse_0_path}",
+        f"--output_path {sparse_0_path}",
+        "--BundleAdjustment.refine_principal_point 1",
+    ]
+    colmap_ba_cmd = " ".join(colmap_ba_cmd)
+    run_command(colmap_ba_cmd, print_command=True)
