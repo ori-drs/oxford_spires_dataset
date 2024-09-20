@@ -1,6 +1,19 @@
+import sys
 from pathlib import Path
 
-from oxford_spires_utils.bash_command import run_command
+from nerfstudio.scripts.train import entrypoint
+
+from oxford_spires_utils.bash_command import print_with_colour
+
+
+def generate_nerfstudio_config(method, data_dir, vis="wandb", cam_opt_mode="off"):
+    ns_config = {
+        "method": method,
+        "data": str(data_dir),
+        "vis": vis,
+        "pipeline.model.camera-optimizer.mode": cam_opt_mode,
+    }
+    return ns_config
 
 
 def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
@@ -22,27 +35,18 @@ def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
             item_symlink.symlink_to(item)
 
 
-def run_nerfacto(data_path, vis="wandb", cam_opt_mode="off"):
-    assert Path(data_path).exists(), f"Data path not found at {data_path}"
-    nerfstudio_cmd = [
-        "ns-train",
-        "nerfacto",
-        f"--data {str(data_path)}",
-        f"--vis {vis}",
-        f"--pipeline.model.camera-optimizer.mode {cam_opt_mode}",
-    ]
-    nerfstudio_cmd = " ".join(nerfstudio_cmd)
-    run_command(nerfstudio_cmd, print_command=True)
+def update_argv(nerfstudio_config):
+    assert sys.argv[0].endswith(".py") and len(sys.argv) == 1, "No args should be provided for the script"
+    for k, v in nerfstudio_config.items():
+        if k == "method":
+            sys.argv.append(f"{v}")
+        else:
+            sys.argv.append(f"--{k}")
+            sys.argv.append(f"{v}")
+    print_with_colour(" ".join(sys.argv))
 
 
-def run_splatfacto(data_path, vis="wandb", cam_opt_mode="off"):
-    assert Path(data_path).exists(), f"Data path not found at {data_path}"
-    nerfstudio_cmd = [
-        "ns-train",
-        "splatfacto",
-        f"--data {str(data_path)}",
-        f"--vis {vis}",
-        f"--pipeline.model.camera-optimizer.mode {cam_opt_mode}",
-    ]
-    nerfstudio_cmd = " ".join(nerfstudio_cmd)
-    run_command(nerfstudio_cmd, print_command=True)
+def run_nerfstudio(ns_config):
+    update_argv(ns_config)
+    entrypoint()
+    sys.argv = [sys.argv[0]]
