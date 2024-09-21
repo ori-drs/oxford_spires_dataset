@@ -25,7 +25,7 @@ class NeRFTrajReader(BasicTrajReader):
     Read trajectory file in NeRF format
     """
 
-    def __init__(self, file_path, nerf_reader_valid_folder_path, nerf_reader_sort_timestamp, **kwargs):
+    def __init__(self, file_path, nerf_reader_valid_folder_path="", nerf_reader_sort_timestamp=True, **kwargs):
         super().__init__(file_path)
         self.valid_folder_path = nerf_reader_valid_folder_path
         self.sort_timestamp = nerf_reader_sort_timestamp
