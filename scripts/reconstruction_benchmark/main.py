@@ -103,7 +103,7 @@ class ReconstructionBenchmark:
 
     def run_nerfstudio(self, method="nerfacto"):
         assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
-        ns_config = generate_nerfstudio_config(method, self.ns_data_dir, self.ns_model_dir)
+        ns_config = generate_nerfstudio_config(method, self.ns_data_dir / self.ns_data_json_filename, self.ns_model_dir)
         run_nerfstudio(ns_config)
 
 
