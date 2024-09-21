@@ -56,7 +56,9 @@ def run_nerfstudio(ns_config):
     update_argv(ns_config)
     train_entrypoint()
     sys.argv = [sys.argv[0]]
-    output_log_dir = Path(ns_config["output-dir"]) / Path(ns_config["data"]).name / ns_config["method"]
+    ns_data = Path(ns_config["data"])
+    folder_name = ns_data.name if ns_data.is_dir() else ns_data.parent.name
+    output_log_dir = Path(ns_config["output-dir"]) / folder_name / ns_config["method"]
     lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
     latest_output_config = lastest_output_folder / "config.yml"
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
