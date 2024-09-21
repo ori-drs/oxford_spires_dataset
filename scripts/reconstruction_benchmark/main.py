@@ -4,7 +4,7 @@ import numpy as np
 from lidar_cloud_eval import evaluate_lidar_cloud
 from mvs import run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
-from sfm import run_colmap
+from sfm import rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
@@ -39,6 +39,7 @@ class ReconstructionBenchmark:
         self.mvs_max_image_size = 600
 
         self.ns_data_dir = self.output_folder / "nerfstudio"
+        self.ns_data_json_filename = "transforms_metric.json"
         self.ns_model_dir = self.ns_data_dir / "trained_models"
 
     def process_gt_cloud(self):
@@ -90,12 +91,15 @@ class ReconstructionBenchmark:
     def compute_sim3(self):
         lidar_slam_traj_file = self.project_folder / "slam_poses_robotics.csv"
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
-        # colmap_traj = align_colmap_lidarslam(colmap_traj, slam_traj)
-        breakpoint()
+        rescaled_colmap_traj_file = self.colmap_output_folder / self.ns_data_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
         colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
-        align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
-        pass
+
+        T_lidar_colmap = align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
+        rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
+        ns_metric_json_file = self.ns_data_dir / self.ns_data_json_filename
+        if not ns_metric_json_file.exists():
+            ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
 
     def run_nerfstudio(self, method="nerfacto"):
         assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
@@ -114,5 +118,6 @@ if __name__ == "__main__":
     recon_benchmark.evaluate_lidar_clouds()
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
+    recon_benchmark.compute_sim3()
     recon_benchmark.run_nerfstudio("nerfacto")
     recon_benchmark.run_nerfstudio("splatfacto")

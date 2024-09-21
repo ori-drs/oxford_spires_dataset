@@ -1,10 +1,13 @@
+import json
 from pathlib import Path
 
+import numpy as np
 import requests
 from nerfstudio.process_data.colmap_utils import colmap_to_json
 from tqdm import tqdm
 
 from oxford_spires_utils.bash_command import run_command
+from oxford_spires_utils.se3 import s_se3_from_sim3
 
 camera_model_list = {"OPENCV_FISHEYE", "OPENCV", "PINHOLE"}
 
@@ -80,3 +83,27 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
 
     num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
     print(f"Number of images matched: {num_image_matched}")
+
+
+def rescale_colmap_json(json_file, sim3_matrix, output_file):
+    with open(json_file, "r") as f:
+        data = json.load(f)
+
+    new_frames = []
+    for frame in data["frames"]:
+        T = np.array(frame["transform_matrix"])
+        T_test = sim3_matrix @ T
+        scale, T_vilens_colmap = s_se3_from_sim3(sim3_matrix)
+        T[:3, 3] *= scale
+        T = T_vilens_colmap @ T
+
+        T_test[:3, :3] /= scale
+        assert np.allclose(T, T_test)
+
+        frame["transform_matrix"] = T.tolist()
+        new_frames.append(frame)
+    data["frames"] = new_frames
+
+    assert Path(output_file).suffix == ".json"
+    with open(output_file, "w") as f:
+        json.dump(data, f, indent=2)
