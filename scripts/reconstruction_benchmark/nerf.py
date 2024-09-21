@@ -7,7 +7,9 @@ from nerfstudio.scripts.train import entrypoint as train_entrypoint
 from oxford_spires_utils.bash_command import print_with_colour
 
 
-def generate_nerfstudio_config(method, data_dir, output_dir, iterations=30000, vis="wandb", cam_opt_mode="off"):
+def generate_nerfstudio_config(
+    method, data_dir, output_dir, iterations=30000, eval_step=500, vis="wandb", cam_opt_mode="off"
+):
     ns_config = {
         "method": method,
         "data": str(data_dir),
@@ -15,6 +17,7 @@ def generate_nerfstudio_config(method, data_dir, output_dir, iterations=30000, v
         "vis": vis,
         "max-num-iterations": iterations,
         "pipeline.model.camera-optimizer.mode": cam_opt_mode,
+        "steps-per-eval-image": eval_step,
     }
     return ns_config
 
