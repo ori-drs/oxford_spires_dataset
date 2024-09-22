@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import requests
+from nerfstudio.data.utils.colmap_parsing_utils import qvec2rotmat, read_cameras_binary, read_images_binary
 from nerfstudio.process_data.colmap_utils import colmap_to_json
 from tqdm import tqdm
 
@@ -109,18 +110,12 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
         json.dump(data, f, indent=2)
 
 
-def export_json(
-    input_bin_dir,
-    camera_model,
-    output_dir=None,
-    json_file_name="transforms.json",
-):
-    assert camera_model in camera_model_dict.values()
+def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir=None, camera_model="OPENCV_FISHEYE"):
     camera_mask_path = None
     input_bin_dir = Path(input_bin_dir)
     cameras_path = input_bin_dir / "cameras.bin"
     images_path = input_bin_dir / "images.bin"
-    output_dir = Path(output_dir) if output_dir is not None else input_bin_dir
+    output_dir = input_bin_dir if output_dir is None else Path(output_dir)
 
     cameras = read_cameras_binary(cameras_path)
     images = read_images_binary(images_path)
@@ -148,7 +143,7 @@ def export_json(
         up += c2w[0:3, 1]
 
         if multi_camera_setting:
-            frame = ColmapRunner.generate_json_camera_data(camera, camera_model)
+            frame = generate_json_camera_data(camera, camera_model)
         else:
             frame = {}
 
@@ -161,11 +156,11 @@ def export_json(
         frames.append(frame)
 
     if not multi_camera_setting:
-        out = ColmapRunner.generate_json_camera_data(camera, camera_model)
+        out = generate_json_camera_data(camera, camera_model)
     else:
         out = {}
 
-    out["camera_model"] = camera_model.value
+    out["camera_model"] = camera_model
 
     if not multi_camera_setting:
         # Add information for instant-ngp
@@ -190,12 +185,12 @@ def export_json(
 
     # Save for scale adjustment later
     assert json_file_name[-5:] == ".json"
-    if output_dir is not None:
-        with open(output_dir / json_file_name, "w", encoding="utf-8") as f:
-            json.dump(out, f, indent=4)
+    with open(output_dir / json_file_name, "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=4)
 
 
-def generate_json_camera_data(camera: Camera, camera_model: CameraModel) -> Dict:
+def generate_json_camera_data(camera, camera_model):
+    assert camera_model in ["OPENCV_FISHEYE", "OPENCV"]
     data = {
         "fl_x": float(camera.params[0]),
         "fl_y": float(camera.params[1]),
@@ -205,7 +200,7 @@ def generate_json_camera_data(camera: Camera, camera_model: CameraModel) -> Dict
         "h": camera.height,
     }
 
-    if camera_model == CameraModel.OPENCV:
+    if camera_model == "OPENCV":
         data.update(
             {
                 "k1": float(camera.params[4]),
@@ -214,7 +209,7 @@ def generate_json_camera_data(camera: Camera, camera_model: CameraModel) -> Dict
                 "p2": float(camera.params[7]),
             }
         )
-    if camera_model == CameraModel.OPENCV_FISHEYE:
+    if camera_model == "OPENCV_FISHEYE":
         data.update(
             {
                 "k1": float(camera.params[4]),
