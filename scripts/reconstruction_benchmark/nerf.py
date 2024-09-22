@@ -73,6 +73,7 @@ def run_nerfstudio_exporter(config_file, export_method):
     }
     if export_method == "pointcloud":
         exporter_config["normal-method"] = "open3d"
+        exporter_config["save-world-frame"] = True
     if export_method == "gaussian-splat":
         exporter_config["ply-color-mode"] = "rgb"
     update_argv(exporter_config)
