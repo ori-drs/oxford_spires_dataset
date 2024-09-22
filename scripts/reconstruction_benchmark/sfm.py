@@ -147,8 +147,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         else:
             frame = {}
 
-        # frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()
-        frame["file_path"] = Path(f"./{im_data.name}").as_posix()
+        frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
         frame["transform_matrix"] = c2w.tolist()
         if camera_mask_path is not None:
             frame["mask_path"] = camera_mask_path.relative_to(camera_mask_path.parent.parent).as_posix()
