@@ -123,7 +123,6 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     images = read_images_binary(images_path)
 
     frames = []
-    up = np.zeros(3)
     for _, im_data in images.items():
         camera = cameras[im_data.camera_id]
         rotation = qvec2rotmat(im_data.qvec)
@@ -137,7 +136,6 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         c2w[0:3, 1] *= -1
         c2w = c2w[[1, 0, 2, 3], :]
         c2w[2, :] *= -1  # flip whole world upside down
-        up += c2w[0:3, 1]
 
         frame = generate_json_camera_data(camera, camera_model)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
