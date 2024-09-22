@@ -120,11 +120,6 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     cameras = read_cameras_binary(cameras_path)
     images = read_images_binary(images_path)
 
-    if len(cameras) > 1:
-        multi_camera_setting = True
-    else:
-        multi_camera_setting = False
-
     frames = []
     up = np.zeros(3)
     for _, im_data in images.items():
@@ -142,11 +137,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         c2w[2, :] *= -1  # flip whole world upside down
         up += c2w[0:3, 1]
 
-        if multi_camera_setting:
-            frame = generate_json_camera_data(camera, camera_model)
-        else:
-            frame = {}
-
+        frame = generate_json_camera_data(camera, camera_model)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
         frame["transform_matrix"] = c2w.tolist()
         if camera_mask_path is not None:
@@ -154,30 +145,8 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
 
         frames.append(frame)
 
-    if not multi_camera_setting:
-        out = generate_json_camera_data(camera, camera_model)
-    else:
-        out = {}
-
+    out = {}
     out["camera_model"] = camera_model
-
-    if not multi_camera_setting:
-        # Add information for instant-ngp
-        # (https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py)
-        if CameraModel[out["camera_model"]] == CameraModel.OPENCV:
-            out["is_fisheye"] = False
-        elif CameraModel[out["camera_model"]] == CameraModel.OPENCV_FISHEYE:
-            out["is_fisheye"] = True
-        else:
-            raise RuntimeError("Unkown camera model")
-        out["angle_x"] = math.atan(out["w"] / (out["fl_x"] * 2)) * 2
-        out["angle_y"] = math.atan(out["h"] / (out["fl_y"] * 2)) * 2
-        out["aabb_scale"] = 16
-        trans = np.array([frame["transform_matrix"] for frame in frames])[:, :3, 3]
-        # Not sure if this is correct
-        out["scale"] = 1.0 / np.mean(np.linalg.norm(trans, axis=1))
-    #     out["offset"] = [0, 0, 0]
-
     out["frames"] = frames
     num_frames_string = f"Number of frames: {len(frames)}"
     print(num_frames_string)
