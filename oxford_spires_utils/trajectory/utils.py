@@ -3,6 +3,16 @@ from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from matplotlib import cm
 
 
+def pose_to_ply(traj: PoseTrajectory3D, output_file: str, colour=[1.0, 0.0, 0.0]):
+    assert isinstance(traj, PosePath3D)
+    output_cloud = o3d.geometry.PointCloud()
+    for i in range(traj.positions_xyz.shape[0]):
+        output_cloud.points.append(traj.positions_xyz[i])
+        output_cloud.colors.append(colour)
+
+    o3d.io.write_point_cloud(str(output_file), output_cloud)
+
+
 class PosePlotter:
     def __init__(
         self,

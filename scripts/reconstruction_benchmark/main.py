@@ -10,6 +10,7 @@ from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
 from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxford_spires_utils.trajectory.utils import pose_to_ply
 from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder
 
@@ -97,6 +98,9 @@ class ReconstructionBenchmark:
 
         T_lidar_colmap = align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
+        rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
+        pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "colmap_traj.ply", [0.0, 1.0, 0.0])
+        pose_to_ply(lidar_slam_traj, self.colmap_output_folder / "lidar_slam_traj.ply", [1.0, 0.0, 0.0])
         ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
         if not ns_metric_json_file.exists():
             ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
