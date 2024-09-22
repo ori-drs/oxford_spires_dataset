@@ -18,7 +18,6 @@ def align(vilens_traj, colmap_traj, output_dir):
         json.dump(align_data, f, indent=2)
     print(json.dumps(align_data, indent=2))
     T_vilens_colmap = np.eye(4)
-    T_vilens_colmap[:3, :3] = np.array(r_a)
+    T_vilens_colmap[:3, :3] = np.array(r_a) * align_s
     T_vilens_colmap[:3, 3] = np.array(t_a)
-    scale = align_s
-    return vilens_traj_sync, colmap_traj_sync, T_vilens_colmap, scale
+    return T_vilens_colmap
