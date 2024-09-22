@@ -62,11 +62,13 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     colmap_vocab_tree_matcher_cmd = " ".join(colmap_vocab_tree_matcher_cmd)
     run_command(colmap_vocab_tree_matcher_cmd, print_command=True)
 
+    mapper_ba_global_function_tolerance = 1e-5
     colmap_mapper_cmd = [
         "colmap mapper",
         f"--database_path {database_path}",
         f"--image_path {image_path}",
         f"--output_path {sparse_path}",
+        f"--Mapper.ba_global_function_tolerance {mapper_ba_global_function_tolerance}",
     ]
     colmap_mapper_cmd = " ".join(colmap_mapper_cmd)
     run_command(colmap_mapper_cmd, print_command=True)
