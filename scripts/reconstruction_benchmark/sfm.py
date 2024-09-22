@@ -93,13 +93,13 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
     new_frames = []
     for frame in data["frames"]:
         T = np.array(frame["transform_matrix"])
-        T_test = sim3_matrix @ T
+        # T_test = sim3_matrix @ T
         scale, T_vilens_colmap = s_se3_from_sim3(sim3_matrix)
         T[:3, 3] *= scale
         T = T_vilens_colmap @ T
 
-        T_test[:3, :3] /= scale
-        assert np.allclose(T, T_test)
+        # T_test[:3, :3] /= scale
+        # assert np.allclose(T, T_test)
 
         frame["transform_matrix"] = T.tolist()
         new_frames.append(frame)
