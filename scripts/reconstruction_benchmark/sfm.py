@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 import requests
 from nerfstudio.data.utils.colmap_parsing_utils import qvec2rotmat, read_cameras_binary, read_images_binary
-from nerfstudio.process_data.colmap_utils import colmap_to_json
 from tqdm import tqdm
 
 from oxford_spires_utils.bash_command import run_command
@@ -82,8 +81,10 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     colmap_ba_cmd = " ".join(colmap_ba_cmd)
     run_command(colmap_ba_cmd, print_command=True)
 
-    num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
-    print(f"Number of images matched: {num_image_matched}")
+    # from nerfstudio.process_data.colmap_utils import colmap_to_json
+    # num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
+    export_json(sparse_0_path, json_file_name="transforms.json", output_dir=output_path, camera_model=camera_model)
+    # print(f"Number of images matched: {num_image_matched}")
 
 
 def rescale_colmap_json(json_file, sim3_matrix, output_file):
