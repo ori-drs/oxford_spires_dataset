@@ -38,7 +38,7 @@ class ReconstructionBenchmark:
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
         self.mvs_max_image_size = 600
 
-        self.ns_data_dir = self.output_folder / "nerfstudio"
+        self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
         self.metric_json_filename = "transforms_metric.json"
         self.ns_model_dir = self.ns_data_dir / "trained_models"
 
