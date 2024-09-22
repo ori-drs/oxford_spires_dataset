@@ -107,3 +107,120 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
     assert Path(output_file).suffix == ".json"
     with open(output_file, "w") as f:
         json.dump(data, f, indent=2)
+
+
+def export_json(
+    input_bin_dir,
+    camera_model,
+    output_dir=None,
+    json_file_name="transforms.json",
+):
+    assert camera_model in camera_model_dict.values()
+    camera_mask_path = None
+    input_bin_dir = Path(input_bin_dir)
+    cameras_path = input_bin_dir / "cameras.bin"
+    images_path = input_bin_dir / "images.bin"
+    output_dir = Path(output_dir) if output_dir is not None else input_bin_dir
+
+    cameras = read_cameras_binary(cameras_path)
+    images = read_images_binary(images_path)
+
+    if len(cameras) > 1:
+        multi_camera_setting = True
+    else:
+        multi_camera_setting = False
+
+    frames = []
+    up = np.zeros(3)
+    for _, im_data in images.items():
+        camera = cameras[im_data.camera_id]
+        rotation = qvec2rotmat(im_data.qvec)
+        translation = im_data.tvec.reshape(3, 1)
+        w2c = np.concatenate([rotation, translation], 1)
+        w2c = np.concatenate([w2c, np.array([[0, 0, 0, 1]])], 0)
+        c2w = np.linalg.inv(w2c)
+
+        # https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py#L328
+        c2w[0:3, 2] *= -1  # flip the y and z axis
+        c2w[0:3, 1] *= -1
+        c2w = c2w[[1, 0, 2, 3], :]
+        c2w[2, :] *= -1  # flip whole world upside down
+        up += c2w[0:3, 1]
+
+        if multi_camera_setting:
+            frame = ColmapRunner.generate_json_camera_data(camera, camera_model)
+        else:
+            frame = {}
+
+        # frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()
+        frame["file_path"] = Path(f"./{im_data.name}").as_posix()
+        frame["transform_matrix"] = c2w.tolist()
+        if camera_mask_path is not None:
+            frame["mask_path"] = camera_mask_path.relative_to(camera_mask_path.parent.parent).as_posix()
+
+        frames.append(frame)
+
+    if not multi_camera_setting:
+        out = ColmapRunner.generate_json_camera_data(camera, camera_model)
+    else:
+        out = {}
+
+    out["camera_model"] = camera_model.value
+
+    if not multi_camera_setting:
+        # Add information for instant-ngp
+        # (https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py)
+        if CameraModel[out["camera_model"]] == CameraModel.OPENCV:
+            out["is_fisheye"] = False
+        elif CameraModel[out["camera_model"]] == CameraModel.OPENCV_FISHEYE:
+            out["is_fisheye"] = True
+        else:
+            raise RuntimeError("Unkown camera model")
+        out["angle_x"] = math.atan(out["w"] / (out["fl_x"] * 2)) * 2
+        out["angle_y"] = math.atan(out["h"] / (out["fl_y"] * 2)) * 2
+        out["aabb_scale"] = 16
+        trans = np.array([frame["transform_matrix"] for frame in frames])[:, :3, 3]
+        # Not sure if this is correct
+        out["scale"] = 1.0 / np.mean(np.linalg.norm(trans, axis=1))
+    #     out["offset"] = [0, 0, 0]
+
+    out["frames"] = frames
+    num_frames_string = f"Number of frames: {len(frames)}"
+    print(num_frames_string)
+
+    # Save for scale adjustment later
+    assert json_file_name[-5:] == ".json"
+    if output_dir is not None:
+        with open(output_dir / json_file_name, "w", encoding="utf-8") as f:
+            json.dump(out, f, indent=4)
+
+
+def generate_json_camera_data(camera: Camera, camera_model: CameraModel) -> Dict:
+    data = {
+        "fl_x": float(camera.params[0]),
+        "fl_y": float(camera.params[1]),
+        "cx": float(camera.params[2]),
+        "cy": float(camera.params[3]),
+        "w": camera.width,
+        "h": camera.height,
+    }
+
+    if camera_model == CameraModel.OPENCV:
+        data.update(
+            {
+                "k1": float(camera.params[4]),
+                "k2": float(camera.params[5]),
+                "p1": float(camera.params[6]),
+                "p2": float(camera.params[7]),
+            }
+        )
+    if camera_model == CameraModel.OPENCV_FISHEYE:
+        data.update(
+            {
+                "k1": float(camera.params[4]),
+                "k2": float(camera.params[5]),
+                "k3": float(camera.params[6]),
+                "k4": float(camera.params[7]),
+            }
+        )
+    return data
