@@ -129,7 +129,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         translation = im_data.tvec.reshape(3, 1)
         w2c = np.concatenate([rotation, translation], 1)
         w2c = np.concatenate([w2c, np.array([[0, 0, 0, 1]])], 0)
-        c2w = np.linalg.inv(w2c)
+        c2w = np.linalg.inv(w2c)  # this is the coordinate for openMVS
 
         # https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py#L328
         c2w[0:3, 2] *= -1  # flip the y and z axis
