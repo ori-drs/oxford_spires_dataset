@@ -39,7 +39,7 @@ class ReconstructionBenchmark:
         self.mvs_max_image_size = 600
 
         self.ns_data_dir = self.output_folder / "nerfstudio"
-        self.ns_data_json_filename = "transforms_metric.json"
+        self.metric_json_filename = "transforms_metric.json"
         self.ns_model_dir = self.ns_data_dir / "trained_models"
 
     def process_gt_cloud(self):
@@ -91,19 +91,19 @@ class ReconstructionBenchmark:
     def compute_sim3(self):
         lidar_slam_traj_file = self.project_folder / "slam_poses_robotics.csv"
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
-        rescaled_colmap_traj_file = self.colmap_output_folder / self.ns_data_json_filename  # TODO refactor
+        rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
         colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
 
         T_lidar_colmap = align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
-        ns_metric_json_file = self.ns_data_dir / self.ns_data_json_filename
+        ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
         if not ns_metric_json_file.exists():
             ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
 
-    def run_nerfstudio(self, method="nerfacto"):
+    def run_nerfstudio(self, method="nerfacto", json_filename="transforms_metric.json"):
         assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
-        ns_config = generate_nerfstudio_config(method, self.ns_data_dir / self.ns_data_json_filename, self.ns_model_dir)
+        ns_config = generate_nerfstudio_config(method, self.ns_data_dir / json_filename, self.ns_model_dir)
         run_nerfstudio(ns_config)
 
 
@@ -119,5 +119,5 @@ if __name__ == "__main__":
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
     recon_benchmark.compute_sim3()
-    recon_benchmark.run_nerfstudio("nerfacto")
+    recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_metric.json")
     recon_benchmark.run_nerfstudio("splatfacto")
