@@ -1,6 +1,9 @@
+import json
 import sys
 from pathlib import Path
 
+import numpy as np
+import open3d as o3d
 from nerfstudio.scripts.exporter import entrypoint as exporter_entrypoint
 from nerfstudio.scripts.train import entrypoint as train_entrypoint
 
@@ -62,7 +65,13 @@ def run_nerfstudio(ns_config):
     lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
     latest_output_config = lastest_output_folder / "config.yml"
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
-    run_nerfstudio_exporter(latest_output_config, export_method)
+    output_cloud_file = run_nerfstudio_exporter(latest_output_config, export_method)
+    ns_se3, scale_matrix = load_ns_transform(lastest_output_folder)
+    cloud = o3d.io.read_point_cloud(str(output_cloud_file))
+
+    cloud.transform(scale_matrix)
+    cloud.transform(np.linalg.inv(ns_se3))
+    o3d.io.write_point_cloud(str(output_cloud_file.with_name("input_scale.ply")), cloud)
 
 
 def run_nerfstudio_exporter(config_file, export_method):
@@ -73,9 +82,24 @@ def run_nerfstudio_exporter(config_file, export_method):
     }
     if export_method == "pointcloud":
         exporter_config["normal-method"] = "open3d"
-        exporter_config["save-world-frame"] = True
+        # exporter_config["save-world-frame"] = True
+        output_cloud_name = "point_cloud.ply"
     if export_method == "gaussian-splat":
         exporter_config["ply-color-mode"] = "rgb"
+        output_cloud_name = "splat.ply"
     update_argv(exporter_config)
     exporter_entrypoint()
     sys.argv = [sys.argv[0]]
+    output_cloud_file = exporter_config["output-dir"] / output_cloud_name
+    return output_cloud_file
+
+
+def load_ns_transform(ns_log_output_dir):
+    transform_json_file = ns_log_output_dir / "dataparser_transforms.json"
+    transform_data = json.load(transform_json_file.open())
+    se3_matrix = np.array(transform_data["transform"])
+    se3_matrix = np.vstack([se3_matrix, [0, 0, 0, 1]])
+    scale = transform_data["scale"]
+    scale_matrix = np.eye(4)
+    scale_matrix[:3, :3] *= 1 / scale
+    return se3_matrix, scale_matrix
