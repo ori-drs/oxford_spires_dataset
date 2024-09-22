@@ -82,31 +82,31 @@ def run_openmvs(
     run_command(" ".join(densify_cmd), print_command=True)
 
     # Reconstruct the mesh
-    reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
-    run_command(" ".join(reconstruct_cmd), print_command=True)
+    # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
+    # run_command(" ".join(reconstruct_cmd), print_command=True)
 
     # Refine the mesh
-    refine_cmd = [
-        f"{openmvs_bin}/RefineMesh",
-        "scene_dense.mvs",
-        "-m scene_dense_mesh.ply",
-        "-o scene_dense_mesh_refine.mvs",
-        "--scales 1",
-        "--gradient-step 25.05",
-        f"-w {mvs_dir}",
-    ]
-    run_command(" ".join(refine_cmd), print_command=True)
+    # refine_cmd = [
+    #     f"{openmvs_bin}/RefineMesh",
+    #     "scene_dense.mvs",
+    #     "-m scene_dense_mesh.ply",
+    #     "-o scene_dense_mesh_refine.mvs",
+    #     "--scales 1",
+    #     "--gradient-step 25.05",
+    #     f"-w {mvs_dir}",
+    # ]
+    # run_command(" ".join(refine_cmd), print_command=True)
 
     # Texture the mesh
-    texture_cmd = [
-        f"{openmvs_bin}/TextureMesh",
-        "scene_dense.mvs",
-        "-m scene_dense_mesh_refine.ply",
-        "-o scene_dense_mesh_refine_texture.mvs",
-        "--decimate 0.5",
-        f"-w {mvs_dir}",
-    ]
-    run_command(" ".join(texture_cmd), print_command=True)
+    # texture_cmd = [
+    #     f"{openmvs_bin}/TextureMesh",
+    #     "scene_dense.mvs",
+    #     "-m scene_dense_mesh_refine.ply",
+    #     "-o scene_dense_mesh_refine_texture.mvs",
+    #     "--decimate 0.5",
+    #     f"-w {mvs_dir}",
+    # ]
+    # run_command(" ".join(texture_cmd), print_command=True)
 
 
 if __name__ == "__main__":
