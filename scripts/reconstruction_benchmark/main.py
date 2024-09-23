@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 from lidar_cloud_eval import evaluate_lidar_cloud
-from mvs import run_openmvs
+from mvs import rescale_openmvs_cloud, run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import rescale_colmap_json, run_colmap
 
@@ -116,9 +116,12 @@ class ReconstructionBenchmark:
         rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
         colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
-
+        pose_to_ply(colmap_traj, self.colmap_output_folder / "colmap_traj.ply", [0.0, 0.0, 1.0])
         T_lidar_colmap = align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
+        mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
+        scaled_mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world_scaled.ply"
+        rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, scaled_mvs_cloud_file)
         rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
         pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
         pose_to_ply(lidar_slam_traj, self.colmap_output_folder / "lidar_slam_traj.ply", [1.0, 0.0, 0.0])

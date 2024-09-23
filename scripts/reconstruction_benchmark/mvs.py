@@ -1,8 +1,11 @@
+import logging
 from pathlib import Path
 
+import numpy as np
 import open3d as o3d
 
 from oxford_spires_utils.bash_command import run_command
+from oxford_spires_utils.se3 import s_se3_from_sim3
 from oxford_spires_utils.trajectory.pose_convention import colmap_to_nerf_world_transform
 
 logger = logging.getLogger(__name__)
@@ -90,7 +93,7 @@ def run_openmvs(
         logger.error(f"Failed to generate dense point cloud at {output_ply_file}")
     dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
     dense_ply.transform(colmap_to_nerf_world_transform)
-    o3d.io.write_point_cloud(str(output_ply_file), dense_ply.with_name("scene_dense_nerf_world.ply"))
+    o3d.io.write_point_cloud(str(output_ply_file.with_name("scene_dense_nerf_world.ply")), dense_ply)
     # Reconstruct the mesh
     # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
     # run_command(" ".join(reconstruct_cmd), print_command=True)
@@ -117,6 +120,16 @@ def run_openmvs(
     #     f"-w {mvs_dir}",
     # ]
     # run_command(" ".join(texture_cmd), print_command=True)
+
+
+def rescale_openmvs_cloud(original_cloud_file, sim3_matrix, output_cloud_file):
+    cloud = o3d.io.read_point_cloud(str(original_cloud_file))
+    scale, se3_matrix = s_se3_from_sim3(sim3_matrix)
+    scale_matrix = np.eye(4)
+    scale_matrix[:3, :3] *= scale
+    cloud.transform(scale_matrix)
+    cloud.transform(se3_matrix)
+    o3d.io.write_point_cloud(str(output_cloud_file), cloud)
 
 
 if __name__ == "__main__":
