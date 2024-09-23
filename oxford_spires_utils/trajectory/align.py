@@ -27,7 +27,6 @@ def align(vilens_traj, colmap_traj, output_dir):
     logger.info("Save align data to evo_align_results.json")
     with open(output_dir / "evo_align_results.json", "w") as f:
         json.dump(align_data, f, indent=2)
-    print(json.dumps(align_data, indent=2))
     T_vilens_colmap = np.eye(4)
     T_vilens_colmap[:3, :3] = np.array(r_a) * align_s
     T_vilens_colmap[:3, 3] = np.array(t_a)
