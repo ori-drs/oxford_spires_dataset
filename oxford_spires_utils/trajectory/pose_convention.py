@@ -42,3 +42,14 @@ class PoseConvention:
         input_convention = PoseConvention.rename_convention(input_convention)
         output_convention = PoseConvention.rename_convention(output_convention)
         return PoseConvention.transforms[input_convention][output_convention]
+
+
+colmap_to_nerf_world_transform = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+
+
+def get_nerf_pose(colmap_c2w):
+    # equivalent to https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py
+    # new local frame
+    vision_2_graphics = PoseConvention.transforms["vision"]["graphics"]
+    # new global frame is colmap_to_nerf_world_transform # TODO this is unnecessary
+    return colmap_to_nerf_world_transform @ colmap_c2w @ vision_2_graphics

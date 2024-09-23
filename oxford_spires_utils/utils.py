@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from oxford_spires_utils.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxford_spires_utils.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
+from oxford_spires_utils.trajectory.pose_convention import PoseConvention
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
@@ -49,3 +50,12 @@ def transform_pcd_folder(folder_path, new_folder_path, transform_matrix):
 
         new_filename = new_folder_path / filename.name
         saved_pcd4.save(new_filename)
+
+
+def get_nerf_pose(colmap_c2w):
+    # equivalent to https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py
+    # new local frame
+    vision_2_graphics = PoseConvention.transforms["vision"]["graphics"]
+    # new global frame # TODO this is unnecessary
+    world_transform = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+    return world_transform @ colmap_c2w @ vision_2_graphics

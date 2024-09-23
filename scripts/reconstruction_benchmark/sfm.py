@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from oxford_spires_utils.bash_command import run_command
 from oxford_spires_utils.se3 import s_se3_from_sim3
+from oxford_spires_utils.utils import get_nerf_pose
 
 logger = logging.getLogger(__name__)
 camera_model_list = {"OPENCV_FISHEYE", "OPENCV", "PINHOLE"}
@@ -132,12 +133,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         w2c = np.concatenate([rotation, translation], 1)
         w2c = np.concatenate([w2c, np.array([[0, 0, 0, 1]])], 0)
         c2w = np.linalg.inv(w2c)  # this is the coordinate for openMVS
-
-        # https://github.com/NVlabs/instant-ngp/blob/master/scripts/colmap2nerf.py#L328
-        c2w[0:3, 2] *= -1  # flip the y and z axis
-        c2w[0:3, 1] *= -1
-        c2w = c2w[[1, 0, 2, 3], :]
-        c2w[2, :] *= -1  # flip whole world upside down
+        c2w = get_nerf_pose(c2w)
 
         frame = generate_json_camera_data(camera, camera_model)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
