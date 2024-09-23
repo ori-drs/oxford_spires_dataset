@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -9,6 +10,7 @@ from tqdm import tqdm
 from oxford_spires_utils.bash_command import run_command
 from oxford_spires_utils.se3 import s_se3_from_sim3
 
+logger = logging.getLogger(__name__)
 camera_model_list = {"OPENCV_FISHEYE", "OPENCV", "PINHOLE"}
 
 
@@ -149,7 +151,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     out["camera_model"] = camera_model
     out["frames"] = frames
     num_frames_string = f"Number of frames: {len(frames)}"
-    print(num_frames_string)
+    logger.info(num_frames_string)
 
     # Save for scale adjustment later
     assert json_file_name[-5:] == ".json"

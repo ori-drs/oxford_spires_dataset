@@ -1,3 +1,5 @@
+import logging
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +17,22 @@ from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, Vilen
 from oxford_spires_utils.trajectory.utils import pose_to_ply
 from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder
+
+logger = logging.getLogger(__name__)
+
+
+def setup_logging():
+    time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    Path("logs").mkdir(exist_ok=True)
+    logging.basicConfig(
+        filename=f"logs/recon_benchmark_{time}.log",  # Log file
+        level=logging.DEBUG,  # Set the logging level
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",  # Log format
+    )
+    console_handler = logging.StreamHandler()  # Create a console handler
+    console_handler.setLevel(logging.INFO)  # Set the logging level
+    root_logger = logging.getLogger()  # Get the root logger
+    root_logger.addHandler(console_handler)  # Add the console handler to the logger
 
 
 class ReconstructionBenchmark:
@@ -44,6 +62,7 @@ class ReconstructionBenchmark:
         self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
         self.metric_json_filename = "transforms_metric.json"
         self.ns_model_dir = self.ns_data_dir / "trained_models"
+        logger.info(f"Project folder: {self.project_folder}")
 
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
@@ -114,6 +133,8 @@ class ReconstructionBenchmark:
 
 
 if __name__ == "__main__":
+    setup_logging()
+    logger.info("Starting Reconstruction Benchmark")
     with open(Path(__file__).parent.parent.parent / "config" / "sensor.yaml", "r") as f:
         sensor_config = yaml.safe_load(f)["sensor"]
         sensor = Sensor(**sensor_config)
