@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import yaml
 from lidar_cloud_eval import evaluate_lidar_cloud
 from mvs import run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
@@ -8,6 +9,7 @@ from sfm import rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
+from oxford_spires_utils.sensor import Sensor
 from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.trajectory.utils import pose_to_ply
@@ -112,6 +114,9 @@ class ReconstructionBenchmark:
 
 
 if __name__ == "__main__":
+    with open(Path(__file__).parent.parent.parent / "config" / "sensor.yaml", "r") as f:
+        sensor_config = yaml.safe_load(f)["sensor"]
+        sensor = Sensor(sensor_config)
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
     gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_clouds"
     convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
