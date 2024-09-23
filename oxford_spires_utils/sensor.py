@@ -97,11 +97,6 @@ class Sensor:
         self.camera_topics = list(self.camera_topics_labelled.values())
         self.camera_subdirs = self.camera_topics
 
-        # self.cam_ids = {
-        #     "cam_front": 1,
-        #     "cam_left": 2,
-        #     "cam_right": 3,
-        # }
         self.cam_idx_new = {camera.label: (camera.idx) for camera in self.cameras}
         for cam_name in self.camera_topics_labelled.keys():
             # self.cam_ids[self.camera_topics_labelled[cam_name]] = self.cam_ids[cam_name]
