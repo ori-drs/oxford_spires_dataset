@@ -1,6 +1,11 @@
 from pathlib import Path
 
+import open3d as o3d
+
 from oxford_spires_utils.bash_command import run_command
+from oxford_spires_utils.trajectory.pose_convention import colmap_to_nerf_world_transform
+
+logger = logging.getLogger(__name__)
 
 
 def run_colmap_mvs(image_path, colmap_output_path, sparse_folder, max_image_size):
@@ -80,7 +85,12 @@ def run_openmvs(
         f"-w {mvs_dir}",
     ]
     run_command(" ".join(densify_cmd), print_command=True)
-
+    output_ply_file = mvs_dir / "scene_dense.ply"
+    if not output_ply_file.exists():
+        logger.error(f"Failed to generate dense point cloud at {output_ply_file}")
+    dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
+    dense_ply.transform(colmap_to_nerf_world_transform)
+    o3d.io.write_point_cloud(str(output_ply_file), dense_ply.with_name("scene_dense_nerf_world.ply"))
     # Reconstruct the mesh
     # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
     # run_command(" ".join(reconstruct_cmd), print_command=True)
