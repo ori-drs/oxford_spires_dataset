@@ -125,7 +125,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     images = read_images_binary(images_path)
 
     frames = []
-    for _, im_data in images.items():
+    for img_id, im_data in images.items():
         camera = cameras[im_data.camera_id]
         rotation = qvec2rotmat(im_data.qvec)
         translation = im_data.tvec.reshape(3, 1)
@@ -142,6 +142,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         frame = generate_json_camera_data(camera, camera_model)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
         frame["transform_matrix"] = c2w.tolist()
+        frame["colmap_img_id"] = img_id
         if camera_mask_path is not None:
             frame["mask_path"] = camera_mask_path.relative_to(camera_mask_path.parent.parent).as_posix()
 
