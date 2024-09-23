@@ -116,7 +116,7 @@ class ReconstructionBenchmark:
 if __name__ == "__main__":
     with open(Path(__file__).parent.parent.parent / "config" / "sensor.yaml", "r") as f:
         sensor_config = yaml.safe_load(f)["sensor"]
-        sensor = Sensor(sensor_config)
+        sensor = Sensor(**sensor_config)
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
     gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_clouds"
     convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
