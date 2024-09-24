@@ -52,7 +52,9 @@ RUN git clone https://github.com/ori-drs/FAST_LIO.git ${CATKIN_WS_DIR}/src/FAST_
 RUN cd ${CATKIN_WS_DIR} && catkin build
 
 # Trajectory evaluation dependences
-RUN pip install --user libtmux
+RUN apt-get update
+RUN apt-get install tmux -y
+RUN pip install libtmux
 RUN pip install evo
 
 # Final setup
