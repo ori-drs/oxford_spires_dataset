@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_colmap_mvs(image_path, colmap_output_path, sparse_folder, max_image_size):
+    logger.info(f"Running colmap MVS; img_path {image_path}; output: {colmap_output_path}")
     colmap_image_undistorter_cmd = [
         "colmap image_undistorter",
         f"--image_path {image_path}",
@@ -54,6 +55,7 @@ def run_colmap_mvs(image_path, colmap_output_path, sparse_folder, max_image_size
 def run_openmvs(
     image_path, colmap_output_path, sparse_folder, mvs_dir, max_image_size, openmvs_bin="/usr/local/bin/OpenMVS"
 ):
+    logger.info(f"Running OpenMVS; img_path {image_path}; output: {mvs_dir}")
     colmap_output_path = Path(colmap_output_path)
     mvs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -94,6 +96,7 @@ def run_openmvs(
     dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
     dense_ply.transform(colmap_to_nerf_world_transform)
     o3d.io.write_point_cloud(str(output_ply_file.with_name("scene_dense_nerf_world.ply")), dense_ply)
+    logger.info("Transformed MVS point cloud to the world frame defined by the nerf convention")
     # Reconstruct the mesh
     # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
     # run_command(" ".join(reconstruct_cmd), print_command=True)
@@ -130,6 +133,7 @@ def rescale_openmvs_cloud(original_cloud_file, sim3_matrix, output_cloud_file):
     cloud.transform(scale_matrix)
     cloud.transform(se3_matrix)
     o3d.io.write_point_cloud(str(output_cloud_file), cloud)
+    logger.info(f"Rescaled OpenMVS point cloud to to metric and save as {output_cloud_file}")
 
 
 if __name__ == "__main__":
