@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
@@ -36,9 +37,11 @@ def setup_logging():
 
 
 class ReconstructionBenchmark:
-    def __init__(self, project_folder):
+    def __init__(self, project_folder, sensor):
         self.project_folder = Path(project_folder)
         self.project_folder.mkdir(parents=True, exist_ok=True)
+        self.sensor = sensor
+        self.camera_for_alignment = "cam_front"
         self.image_folder = self.project_folder / "images"
         self.gt_individual_folder = self.project_folder / "gt_clouds"
         self.individual_clouds_folder = self.project_folder / "lidar_clouds"
@@ -115,9 +118,19 @@ class ReconstructionBenchmark:
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
         rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
-        colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
-        pose_to_ply(colmap_traj, self.colmap_output_folder / "colmap_traj.ply", [0.0, 0.0, 1.0])
-        T_lidar_colmap = align(lidar_slam_traj, colmap_traj, self.colmap_output_folder)
+        camera_alignment = self.sensor.get_camera(self.camera_for_alignment)
+        valid_folder_path = "images/" + Sensor.convert_camera_topic_to_folder_name(camera_alignment.topic)
+        logger.info(f'Loading only "{self.camera_for_alignment}" with directory "{valid_folder_path}" from json file')
+        # colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
+        colmap_traj_single_cam = NeRFTrajReader(colmap_traj_file, valid_folder_path).read_file()
+        pose_to_ply(colmap_traj_single_cam, self.colmap_output_folder / "colmap_traj_single_cam.ply", [0.0, 0.0, 1.0])
+        T_cam_lidar = camera_alignment.T_cam_lidar_overwrite
+        T_lidar_cam = np.linalg.inv(T_cam_lidar)
+        # T_WL @ T_LC = T_WC
+        lidar_slam_traj_cam_frame = deepcopy(lidar_slam_traj)
+        lidar_slam_traj_cam_frame.transform(T_lidar_cam, right_mul=True)
+        T_lidar_colmap = align(lidar_slam_traj, colmap_traj_single_cam, self.colmap_output_folder)
+        # T_lidar_colmap_2 = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
         scaled_mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world_scaled.ply"
@@ -145,7 +158,7 @@ if __name__ == "__main__":
     gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_clouds"
     convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
     project_folder = "/home/oxford_spires_dataset/data/2024-03-13-maths_1"
-    recon_benchmark = ReconstructionBenchmark(project_folder)
+    recon_benchmark = ReconstructionBenchmark(project_folder, sensor)
     recon_benchmark.process_gt_cloud()
     recon_benchmark.tranform_lidar_clouds()
     recon_benchmark.evaluate_lidar_clouds()
