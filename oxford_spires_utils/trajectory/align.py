@@ -9,8 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def align(vilens_traj, colmap_traj, output_dir):
+    logger.info("Aligning Vilens and Colmap trajectories")
     vilens_traj_sync, colmap_traj_sync = sync.associate_trajectories(vilens_traj, colmap_traj, max_diff=0.05)
-    print(f"Trajectory pair length: {len(vilens_traj_sync.poses_se3)}")
+    logger.debug(f"Trajectory pair length: {len(vilens_traj_sync.poses_se3)}")
     r_a, t_a, align_s = colmap_traj_sync.align(vilens_traj_sync, correct_scale=True)
     align_data = {
         "rotation": r_a.tolist(),
