@@ -40,6 +40,7 @@ def get_vocab_tree(image_num) -> Path:
 
 
 def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
+    logger.debug(f"Running colmap; img_path {image_path}; output: {output_path}, {camera_model}")
     assert camera_model in camera_model_list, f"{camera_model} not supported. Supported models: {camera_model_list}"
     database_path = output_path / "database.db"
     sparse_path = output_path / "sparse"
@@ -147,7 +148,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     out = {}
     out["camera_model"] = camera_model
     out["frames"] = frames
-    num_frames_string = f"Number of frames: {len(frames)}"
+    num_frames_string = f"Number of frames in {json_file_name} from colmap: {len(frames)}"
     logger.info(num_frames_string)
 
     # Save for scale adjustment later
