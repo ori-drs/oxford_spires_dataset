@@ -65,7 +65,8 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
         f"--ImageReader.camera_model {camera_model}",
     ]
     colmap_feature_extractor_cmd = " ".join(colmap_feature_extractor_cmd)
-    run_command(colmap_feature_extractor_cmd, print_command=True)
+    logger.info(f"Running {colmap_feature_extractor_cmd}")
+    run_command(colmap_feature_extractor_cmd, print_command=False)
     colmap_db = COLMAPDatabase.connect(database_path)
     total_image_num = colmap_db.execute("SELECT COUNT(*) FROM images").fetchone()[0]
     logger.debug(f"Total number of images in COLMAP database: {total_image_num}")
@@ -77,7 +78,8 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
         f"--VocabTreeMatching.vocab_tree_path {get_vocab_tree(image_num)}",
     ]
     colmap_vocab_tree_matcher_cmd = " ".join(colmap_vocab_tree_matcher_cmd)
-    run_command(colmap_vocab_tree_matcher_cmd, print_command=True)
+    logger.info(f"Running {colmap_vocab_tree_matcher_cmd}")
+    run_command(colmap_vocab_tree_matcher_cmd, print_command=False)
 
     mapper_ba_global_function_tolerance = 1e-5
     colmap_mapper_cmd = [
@@ -88,7 +90,8 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
         f"--Mapper.ba_global_function_tolerance {mapper_ba_global_function_tolerance}",
     ]
     colmap_mapper_cmd = " ".join(colmap_mapper_cmd)
-    run_command(colmap_mapper_cmd, print_command=True)
+    logger.info(f"Running {colmap_mapper_cmd}")
+    run_command(colmap_mapper_cmd, print_command=False)
 
     colmap_ba_cmd = [
         "colmap bundle_adjuster",
@@ -97,10 +100,12 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
         "--BundleAdjustment.refine_principal_point 1",
     ]
     colmap_ba_cmd = " ".join(colmap_ba_cmd)
-    run_command(colmap_ba_cmd, print_command=True)
+    logger.info(f"Running {colmap_ba_cmd}")
+    run_command(colmap_ba_cmd, print_command=False)
 
     # from nerfstudio.process_data.colmap_utils import colmap_to_json
     # num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
+    logger.info("Exporting COLMAP to json file")
     num_frame_matched = export_json(
         sparse_0_path, json_file_name="transforms.json", output_dir=output_path, camera_model=camera_model
     )
