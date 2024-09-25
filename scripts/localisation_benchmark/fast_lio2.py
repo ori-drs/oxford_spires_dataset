@@ -23,7 +23,7 @@ if __name__ == "__main__":
     pane_1.send_keys('roslaunch fast_lio {}.launch'.format(sequence))
     
     pane_2.send_keys('cd {}/rosbag/'.format(seq_path))
-    pane_2.send_keys('rosbag play *.bag --clock -s 470')
+    pane_2.send_keys('rosbag play *.bag --clock')
 
     # Check if the rosbag is "Done."
     print("Fast-LIO2 launched!! - {}.launch".format(sequence))
