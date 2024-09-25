@@ -15,9 +15,9 @@
     <node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" /> 
 
     <arg name="path" default="/home/oxford_spires_dataset/data/2024-03-14_blenhein_1/rosbag/"/>
-    <arg name="output" default="Fast-LIO2.bag"/>
+    <arg name="output" default="/home/oxford_spires_dataset/data/2024-03-14_blenhein_1/output_loc/Fast-LIO2.bag"/>
 
-    <node pkg="rosbag" type="record" name="rosbagrecord" args="record -O $(arg path)$(arg output) /Odometry" />
+    <node pkg="rosbag" type="record" name="rosbagrecord" args="record -O $(arg output) /Odometry" />
     <!-- <node pkg="rosbag" type="play" name="rosbagplay" args="$(arg path)$(arg bag_file_1)" required="true" /> -->
 
     <!-- <group if="$(arg rviz)">
