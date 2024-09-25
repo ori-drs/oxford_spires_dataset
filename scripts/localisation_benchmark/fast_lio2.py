@@ -3,6 +3,8 @@ import time
 import sys
 
 if __name__ == "__main__":
+
+    # TODO: put it in def an get path from arg.
     
     path = '/home/oxford_spires_dataset/data/'
     sequence = '2024-03-14_blenhein_1'
