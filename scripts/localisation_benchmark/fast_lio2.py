@@ -1,6 +1,7 @@
-import libtmux
-import time
 import sys
+import time
+
+import libtmux
 
 if __name__ == "__main__":
 
