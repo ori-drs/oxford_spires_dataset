@@ -4,20 +4,21 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+import open3d as o3d
 import yaml
-from lidar_cloud_eval import evaluate_lidar_cloud
 from mvs import rescale_openmvs_cloud, run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
+from oxford_spires_utils.eval import get_recon_metrics, save_error_cloud
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
 from oxford_spires_utils.sensor import Sensor
 from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.trajectory.utils import pose_to_ply
-from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
-from spires_cpp import convertOctreeToPointCloud, processPCDFolder
+from oxford_spires_utils.utils import transform_pcd_folder
+from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +51,13 @@ class ReconstructionBenchmark:
         self.lidar_output_folder.mkdir(exist_ok=True, parents=True)
         self.colmap_output_folder = self.output_folder / "colmap"
         self.colmap_output_folder.mkdir(exist_ok=True, parents=True)
+        self.recon_benchmark_dir = self.output_folder / "recon_benchmark"
+        self.recon_benchmark_dir.mkdir(exist_ok=True, parents=True)
         # TODO: check lidar cloud folder has viewpoints and is pcd, check gt folder is pcd, check image folder is jpg/png
         self.octomap_resolution = 0.1
         self.cloud_downsample_voxel_size = 0.05
-        self.gt_octree_path = self.output_folder / "gt_cloud.bt"
-        self.gt_cloud_merged_path = self.output_folder / "gt_cloud_merged.pcd"
+        self.gt_octree_path = self.recon_benchmark_dir / "gt_cloud.bt"
+        self.gt_cloud_merged_path = self.recon_benchmark_dir / "gt_cloud_merged.pcd"
 
         self.colmap_sparse_folder = self.colmap_output_folder / "sparse" / "0"
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
@@ -67,8 +70,8 @@ class ReconstructionBenchmark:
         self.ns_model_dir = self.ns_data_dir / "trained_models"
         logger.info(f"Project folder: {self.project_folder}")
 
-        self.recon_benchmark_dir = self.output_folder / "recon_benchmark"
-        self.recon_benchmark_dir.mkdir(exist_ok=True, parents=True)
+        self.lidar_cloud_merged_path = self.recon_benchmark_dir / "lidar_cloud_merged.pcd"
+
 
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
@@ -89,15 +92,28 @@ class ReconstructionBenchmark:
             self.octomap_resolution,
         )
 
-    def tranform_lidar_clouds(self, transform_matrix_path=None):
+    def process_lidar_clouds(self, transform_matrix_path=None):
+        logger.info("Transforming lidar clouds to the same frame as the ground truth clouds")
         if transform_matrix_path is None:
             transform_matrix_path = self.project_folder / "T_gt_lidar.txt"
         assert transform_matrix_path.exists(), f"Transform matrix not found at {transform_matrix_path}"
         transform_matrix = np.loadtxt(transform_matrix_path)
-        new_individual_clouds_folder = self.project_folder / "lidar_clouds_transformed"
+        new_individual_clouds_folder = self.lidar_output_folder / "lidar_clouds_transformed"
         transform_pcd_folder(self.individual_clouds_folder, new_individual_clouds_folder, transform_matrix)
         self.individual_clouds_folder = new_individual_clouds_folder
-
+        logger.info("Creating Octree from transformed lidar clouds")
+        lidar_cloud_octomap_file = self.lidar_output_folder / "lidar_cloud.bt"
+        processPCDFolder(str(self.individual_clouds_folder), self.octomap_resolution, str(lidar_cloud_octomap_file))
+        logger.info("Converting Octree to point cloud")
+        lidar_cloud_free_path = Path(lidar_cloud_octomap_file).with_name(
+            f"{Path(lidar_cloud_octomap_file).stem}_free.pcd"
+        )
+        lidar_cloud_occ_path = Path(lidar_cloud_octomap_file).with_name(
+            f"{Path(lidar_cloud_octomap_file).stem}_occ.pcd"
+        )
+        convertOctreeToPointCloud(str(lidar_cloud_octomap_file), str(lidar_cloud_free_path), str(lidar_cloud_occ_path))
+        logger.info("Merging and downsampling lidar clouds")
+        _ = merge_downsample_vilens_slam_clouds(self.individual_clouds_folder, self.cloud_downsample_voxel_size, self.lidar_cloud_merged_path)
     def run_colmap(self):
         run_colmap(self.image_folder, self.colmap_output_folder)
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
@@ -151,7 +167,16 @@ class ReconstructionBenchmark:
         ns_config = generate_nerfstudio_config(method, self.ns_data_dir / json_filename, self.ns_model_dir)
         final_cloud_file = run_nerfstudio(ns_config)
         final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
-
+    
+    def evaluate_reconstruction(self, input_cloud_path):
+        assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
+        assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
+        filtered_input_cloud_path = Path(input_cloud_path).with_name(f"{Path(input_cloud_path).stem}_filtered.pcd")
+        removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
+        input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
+        gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
+        print(get_recon_metrics(input_cloud_np, gt_cloud_np))
+        save_error_cloud(input_cloud_np, gt_cloud_np, str(Path(self.project_folder) / "input_error.pcd"))
 
 if __name__ == "__main__":
     setup_logging()
@@ -165,8 +190,8 @@ if __name__ == "__main__":
     project_folder = "/home/oxford_spires_dataset/data/2024-03-13-observatory-quarter-01"
     recon_benchmark = ReconstructionBenchmark(project_folder, sensor)
     recon_benchmark.process_gt_cloud()
-    recon_benchmark.tranform_lidar_clouds()
-    recon_benchmark.evaluate_lidar_clouds()
+    recon_benchmark.process_lidar_clouds()
+    recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_cloud_merged_path)
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
     recon_benchmark.compute_sim3()
