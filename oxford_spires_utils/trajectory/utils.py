@@ -19,7 +19,6 @@ def viz(traj_1, traj_2, axis_viz_size=0.5, frame_arraw_size=3):
     origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=frame_arraw_size)
     pcds.append(origin)
     # add axis to show the poses
-    axis_viz_size = 1
     for T in traj_1.poses_se3:
         axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=axis_viz_size)
         axis.paint_uniform_color([1, 1, 0])
