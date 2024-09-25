@@ -13,7 +13,7 @@ def pose_to_ply(traj: PoseTrajectory3D, output_file: str, colour=[1.0, 0.0, 0.0]
     o3d.io.write_point_cloud(str(output_file), output_cloud)
 
 
-def viz(traj_1, traj_2, frame_arraw_size=3):
+def viz(traj_1, traj_2, axis_viz_size=0.5, frame_arraw_size=3):
     # Visualize align trajectory
     pcds = []
     origin = o3d.geometry.TriangleMesh.create_coordinate_frame(size=frame_arraw_size)
