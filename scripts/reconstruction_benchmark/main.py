@@ -67,6 +67,9 @@ class ReconstructionBenchmark:
         self.ns_model_dir = self.ns_data_dir / "trained_models"
         logger.info(f"Project folder: {self.project_folder}")
 
+        self.recon_benchmark_dir = self.output_folder / "recon_benchmark"
+        self.recon_benchmark_dir.mkdir(exist_ok=True, parents=True)
+
     def process_gt_cloud(self):
         print_with_colour("Creating Octree and merged cloud from ground truth clouds")
         processPCDFolder(str(self.gt_individual_folder), self.octomap_resolution, str(self.gt_octree_path))
@@ -146,7 +149,8 @@ class ReconstructionBenchmark:
     def run_nerfstudio(self, method="nerfacto", json_filename="transforms_metric.json"):
         assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
         ns_config = generate_nerfstudio_config(method, self.ns_data_dir / json_filename, self.ns_model_dir)
-        run_nerfstudio(ns_config)
+        final_cloud_file = run_nerfstudio(ns_config)
+        final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
 
 
 if __name__ == "__main__":
