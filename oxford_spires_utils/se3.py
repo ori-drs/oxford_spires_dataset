@@ -68,3 +68,31 @@ def is_quaternion(quaternion):
     assert isinstance(quaternion, np.ndarray), f"{quaternion} is not a numpy array or list"
     assert quaternion.shape == (4,), f"{quaternion} is not a 4D quaternion"
     return np.isclose(np.linalg.norm(quaternion), 1.0)
+
+
+def is_sim3_matrix(sim3_matrix):
+    scale = compute_scale_from_sim3(sim3_matrix)
+    valid_scale = scale > 0
+    se3_matrix = compute_se3_from_sim3(sim3_matrix)
+    is_valid, debug_info = is_se3_matrix(se3_matrix)
+    debug_info["valid_scale"] = valid_scale
+    is_valid = is_valid and valid_scale
+    return is_valid, debug_info
+
+
+def compute_scale_from_sim3(sim3_matrix):
+    return np.linalg.norm(sim3_matrix[:3, :3], ord=2)
+
+
+def compute_se3_from_sim3(sim3_matrix):
+    scale = compute_scale_from_sim3(sim3_matrix)
+    se3_matrix = sim3_matrix.copy()
+    se3_matrix[:3, :3] = sim3_matrix[:3, :3] / scale
+    return se3_matrix
+
+
+def s_se3_from_sim3(sim3_matrix):
+    assert is_sim3_matrix(sim3_matrix)[0], is_sim3_matrix(sim3_matrix)[1]
+    scale = compute_scale_from_sim3(sim3_matrix)
+    se3_matrix = compute_se3_from_sim3(sim3_matrix)
+    return scale, se3_matrix
