@@ -12,6 +12,6 @@
     <include file="$(find lio_sam_6axis)/launch/include/module_robot_state_publisher.launch"/>
 
     <!--- Run Rviz-->
-    <include file="$(find lio_sam_6axis)/launch/include/module_rviz.launch"/>
+    <!-- <include file="$(find lio_sam_6axis)/launch/include/module_rviz.launch"/> -->
 
 </launch>
