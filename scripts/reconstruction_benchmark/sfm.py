@@ -49,7 +49,9 @@ def get_vocab_tree(image_num) -> Path:
     return vocab_tree_filename
 
 
-def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
+def run_colmap(
+    image_path, output_path, camera_model="OPENCV_FISHEYE", matcher="vocab_tree_matcher", loop_detection_period=10
+):
     logger.debug(f"Running colmap; img_path {image_path}; output: {output_path}, {camera_model}")
     assert camera_model in camera_model_list, f"{camera_model} not supported. Supported models: {camera_model_list}"
     database_path = output_path / "database.db"
@@ -72,14 +74,23 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     logger.debug(f"Total number of images in COLMAP database: {total_image_num}")
 
     image_num = len(list(image_path.rglob("*")))
-    colmap_vocab_tree_matcher_cmd = [
-        "colmap vocab_tree_matcher",
+    colmap_matcher_cmd = [
+        f"colmap {matcher}",
         f"--database_path {database_path}",
-        f"--VocabTreeMatching.vocab_tree_path {get_vocab_tree(image_num)}",
     ]
-    colmap_vocab_tree_matcher_cmd = " ".join(colmap_vocab_tree_matcher_cmd)
-    logger.info(f"Running {colmap_vocab_tree_matcher_cmd}")
-    run_command(colmap_vocab_tree_matcher_cmd, print_command=False)
+    if matcher == "vocab_tree_matcher":
+        colmap_matcher_cmd.append(f"--VocabTreeMatching.vocab_tree_path {get_vocab_tree(image_num)}")
+    elif matcher == "sequential_matcher":
+        colmap_matcher_cmd.append("--SequentialMatching.loop_detection 1")
+        colmap_matcher_cmd.append(f"--SequentialMatching.vocab_tree_path {get_vocab_tree(image_num)}")
+        colmap_matcher_cmd.append(f"--SequentialMatching.loop_detection_period {loop_detection_period}")
+    else:
+        raise ValueError(
+            f"matcher {matcher} not supported. Supported matchers: ['vocab_tree_matcher', 'sequential_matcher']"
+        )
+    colmap_matcher_cmd = " ".join(colmap_matcher_cmd)
+    logger.info(f"Running {colmap_matcher_cmd}")
+    run_command(colmap_matcher_cmd, print_command=False)
 
     mapper_ba_global_function_tolerance = 1e-5
     colmap_mapper_cmd = [

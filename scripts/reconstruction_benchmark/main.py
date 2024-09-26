@@ -121,8 +121,8 @@ class ReconstructionBenchmark:
             self.individual_clouds_folder, self.cloud_downsample_voxel_size, self.lidar_cloud_merged_path
         )
 
-    def run_colmap(self):
-        run_colmap(self.image_folder, self.colmap_output_folder)
+    def run_colmap(self, matcher="vocab_tree_matcher"):
+        run_colmap(self.image_folder, self.colmap_output_folder, matcher=matcher)
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
 
     def run_openmvs(self):
