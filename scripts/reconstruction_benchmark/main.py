@@ -45,7 +45,8 @@ class ReconstructionBenchmark:
         self.sensor = sensor
         self.camera_for_alignment = "cam_front"
         self.image_folder = self.project_folder / "images"
-        self.individual_clouds_folder = self.project_folder / "lidar_clouds"
+        self.individual_clouds_folder = self.project_folder / "lidar_slam" / "individual_clouds"
+        self.lidar_slam_traj_file = self.project_folder / "lidar_slam" / "slam_poses.csv"
         self.output_folder = self.project_folder / "outputs"
         self.lidar_output_folder = self.output_folder / "lidar"
         self.lidar_output_folder.mkdir(exist_ok=True, parents=True)
@@ -144,10 +145,9 @@ class ReconstructionBenchmark:
         )
 
     def compute_sim3(self):
-        lidar_slam_traj_file = self.project_folder / "slam_poses_robotics.csv"
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
         rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
-        lidar_slam_traj = VilensSlamTrajReader(lidar_slam_traj_file).read_file()
+        lidar_slam_traj = VilensSlamTrajReader(self.lidar_slam_traj_file).read_file()
         camera_alignment = self.sensor.get_camera(self.camera_for_alignment)
         valid_folder_path = "images/" + Sensor.convert_camera_topic_to_folder_name(camera_alignment.topic)
         logger.info(f'Loading only "{self.camera_for_alignment}" with directory "{valid_folder_path}" from json file')
