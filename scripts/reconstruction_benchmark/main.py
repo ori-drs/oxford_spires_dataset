@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 import yaml
-from mvs import rescale_openmvs_cloud, run_openmvs
+from mvs import rescale_openmvs_cloud, run_openmvs, transform_cloud_to_gt_frame
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import rescale_colmap_json, run_colmap
 
@@ -160,8 +160,12 @@ class ReconstructionBenchmark:
         T_lidar_colmap = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
-        self.scaled_mvs_cloud_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_metric.ply"
-        rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, scaled_mvs_cloud_file)
+        self.scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
+        rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, self.scaled_mvs_cloud_file)
+        self.scaled_mvs_cloud_gt_frame_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_gt_frame.pcd"
+        transform_cloud_to_gt_frame(
+            self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file
+        )
         rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
         pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
         pose_to_ply(lidar_slam_traj, self.colmap_output_folder / "lidar_slam_traj.ply", [1.0, 0.0, 0.0])
@@ -177,12 +181,14 @@ class ReconstructionBenchmark:
 
     def evaluate_reconstruction(self, input_cloud_path):
         assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
+        assert Path(input_cloud_path).suffix == ".pcd", "Input cloud must be a pcd file"
         assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
         filtered_input_cloud_path = Path(input_cloud_path).with_name(f"{Path(input_cloud_path).stem}_filtered.pcd")
+        logger.info(f'Removing unknown points from "{input_cloud_path}" using {self.gt_octree_path}')
         removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
         input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
         gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
-        print(get_recon_metrics(input_cloud_np, gt_cloud_np))
+        logger.info(get_recon_metrics(input_cloud_np, gt_cloud_np))
         save_error_cloud(input_cloud_np, gt_cloud_np, str(Path(self.project_folder) / "input_error.pcd"))
 
 
@@ -204,5 +210,6 @@ if __name__ == "__main__":
     recon_benchmark.run_colmap()
     recon_benchmark.run_openmvs()
     recon_benchmark.compute_sim3()
+    recon_benchmark.evaluate_reconstruction(recon_benchmark.scaled_mvs_cloud_gt_frame_file)
     recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_metric.json")
     recon_benchmark.run_nerfstudio("splatfacto")
