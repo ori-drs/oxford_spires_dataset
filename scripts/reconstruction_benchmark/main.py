@@ -158,7 +158,7 @@ if __name__ == "__main__":
     gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
     gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_clouds"
     convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
-    project_folder = "/home/oxford_spires_dataset/data/2024-03-13-maths_1"
+    project_folder = "/home/oxford_spires_dataset/data/2024-03-13-roq-1"
     recon_benchmark = ReconstructionBenchmark(project_folder, sensor)
     recon_benchmark.process_gt_cloud()
     recon_benchmark.tranform_lidar_clouds()
