@@ -18,7 +18,7 @@ from oxford_spires_utils.sensor import Sensor
 from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.trajectory.utils import pose_to_ply
-from oxford_spires_utils.utils import transform_pcd_folder
+from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
 from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,6 @@ class ReconstructionBenchmark:
         self.sensor = sensor
         self.camera_for_alignment = "cam_front"
         self.image_folder = self.project_folder / "images"
-        self.gt_individual_folder = self.project_folder / "gt_clouds"
         self.individual_clouds_folder = self.project_folder / "lidar_clouds"
         self.output_folder = self.project_folder / "outputs"
         self.lidar_output_folder = self.output_folder / "lidar"
@@ -59,6 +58,8 @@ class ReconstructionBenchmark:
         self.cloud_downsample_voxel_size = 0.05
         self.gt_octree_path = self.recon_benchmark_dir / "gt_cloud.bt"
         self.gt_cloud_merged_path = self.recon_benchmark_dir / "gt_cloud_merged.pcd"
+        self.gt_cloud_individual_e57_folder = self.project_folder / "gt" / "individual_e57_clouds"
+        self.gt_cloud_individual_pcd_folder = self.project_folder / "gt" / "individual_pcd_clouds"
 
         self.colmap_sparse_folder = self.colmap_output_folder / "sparse" / "0"
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
@@ -74,13 +75,16 @@ class ReconstructionBenchmark:
         self.lidar_cloud_merged_path = self.recon_benchmark_dir / "lidar_cloud_merged.pcd"
 
     def process_gt_cloud(self):
-        print_with_colour("Creating Octree and merged cloud from ground truth clouds")
-        processPCDFolder(str(self.gt_individual_folder), self.octomap_resolution, str(self.gt_octree_path))
+        logger.info("Converting ground truth clouds from e57 to pcd")
+        convert_e57_folder_to_pcd_folder(self.gt_cloud_individual_e57_folder, self.gt_cloud_individual_pcd_folder)
+        logger.info("Creating Octree and merged cloud from ground truth clouds")
+        processPCDFolder(str(self.gt_cloud_individual_pcd_folder), self.octomap_resolution, str(self.gt_octree_path))
         gt_cloud_free_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_free.pcd"))
         gt_cloud_occ_path = str(Path(self.gt_octree_path).with_name(f"{Path(self.gt_octree_path).stem}_occ.pcd"))
         convertOctreeToPointCloud(str(self.gt_octree_path), str(gt_cloud_free_path), str(gt_cloud_occ_path))
+        logger.info("Merging and downsampling ground truth clouds")
         _ = merge_downsample_vilens_slam_clouds(
-            self.gt_individual_folder, self.cloud_downsample_voxel_size, self.gt_cloud_merged_path
+            self.gt_cloud_individual_pcd_folder, self.cloud_downsample_voxel_size, self.gt_cloud_merged_path
         )
 
     def evaluate_lidar_clouds(self):
@@ -198,9 +202,6 @@ if __name__ == "__main__":
     with open(Path(__file__).parent.parent.parent / "config" / "sensor.yaml", "r") as f:
         sensor_config = yaml.safe_load(f)["sensor"]
         sensor = Sensor(**sensor_config)
-    gt_cloud_folder_e57_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_individual_e57"
-    gt_cloud_folder_pcd_path = "/home/oxford_spires_dataset/data/2024-03-13-maths_1/gt_clouds"
-    convert_e57_folder_to_pcd_folder(gt_cloud_folder_e57_path, gt_cloud_folder_pcd_path)
     project_folder = "/home/oxford_spires_dataset/data/2024-03-13-observatory-quarter-01"
     recon_benchmark = ReconstructionBenchmark(project_folder, sensor)
     recon_benchmark.load_lidar_gt_transform()
