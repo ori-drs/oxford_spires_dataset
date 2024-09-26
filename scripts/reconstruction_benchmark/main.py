@@ -137,7 +137,7 @@ class ReconstructionBenchmark:
         T_lidar_colmap = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
-        scaled_mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world_scaled.ply"
+        self.scaled_mvs_cloud_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_metric.ply"
         rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, scaled_mvs_cloud_file)
         rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
         pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
