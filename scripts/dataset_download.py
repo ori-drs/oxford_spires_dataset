@@ -5,7 +5,10 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-dataset_urls = {"2024-03-13-roq-1": "https://huggingface.co/datasets/yifutao/OxSpires/resolve/main/2024-03-13-roq-1/"}
+dataset_urls = {
+    "2024-03-13-roq-1": "https://huggingface.co/datasets/yifutao/OxSpires/resolve/main/2024-03-13-roq-1/",
+    "2024-03-14-blenheim-5": "https://huggingface.co/datasets/yifutao/OxSpires/resolve/main/2024-03-14-blenheim-5/",
+}
 
 file_lists = ["images.zip", "lidar_slam.zip", "gt/individual_e57_clouds.zip", "T_gt_lidar.txt"]
 for dataset in dataset_urls:
