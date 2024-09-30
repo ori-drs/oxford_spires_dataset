@@ -1,4 +1,5 @@
 import logging
+import shutil
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -121,6 +122,7 @@ class ReconstructionBenchmark:
             f"{Path(lidar_cloud_octomap_file).stem}_occ.pcd"
         )
         convertOctreeToPointCloud(str(lidar_cloud_octomap_file), str(lidar_cloud_free_path), str(lidar_cloud_occ_path))
+        shutil.copy(lidar_cloud_occ_path, self.lidar_occ_benchmark_file)
         logger.info("Merging and downsampling lidar clouds")
         _ = merge_downsample_vilens_slam_clouds(
             self.individual_clouds_folder, self.cloud_downsample_voxel_size, self.lidar_cloud_merged_path
