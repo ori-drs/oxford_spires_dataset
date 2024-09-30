@@ -7,3 +7,4 @@ pye57>=0.4.13
 nerfstudio==1.1.4
 evo>=1.29.0
 pytransform3d>=3.5.0
+huggingface_hub>=0.25.1
