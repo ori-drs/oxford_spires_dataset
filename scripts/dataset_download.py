@@ -7,8 +7,8 @@ from huggingface_hub import hf_hub_download
 logger = logging.getLogger(__name__)
 
 repo_id = "ori-drs/oxford_spires_dataset"
-dataset_sequences = ["2024-03-13-roq-1", "2024-03-14-blenheim-5"]
-file_lists = ["images.zip", "lidar_slam.zip", "gt/individual_e57_clouds.zip", "T_gt_lidar.txt"]
+dataset_sequences = ["2024-03-13-observatory-quarter-01", "2024-03-14-blenheim-05"]
+file_lists = ["images.zip", "lidar_slam.zip", "T_gt_lidar.txt"]
 for sequence in dataset_sequences:
     output_folder = Path(__file__).parent.parent / "data"
     Path(output_folder).mkdir(parents=True, exist_ok=True)
