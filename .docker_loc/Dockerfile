@@ -41,25 +41,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libyaml-cpp-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install fast_lio dependences
-RUN git clone https://github.com/ori-drs/livox_ros_driver2.git ${CATKIN_WS_DIR}/src/livox_ros_driver2
-RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git ${CATKIN_WS_DIR}/src/Livox-SDK2
-RUN cd ${CATKIN_WS_DIR}/src/Livox-SDK2/ && mkdir build && cd build && cmake .. && make -j && make install
-
-# Install lio_sam dependences
-RUN apt-get update
-RUN apt-get install libboost-all-dev
-RUN apt-get install software-properties-common -y
-RUN add-apt-repository ppa:borglab/gtsam-release-4.0
-RUN apt-get update
-RUN apt-get install libgtsam-dev libgtsam-unstable-dev -y
-
-# Install ros packages
-RUN git clone https://github.com/catkin/catkin_simple.git ${CATKIN_WS_DIR}/src/catkin_simple 
-RUN git clone https://github.com/ori-drs/FAST_LIO.git -b ros1 ${CATKIN_WS_DIR}/src/FAST_LIO
-RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO && git submodule update --init
-RUN git clone https://github.com/ori-drs/LIO_SAM_6AXIS.git -b dev/frontier_hesai_ho ${CATKIN_WS_DIR}/src/LIO_SAM_6AXIS
-
 # Install C++ Dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
     libblosc-dev \
@@ -76,15 +57,37 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python3-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd ${CATKIN_WS_DIR} && catkin build livox_ros_driver2
-RUN cd ${CATKIN_WS_DIR} && catkin build fast_lio
-
+######################
+# Install SC-LIO-SAM #
+######################
+# Install lio_sam dependences
+RUN apt-get update
+RUN apt-get install libboost-all-dev
+RUN apt-get install software-properties-common -y
+RUN add-apt-repository ppa:borglab/gtsam-release-4.0
+RUN apt-get update
+RUN apt-get install libgtsam-dev libgtsam-unstable-dev -y
 RUN apt-get update
 RUN apt-get install wget
 RUN cd ${CATKIN_WS_DIR}/src && wget https://sourceforge.net/projects/geographiclib/files/distrib-C++/GeographicLib-2.4.tar.gz && tar xfpz GeographicLib-2.4.tar.gz
 RUN cd ${CATKIN_WS_DIR}/src/GeographicLib-2.4 && mkdir BUILD && cd BUILD && cmake .. && make && make install
+# Install ros packages
+RUN git clone https://github.com/ori-drs/SC-LIO-SAM.git ${CATKIN_WS_DIR}/src/SC-LIO-SAM
+RUN cd ${CATKIN_WS_DIR} && catkin build lio_sam
 
-RUN cd ${CATKIN_WS_DIR} && catkin build lio_sam_6axis
+# # Install fast_lio dependences
+# RUN git clone https://github.com/ori-drs/livox_ros_driver2.git ${CATKIN_WS_DIR}/src/livox_ros_driver2
+# RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git ${CATKIN_WS_DIR}/src/Livox-SDK2
+# RUN cd ${CATKIN_WS_DIR}/src/Livox-SDK2/ && mkdir build && cd build && cmake .. && make -j && make install
+
+# # Install ros packages
+# RUN git clone https://github.com/ori-drs/FAST_LIO.git -b ros1 ${CATKIN_WS_DIR}/src/FAST_LIO
+# RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO && git submodule update --init
+
+# RUN cd ${CATKIN_WS_DIR} && catkin build livox_ros_driver2
+# RUN cd ${CATKIN_WS_DIR} && catkin build fast_lio
+
+
 
 # Trajectory evaluation dependences
 RUN apt-get update
@@ -103,11 +106,6 @@ ARG SPIRES_DIR=/home/oxford_spires_dataset
 WORKDIR ${SPIRES_DIR}
 
 COPY ./oxford_spires_utils/ ${SPIRES_DIR}/oxford_spires_utils/
-COPY ./spires_ros/fast_lio2/launch_osd ${CATKIN_WS_DIR}/src/FAST_LIO/launch
-RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO && mkdir config
-COPY ./spires_ros/fast_lio2/hesai.yaml ${CATKIN_WS_DIR}/src/FAST_LIO/config
-COPY ./spires_ros/lio_sam/launch_lsam ${CATKIN_WS_DIR}/src/LIO_SAM_6AXIS/LIO-SAM-6AXIS/launch
-COPY ./spires_ros/lio_sam/config_lsam ${CATKIN_WS_DIR}/src/LIO_SAM_6AXIS/LIO-SAM-6AXIS/config
 COPY ./pyproject.toml ${SPIRES_DIR}/pyproject.toml
 # RUN pip install -e .
 
