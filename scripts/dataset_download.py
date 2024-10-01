@@ -21,3 +21,20 @@ for sequence in dataset_sequences:
         shutil.unpack_archive(file, file.parent)
         file.unlink()
     logger.info(f'Complete downloading "{sequence}" to {output_folder}')
+
+ground_truth_lists = ["observatory-quarter", "blenheim-palace"]
+ground_truth_lists = [f"ground_truth_cloud/{site}" for site in ground_truth_lists]
+cloud_file = "individual_cloud_e57.zip"
+for ground_truth_site in ground_truth_lists:
+    output_folder = Path(__file__).parent.parent / "data"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+    logger.info(f"Downloading {ground_truth_site} to {output_folder}")
+    hf_hub_download(
+        repo_id, repo_type="dataset", filename=cloud_file, subfolder=ground_truth_site, local_dir=str(output_folder)
+    )
+    files = list(output_folder.rglob("*.zip"))
+    for file in files:
+        logger.info(f"Unzipping {file}")
+        shutil.unpack_archive(file, file.parent)
+        file.unlink()
+    logger.info(f'Complete downloading "{ground_truth_site}" to {output_folder}')
