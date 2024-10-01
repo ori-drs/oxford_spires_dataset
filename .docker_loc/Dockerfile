@@ -75,17 +75,24 @@ RUN cd ${CATKIN_WS_DIR}/src/GeographicLib-2.4 && mkdir BUILD && cd BUILD && cmak
 RUN git clone https://github.com/ori-drs/SC-LIO-SAM.git ${CATKIN_WS_DIR}/src/SC-LIO-SAM
 RUN cd ${CATKIN_WS_DIR} && catkin build lio_sam
 
-# # Install fast_lio dependences
-# RUN git clone https://github.com/ori-drs/livox_ros_driver2.git ${CATKIN_WS_DIR}/src/livox_ros_driver2
-# RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git ${CATKIN_WS_DIR}/src/Livox-SDK2
-# RUN cd ${CATKIN_WS_DIR}/src/Livox-SDK2/ && mkdir build && cd build && cmake .. && make -j && make install
-
+#########################
+# Install Fast-LIO-SLAM #
+#########################
+# Install fast_lio dependences
+RUN git clone https://github.com/Livox-SDK/livox_ros_driver ${CATKIN_WS_DIR}/src/livox_ros_driver
+RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git ${CATKIN_WS_DIR}/src/Livox-SDK2
+RUN cd ${CATKIN_WS_DIR}/src/Livox-SDK2/ && mkdir build && cd build && cmake .. && make -j && make install
+RUN git clone https://ceres-solver.googlesource.com/ceres-solver -b 2.0.0 ${CATKIN_WS_DIR}/src/ceres-solver
+RUN apt-get install libgoogle-glog-dev libgflags-dev
+RUN apt-get install libatlas-base-dev -y
+RUN apt-get install libeigen3-dev
+RUN cd ${CATKIN_WS_DIR}/src/ceres-solver/ && mkdir build && cd build && cmake .. && make -j3 && make install
 # # Install ros packages
-# RUN git clone https://github.com/ori-drs/FAST_LIO.git -b ros1 ${CATKIN_WS_DIR}/src/FAST_LIO
-# RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO && git submodule update --init
-
-# RUN cd ${CATKIN_WS_DIR} && catkin build livox_ros_driver2
-# RUN cd ${CATKIN_WS_DIR} && catkin build fast_lio
+RUN git clone https://github.com/ori-drs/FAST_LIO_SLAM.git ${CATKIN_WS_DIR}/src/FAST_LIO_SLAM
+RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO_SLAM && git submodule update --init
+RUN cd ${CATKIN_WS_DIR} && catkin build livox_ros_driver
+RUN cd ${CATKIN_WS_DIR} && catkin build fast_lio
+RUN cd ${CATKIN_WS_DIR} && catkin build aloam_velodyne
 
 
 
