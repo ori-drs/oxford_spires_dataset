@@ -1,4 +1,4 @@
-iimport sys
+import sys
 import time
 
 import libtmux
