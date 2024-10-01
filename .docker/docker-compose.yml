@@ -19,3 +19,4 @@ services:
       - ../:${SPIRES_DIR}/
       - ${HOST_SPIRES_DATA_DIR}:${SPIRES_DATA_DIR}
       - ~/.netrc:/home/docker_dev/.netrc
+      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
