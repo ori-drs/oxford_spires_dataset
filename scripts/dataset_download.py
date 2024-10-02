@@ -13,11 +13,13 @@ dataset_sequences = [
     "2024-03-12-keble-college-04",
     "2024-03-13-observatory-quarter-01",
     "2024-03-14-blenheim-palace-05",
+    "2024-03-18-christ-church-02",
 ]
 file_lists = ["images.zip", "lidar_slam.zip", "T_gt_lidar.txt"]
 
 ground_truth_lists = [
     "blenheim-palace",
+    "christ-church",
     "keble-college",
     "observatory-quarter",
 ]
