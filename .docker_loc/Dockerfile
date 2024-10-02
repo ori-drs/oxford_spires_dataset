@@ -87,14 +87,19 @@ RUN apt-get install libgoogle-glog-dev libgflags-dev
 RUN apt-get install libatlas-base-dev -y
 RUN apt-get install libeigen3-dev
 RUN cd ${CATKIN_WS_DIR}/src/ceres-solver/ && mkdir build && cd build && cmake .. && make -j3 && make install
-# # Install ros packages
+# Install ros packages
 RUN git clone https://github.com/ori-drs/FAST_LIO_SLAM.git ${CATKIN_WS_DIR}/src/FAST_LIO_SLAM
 RUN cd ${CATKIN_WS_DIR}/src/FAST_LIO_SLAM && git submodule update --init
 RUN cd ${CATKIN_WS_DIR} && catkin build livox_ros_driver
 RUN cd ${CATKIN_WS_DIR} && catkin build fast_lio
 RUN cd ${CATKIN_WS_DIR} && catkin build aloam_velodyne
 
-
+###############
+# Install HBA #
+###############
+# Install ros packages
+RUN git clone https://github.com/ori-drs/HBA.git ${CATKIN_WS_DIR}/src/HBA
+RUN cd ${CATKIN_WS_DIR} && catkin build hba
 
 # Trajectory evaluation dependences
 RUN apt-get update
