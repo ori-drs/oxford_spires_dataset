@@ -39,7 +39,7 @@ if __name__ == "__main__":
             break
     
     time.sleep(3)
-    print("PROCESS FINISHED!!")
+    print("PROCESS FINISHED!! Execute this script 3 times to replicate paper results")
     print("Output in: {}/output_slam/hba/hba_poses_robotics.csv".format(sequence))
 
     # TODO: Copy to output folder
