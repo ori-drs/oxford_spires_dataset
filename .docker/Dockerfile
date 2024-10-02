@@ -147,6 +147,7 @@ COPY ./spires_cpp ${SPIRES_DIR}/spires_cpp/
 COPY ./pyproject.toml ${SPIRES_DIR}/pyproject.toml
 RUN cd ${SPIRES_DIR}/spires_cpp && pip install -e . 
 RUN pip install -e .
+RUN mkdir /home/${UNAME}/.cache
 
 # Make the outputs of the container match the host
 
