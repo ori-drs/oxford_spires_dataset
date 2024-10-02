@@ -40,9 +40,10 @@ def setup_logging():
 
 
 class ReconstructionBenchmark:
-    def __init__(self, project_folder, sensor):
+    def __init__(self, project_folder, gt_folder, sensor):
         self.project_folder = Path(project_folder)
         self.project_folder.mkdir(parents=True, exist_ok=True)
+        self.gt_folder = Path(gt_folder)
         self.sensor = sensor
         self.camera_for_alignment = "cam_front"
         self.image_folder = self.project_folder / "images"
@@ -60,8 +61,8 @@ class ReconstructionBenchmark:
         self.cloud_downsample_voxel_size = 0.05
         self.gt_octree_path = self.recon_benchmark_dir / "gt_cloud.bt"
         self.gt_cloud_merged_path = self.recon_benchmark_dir / "gt_cloud_merged.pcd"
-        self.gt_cloud_individual_e57_folder = self.project_folder / "gt" / "individual_e57_clouds"
-        self.gt_cloud_individual_pcd_folder = self.project_folder / "gt" / "individual_pcd_clouds"
+        self.gt_cloud_individual_e57_folder = self.gt_folder / "individual_cloud_e57"
+        self.gt_cloud_individual_pcd_folder = self.gt_folder / "individual_cloud_pcd"
 
         self.colmap_sparse_folder = self.colmap_output_folder / "sparse" / "0"
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
@@ -75,6 +76,7 @@ class ReconstructionBenchmark:
         logger.info(f"Project folder: {self.project_folder}")
 
         self.lidar_cloud_merged_path = self.recon_benchmark_dir / "lidar_cloud_merged.pcd"
+        self.lidar_occ_benchmark_file = self.recon_benchmark_dir / "lidar_occ.pcd"
 
     def process_gt_cloud(self):
         logger.info("Converting ground truth clouds from e57 to pcd")
@@ -206,7 +208,7 @@ if __name__ == "__main__":
         sensor_config = yaml.safe_load(f)["sensor"]
         sensor = Sensor(**sensor_config)
     project_folder = "/home/oxford_spires_dataset/data/2024-03-13-observatory-quarter-01"
-    recon_benchmark = ReconstructionBenchmark(project_folder, sensor)
+    recon_benchmark = ReconstructionBenchmark(project_folder, gt_folder, sensor)
     recon_benchmark.load_lidar_gt_transform()
     recon_benchmark.process_gt_cloud()
     recon_benchmark.process_lidar_clouds()
