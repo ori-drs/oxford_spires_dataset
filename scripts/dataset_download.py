@@ -9,10 +9,18 @@ logger = logging.getLogger(__name__)
 repo_id = "ori-drs/oxford_spires_dataset"
 download_sequences = True
 download_ground_truth = True
-dataset_sequences = ["2024-03-13-observatory-quarter-01", "2024-03-14-blenheim-05"]
+dataset_sequences = [
+    "2024-03-12-keble-college-04",
+    "2024-03-13-observatory-quarter-01",
+    "2024-03-14-blenheim-palace-05",
+]
 file_lists = ["images.zip", "lidar_slam.zip", "T_gt_lidar.txt"]
 
-ground_truth_lists = ["observatory-quarter", "blenheim-palace"]
+ground_truth_lists = [
+    "blenheim-palace",
+    "keble-college",
+    "observatory-quarter",
+]
 ground_truth_lists = [f"ground_truth_cloud/{site}" for site in ground_truth_lists]
 cloud_file = "individual_cloud_e57.zip"
 
