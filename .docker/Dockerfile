@@ -137,7 +137,7 @@ ENV UNAME=docker_dev
 RUN addgroup --gid $GID $UNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $UNAME
 
-ARG SPIRES_DIR=/home/oxford_spires_dataset
+ARG SPIRES_DIR=/home/${UNAME}/oxford_spires_dataset
 WORKDIR ${SPIRES_DIR}
 
 COPY ./requirements.txt ${SPIRES_DIR}/requirements.txt
@@ -151,7 +151,7 @@ RUN mkdir /home/${UNAME}/.cache
 
 # Make the outputs of the container match the host
 
-RUN chown -R ${UID}:${GID} ${SPIRES_DIR}
+RUN chown -R ${UID}:${GID} /home/${UNAME}
 USER ${UNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
 RUN echo "alias recon_benchmark=\"python ${SPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
