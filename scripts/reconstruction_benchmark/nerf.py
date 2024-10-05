@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -26,22 +27,24 @@ def generate_nerfstudio_config(
 
 
 def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
-    ns_dir = Path(ns_dir)
-    colmap_dir = Path(colmap_dir)
-    image_dir = Path(image_dir)
+    ns_dir = Path(ns_dir).resolve()
+    colmap_dir = Path(colmap_dir).resolve()
+    image_dir = Path(image_dir).resolve()
     # Ensure ns_dir exists
     ns_dir.mkdir(parents=True, exist_ok=True)
 
     # Symlink image_dir to ns_dir
     image_symlink = ns_dir / image_dir.name
     if not image_symlink.exists():
-        image_symlink.symlink_to(image_dir)
+        relative_image_dir = Path(os.path.relpath(str(image_dir.parent), str(ns_dir))) / image_dir.name
+        image_symlink.symlink_to(relative_image_dir)
 
     # Symlink contents of colmap_dir to ns_dir
     for item in colmap_dir.iterdir():
         item_symlink = ns_dir / item.name
         if not item_symlink.exists():
-            item_symlink.symlink_to(item)
+            relative_item = Path(os.path.relpath(str(colmap_dir), str(ns_dir))) / item.name
+            item_symlink.symlink_to(relative_item)
 
 
 def update_argv(nerfstudio_config):
