@@ -147,10 +147,16 @@ class ReconstructionBenchmark:
         )
         export_json(
             input_bin_dir=self.colmap_output_folder / "dense" / "sparse",
-            json_file_name="transforms_undistorted.json",
-            output_dir=self.colmap_output_folder,
+            json_file_name="transforms.json",
+            output_dir=self.colmap_output_folder / "dense",
+            db_file=self.colmap_output_folder / "database.db",
         )
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
+        create_nerfstudio_dir(
+            self.colmap_output_folder / "dense",
+            self.ns_data_dir.with_name(self.ns_data_dir.name + "_undistorted"),
+            self.ns_data_dir / "dense" / self.image_folder.name,
+        )
 
     def run_openmvs(self):
         # check if multiple sparse folders exist
