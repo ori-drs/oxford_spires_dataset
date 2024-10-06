@@ -144,7 +144,6 @@ class ReconstructionBenchmark:
             self.colmap_sparse_0_folder,
             json_file_name="transforms.json",
             output_dir=self.colmap_output_folder,
-            camera_model=camera_model,
         )
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
 

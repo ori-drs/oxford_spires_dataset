@@ -156,7 +156,7 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
         json.dump(data, f, indent=2)
 
 
-def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir=None, camera_model="OPENCV_FISHEYE"):
+def export_json(input_bin_dir, json_file_name="transforms.json", output_dir=None):
     logger.info("Exporting COLMAP to json file")
     camera_mask_path = None
     input_bin_dir = Path(input_bin_dir)
@@ -178,7 +178,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         c2w = np.linalg.inv(w2c)  # this is the coordinate for openMVS
         c2w = get_nerf_pose(c2w)
 
-        frame = generate_json_camera_data(camera, camera_model)
+        frame = generate_json_camera_data(camera)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
         frame["transform_matrix"] = c2w.tolist()
         frame["colmap_img_id"] = img_id
@@ -188,7 +188,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         frames.append(frame)
 
     out = {}
-    out["camera_model"] = camera_model
+    out["camera_model"] = camera.model
     out["frames"] = frames
     num_frame_matched = len(frames)
 
@@ -204,8 +204,9 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         json.dump(out, f, indent=4)
 
 
-def generate_json_camera_data(camera, camera_model):
-    assert camera_model in ["OPENCV_FISHEYE", "OPENCV"]
+def generate_json_camera_data(camera):
+    camera_model = camera.model
+    assert camera_model in ["OPENCV_FISHEYE", "OPENCV", "PINHOLE"]
     data = {
         "fl_x": float(camera.params[0]),
         "fl_y": float(camera.params[1]),
