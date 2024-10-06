@@ -73,7 +73,6 @@ class ReconstructionBenchmark:
 
         self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
         self.metric_json_filename = "transforms_metric.json"
-        self.ns_model_dir = self.ns_data_dir / "trained_models"
         logger.info(f"Project folder: {self.project_folder}")
 
         self.lidar_cloud_merged_path = self.recon_benchmark_dir / "lidar_cloud_merged.pcd"
@@ -204,9 +203,11 @@ class ReconstructionBenchmark:
         if not ns_metric_json_file.exists():
             ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
 
-    def run_nerfstudio(self, method="nerfacto", json_filename="transforms_metric.json"):
-        assert self.ns_data_dir.exists(), f"nerfstudio directory not found at {self.ns_data_dir}"
-        ns_config = generate_nerfstudio_config(method, self.ns_data_dir / json_filename, self.ns_model_dir)
+    def run_nerfstudio(self, method="nerfacto", ns_data_dir=None, json_filename="transforms_metric.json"):
+        ns_data_dir = self.ns_data_dir if ns_data_dir is None else Path(ns_data_dir)
+        ns_model_dir = ns_data_dir / "trained_models"
+        assert ns_data_dir.exists(), f"nerfstudio directory not found at {ns_data_dir}"
+        ns_config = generate_nerfstudio_config(method, ns_data_dir / json_filename, ns_model_dir)
         final_cloud_file = run_nerfstudio(ns_config)
         final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
 
@@ -240,5 +241,7 @@ if __name__ == "__main__":
     recon_benchmark.run_openmvs()
     recon_benchmark.compute_sim3()
     recon_benchmark.evaluate_reconstruction(recon_benchmark.scaled_mvs_cloud_gt_frame_file)
+    undistorted_ns_dir = recon_benchmark.ns_data_dir.with_name(recon_benchmark.ns_data_dir.name + "_undistorted")
+    # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms.json", ns_data_dir=undistorted_ns_dir)
     recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_metric.json")
     recon_benchmark.run_nerfstudio("splatfacto")
