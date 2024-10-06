@@ -69,7 +69,7 @@ class ReconstructionBenchmark:
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
         self.mvs_output_folder = self.output_folder / "mvs"
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
-        self.mvs_max_image_size = 600
+        self.colmap_undistort_max_image_size = 600
 
         self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
         self.metric_json_filename = "transforms_metric.json"
@@ -133,7 +133,13 @@ class ReconstructionBenchmark:
 
     def run_colmap(self, matcher="vocab_tree_matcher"):
         camera_model = "OPENCV_FISHEYE"
-        run_colmap(self.image_folder, self.colmap_output_folder, matcher=matcher, camera_model=camera_model)
+        run_colmap(
+            self.image_folder,
+            self.colmap_output_folder,
+            matcher=matcher,
+            camera_model=camera_model,
+            max_image_size=self.colmap_undistort_max_image_size,
+        )
         export_json(
             self.colmap_sparse_0_folder,
             json_file_name="transforms.json",
@@ -152,7 +158,6 @@ class ReconstructionBenchmark:
             self.colmap_output_folder,
             self.colmap_sparse_0_folder,
             self.mvs_output_folder,
-            self.mvs_max_image_size,
             self.openmvs_bin,
         )
 

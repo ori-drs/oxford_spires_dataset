@@ -50,7 +50,12 @@ def get_vocab_tree(image_num) -> Path:
 
 
 def run_colmap(
-    image_path, output_path, camera_model="OPENCV_FISHEYE", matcher="vocab_tree_matcher", loop_detection_period=10
+    image_path,
+    output_path,
+    camera_model="OPENCV_FISHEYE",
+    matcher="vocab_tree_matcher",
+    loop_detection_period=10,
+    max_image_size=1000,
 ):
     logger.debug(f"Running colmap; img_path {image_path}; output: {output_path}, {camera_model}")
     assert camera_model in camera_model_list, f"{camera_model} not supported. Supported models: {camera_model_list}"
@@ -110,6 +115,18 @@ def run_colmap(
     colmap_ba_cmd = " ".join(colmap_ba_cmd)
     logger.info(f"Running {colmap_ba_cmd}")
     run_command(colmap_ba_cmd, print_command=False)
+
+    colmap_image_undistorter_cmd = [
+        "colmap image_undistorter",
+        f"--image_path {image_path}",
+        f"--input_path {sparse_0_path}",
+        f"--output_path {output_path/'dense'}",
+        "--output_type COLMAP",
+        f"--max_image_size {max_image_size}",
+    ]
+    colmap_image_undistorter_cmd = " ".join(colmap_image_undistorter_cmd)
+    logger.info(f"Running {colmap_image_undistorter_cmd}")
+    run_command(colmap_image_undistorter_cmd, print_command=False)
 
     # from nerfstudio.process_data.colmap_utils import colmap_to_json
     # num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)

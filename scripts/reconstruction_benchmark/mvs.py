@@ -52,23 +52,10 @@ def run_colmap_mvs(image_path, colmap_output_path, sparse_folder, max_image_size
     run_command(colmap_delauany_mesh_filter_cmd, print_command=True)
 
 
-def run_openmvs(
-    image_path, colmap_output_path, sparse_folder, mvs_dir, max_image_size, openmvs_bin="/usr/local/bin/OpenMVS"
-):
+def run_openmvs(image_path, colmap_output_path, sparse_folder, mvs_dir, openmvs_bin="/usr/local/bin/OpenMVS"):
     logger.info(f"Running OpenMVS; img_path {image_path}; output: {mvs_dir}")
     colmap_output_path = Path(colmap_output_path)
     mvs_dir.mkdir(parents=True, exist_ok=True)
-
-    colmap_image_undistorter_cmd = [
-        "colmap image_undistorter",
-        f"--image_path {image_path}",
-        f"--input_path {sparse_folder}",
-        f"--output_path {colmap_output_path/'dense'}",
-        "--output_type COLMAP",
-        f"--max_image_size {max_image_size}",
-    ]
-    colmap_image_undistorter_cmd = " ".join(colmap_image_undistorter_cmd)
-    run_command(colmap_image_undistorter_cmd, print_command=True)
 
     # Export to openMVS
     export_cmd = [
