@@ -9,7 +9,7 @@ import open3d as o3d
 import yaml
 from mvs import rescale_openmvs_cloud, run_openmvs, transform_cloud_to_gt_frame
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
-from sfm import rescale_colmap_json, run_colmap
+from sfm import export_json, rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.eval import get_recon_metrics, save_error_cloud
@@ -64,7 +64,8 @@ class ReconstructionBenchmark:
         self.gt_cloud_individual_e57_folder = self.gt_folder / "individual_cloud_e57"
         self.gt_cloud_individual_pcd_folder = self.gt_folder / "individual_cloud_pcd"
 
-        self.colmap_sparse_folder = self.colmap_output_folder / "sparse" / "0"
+        self.colmap_sparse_folder = self.colmap_output_folder / "sparse"
+        self.colmap_sparse_0_folder = self.colmap_sparse_folder / "0"
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
         self.mvs_output_folder = self.output_folder / "mvs"
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
@@ -131,7 +132,14 @@ class ReconstructionBenchmark:
         )
 
     def run_colmap(self, matcher="vocab_tree_matcher"):
-        run_colmap(self.image_folder, self.colmap_output_folder, matcher=matcher)
+        camera_model = "OPENCV_FISHEYE"
+        run_colmap(self.image_folder, self.colmap_output_folder, matcher=matcher, camera_model=camera_model)
+        export_json(
+            self.colmap_sparse_0_folder,
+            json_file_name="transforms.json",
+            output_dir=self.colmap_output_folder,
+            camera_model=camera_model,
+        )
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
 
     def run_openmvs(self):

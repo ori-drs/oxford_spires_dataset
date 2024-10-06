@@ -69,9 +69,6 @@ def run_colmap(
     colmap_feature_extractor_cmd = " ".join(colmap_feature_extractor_cmd)
     logger.info(f"Running {colmap_feature_extractor_cmd}")
     run_command(colmap_feature_extractor_cmd, print_command=False)
-    colmap_db = COLMAPDatabase.connect(database_path)
-    total_image_num = colmap_db.execute("SELECT COUNT(*) FROM images").fetchone()[0]
-    logger.debug(f"Total number of images in COLMAP database: {total_image_num}")
 
     image_num = len(list(image_path.rglob("*")))
     colmap_matcher_cmd = [
@@ -116,13 +113,6 @@ def run_colmap(
 
     # from nerfstudio.process_data.colmap_utils import colmap_to_json
     # num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
-    logger.info("Exporting COLMAP to json file")
-    num_frame_matched = export_json(
-        sparse_0_path, json_file_name="transforms.json", output_dir=output_path, camera_model=camera_model
-    )
-    logger.info(
-        f"COLMAP matched {num_frame_matched} / {total_image_num} images {num_frame_matched / total_image_num * 100:.2f}%"
-    )
 
 
 def rescale_colmap_json(json_file, sim3_matrix, output_file):
@@ -150,10 +140,12 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
 
 
 def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir=None, camera_model="OPENCV_FISHEYE"):
+    logger.info("Exporting COLMAP to json file")
     camera_mask_path = None
     input_bin_dir = Path(input_bin_dir)
     cameras_path = input_bin_dir / "cameras.bin"
     images_path = input_bin_dir / "images.bin"
+    database_path = output_dir / "database.db"
     output_dir = input_bin_dir if output_dir is None else Path(output_dir)
 
     cameras = read_cameras_binary(cameras_path)
@@ -181,12 +173,18 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
     out = {}
     out["camera_model"] = camera_model
     out["frames"] = frames
+    num_frame_matched = len(frames)
+
+    colmap_db = COLMAPDatabase.connect(database_path)
+    total_image_num = colmap_db.execute("SELECT COUNT(*) FROM images").fetchone()[0]
+    logger.info(
+        f"COLMAP matched {num_frame_matched} / {total_image_num} images {num_frame_matched / total_image_num * 100:.2f}%"
+    )
 
     # Save for scale adjustment later
     assert json_file_name[-5:] == ".json"
     with open(output_dir / json_file_name, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=4)
-    return len(frames)
 
 
 def generate_json_camera_data(camera, camera_model):
