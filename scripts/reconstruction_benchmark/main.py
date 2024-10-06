@@ -150,7 +150,7 @@ class ReconstructionBenchmark:
         run_openmvs(
             self.image_folder,
             self.colmap_output_folder,
-            self.colmap_sparse_folder,
+            self.colmap_sparse_0_folder,
             self.mvs_output_folder,
             self.mvs_max_image_size,
             self.openmvs_bin,
