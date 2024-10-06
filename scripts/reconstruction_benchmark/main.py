@@ -145,6 +145,11 @@ class ReconstructionBenchmark:
             json_file_name="transforms.json",
             output_dir=self.colmap_output_folder,
         )
+        export_json(
+            input_bin_dir=self.colmap_output_folder / "dense" / "sparse",
+            json_file_name="transforms_undistorted.json",
+            output_dir=self.colmap_output_folder,
+        )
         create_nerfstudio_dir(self.colmap_output_folder, self.ns_data_dir, self.image_folder)
 
     def run_openmvs(self):
