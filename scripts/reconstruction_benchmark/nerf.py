@@ -63,6 +63,8 @@ def update_argv(nerfstudio_config):
 
 
 def run_nerfstudio(ns_config):
+    logger.info(f"Running '{ns_config['method']}' on {ns_config['data']}")
+    logging.disable(logging.DEBUG)
     update_argv(ns_config)
     train_entrypoint()
     sys.argv = [sys.argv[0]]
@@ -75,8 +77,10 @@ def run_nerfstudio(ns_config):
     latest_output_config = lastest_output_folder / "config.yml"
 
     # evaluate renders
+    logger.info(f"Evaluating from {lastest_output_folder}")
     render_dir = lastest_output_folder / "renders"
     run_nerfstudio_eval(latest_output_config, render_dir)
+    logging.disable(logging.NOTSET)
 
     # export cloud
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
@@ -99,7 +103,7 @@ def run_nerfstudio_eval(config_file, render_dir):
     }
     update_argv(eval_config)
     eval_entrypoint()
-    logger.info(f"Eval results: {json.load(output_eval_file.open())}")
+    logger.info(f"Nerfstudio eval results\n{json.load(output_eval_file.open())}")
     sys.argv = [sys.argv[0]]
 
 
