@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import open3d as o3d
+from nerfstudio.scripts.eval import entrypoint as eval_entrypoint
 from nerfstudio.scripts.exporter import entrypoint as exporter_entrypoint
 from nerfstudio.scripts.train import entrypoint as train_entrypoint
 
@@ -67,16 +68,33 @@ def run_nerfstudio(ns_config):
     output_log_dir = Path(ns_config["output-dir"]) / folder_name / ns_config["method"]
     lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
     latest_output_config = lastest_output_folder / "config.yml"
+
+    # evaluate renders
+    render_dir = lastest_output_folder / "renders"
+    run_nerfstudio_eval(latest_output_config, render_dir)
+
+    # export cloud
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
     output_cloud_file = run_nerfstudio_exporter(latest_output_config, export_method)
     ns_se3, scale_matrix = load_ns_transform(lastest_output_folder)
     cloud = o3d.io.read_point_cloud(str(output_cloud_file))
-
     cloud.transform(scale_matrix)
     cloud.transform(np.linalg.inv(ns_se3))
     final_metric_cloud_file = output_cloud_file.with_name(f'{ns_config["method"]}_cloud_metric.ply')
     o3d.io.write_point_cloud(str(final_metric_cloud_file), cloud)
     return final_metric_cloud_file
+
+
+def run_nerfstudio_eval(config_file, render_dir):
+    output_eval_file = config_file.parent / "eval_results.json"
+    eval_config = {
+        "load-config": config_file,
+        "output-path": output_eval_file,
+        "render-output-path": render_dir,
+    }
+    update_argv(eval_config)
+    eval_entrypoint()
+    sys.argv = [sys.argv[0]]
 
 
 def run_nerfstudio_exporter(config_file, export_method):
