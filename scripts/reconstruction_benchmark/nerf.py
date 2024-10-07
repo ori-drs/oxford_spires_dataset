@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -10,6 +11,8 @@ from nerfstudio.scripts.exporter import entrypoint as exporter_entrypoint
 from nerfstudio.scripts.train import entrypoint as train_entrypoint
 
 from oxford_spires_utils.bash_command import print_with_colour
+
+logger = logging.getLogger(__name__)
 
 
 def generate_nerfstudio_config(
@@ -96,6 +99,7 @@ def run_nerfstudio_eval(config_file, render_dir):
     }
     update_argv(eval_config)
     eval_entrypoint()
+    logger.info(f"Eval results: {json.load(output_eval_file.open())}")
     sys.argv = [sys.argv[0]]
 
 
