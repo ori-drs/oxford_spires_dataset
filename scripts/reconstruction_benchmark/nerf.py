@@ -65,7 +65,9 @@ def run_nerfstudio(ns_config):
     sys.argv = [sys.argv[0]]
     ns_data = Path(ns_config["data"])
     folder_name = ns_data.name if ns_data.is_dir() else ns_data.parent.name
-    output_log_dir = Path(ns_config["output-dir"]) / folder_name / ns_config["method"]
+    # rename nerfacto-big or nerfacto-huge to nerfacto, splatfacto-big to splatfacto
+    method_dir_name = ns_config["method"].replace("-big", "").replace("-huge", "")
+    output_log_dir = Path(ns_config["output-dir"]) / folder_name / method_dir_name
     lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
     latest_output_config = lastest_output_folder / "config.yml"
 
