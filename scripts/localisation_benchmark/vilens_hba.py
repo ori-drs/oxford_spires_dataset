@@ -5,6 +5,7 @@ sys.path.append("/home/oxford_spires_dataset")
 
 from oxford_spires_utils.bash_command import run_command
 
+
 def evaluation_ape_rmse (path_gt, path_traj):
     
     output = run_command("evo_ape tum {} {} --align_origin --t_max_diff 0.01".format(path_gt, path_traj), print_output=False)
