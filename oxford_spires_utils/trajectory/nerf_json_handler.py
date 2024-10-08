@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 
-class JsonHandler:
+class NeRFJsonHandler:
     # remember to create a copy of the json when removing,
     # otherwise frames will be skipped
     def __init__(self, input_json_path) -> None:
