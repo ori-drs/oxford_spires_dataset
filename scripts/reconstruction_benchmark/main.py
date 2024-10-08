@@ -174,6 +174,7 @@ class ReconstructionBenchmark:
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
         rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(self.lidar_slam_traj_file).read_file()
+        pose_to_ply(lidar_slam_traj, self.colmap_output_folder / "lidar_slam_traj.ply", [1.0, 0.0, 0.0])
         camera_alignment = self.sensor.get_camera(self.camera_for_alignment)
         valid_folder_path = "images/" + Sensor.convert_camera_topic_to_folder_name(camera_alignment.topic)
         logger.info(f'Loading only "{self.camera_for_alignment}" with directory "{valid_folder_path}" from json file')
@@ -189,6 +190,8 @@ class ReconstructionBenchmark:
         # T_lidar_colmap = align(lidar_slam_traj, colmap_traj_single_cam, self.colmap_output_folder)
         T_lidar_colmap = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
         rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
+        rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
+        pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
         self.scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
         rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, self.scaled_mvs_cloud_file)
@@ -196,9 +199,6 @@ class ReconstructionBenchmark:
         transform_cloud_to_gt_frame(
             self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file
         )
-        rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
-        pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
-        pose_to_ply(lidar_slam_traj, self.colmap_output_folder / "lidar_slam_traj.ply", [1.0, 0.0, 0.0])
         ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
         if not ns_metric_json_file.exists():
             ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
