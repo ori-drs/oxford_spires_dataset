@@ -1,10 +1,15 @@
 import os
 import sys
 import time
+import re
+import logging
+
+from evo.tools import file_interface
 
 import libtmux
 
-sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
+package_dir = "/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset"
+sys.path.append(package_dir)
 
 from oxford_spires_utils.bash_command import run_command
 
@@ -43,17 +48,15 @@ def run_immesh (path_to_rosbag, path_to_output):
         cap_curr = pane_2.capture_pane()
         for line in cap_curr:
             if "[RUNNING]" in line:
+                t  = time.time()
                 print(line)
                 sys.stdout.write("\033[F")
             if 'Done.' in line:
+                t  = time.time()
                 sys.stdout.write("\033[K")
                 print('Done.') 
                 break
-        if 'Done.' in cap_curr: # To avoid missings
-            sys.stdout.write("\033[K")
-            print('Done.') 
-            break
-        if (time.time() - t) > 1200.0: # To avoid infinite
+        if (time.time() - t) > 20.0: # To avoid infinite
             print('Timeout!!')
             break
     
@@ -62,8 +65,6 @@ def run_immesh (path_to_rosbag, path_to_output):
     time.sleep(3)
     
     if os.path.exists("{}/immesh_path.bag.active".format(path_to_output)):
-        print("{}/immesh_path.bag.active".format(path_to_output))
-        print(os.path.exists("{}/immesh_path.bag.active".format(path_to_output)))
 
         run_command("rosbag reindex {}/immesh_path.bag.active".format(path_to_output), print_output=True)
 
@@ -105,22 +106,20 @@ def convert_to_tum (path_to_output):
         cap_curr = pane_2.capture_pane()
         for line in cap_curr:
             if "[RUNNING]" in line:
+                t  = time.time()
                 print(line)
                 sys.stdout.write("\033[F")
             if 'Done.' in line:
+                t  = time.time()
                 sys.stdout.write("\033[K")
                 print('Done.') 
                 break
-        if 'Done.' in cap_curr: # To avoid missings
-            sys.stdout.write("\033[K")
-            print('Done.') 
-            break
-        if (time.time() - t) > 1200.0: # To avoid infinite
+        if (time.time() - t) > 20.0: # To avoid infinite
             print('Timeout!!')
             break
 
     print("PROCESS FINISHED!!")
-    print("Output in: {}/ImMesh_tum.txt".format(path_to_output))
+    print("Output in: {}/immesh_tum.txt".format(path_to_output))
     print("*********************************************************")
 
     server.kill()
@@ -131,13 +130,44 @@ def create_output_folder (path_to_sec):
             os.makedirs(path_to_output)
     return path_to_output
 
+def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir):
+
+    traj_tum_pose = file_interface.read_tum_trajectory_file(path_to_output + "/immesh_tum.txt")
+    gt_tum_pose = file_interface.read_tum_trajectory_file(path_to_gt)
+    t_offset = gt_tum_pose.timestamps[0] - traj_tum_pose.timestamps[0]
+    print(t_offset)
+
+    run_command("cd {} && evo_traj tum immesh_tum.txt --t_offset {} --transform_right {}/scripts/localisation_benchmark/tf.json  --save_as_tum".format(path_to_output, t_offset, package_dir), print_output=True)
+
+    time.sleep(5)
+
+    old_file = os.path.join(path_to_output, "immesh_tum.tum")
+    path_traj = os.path.join(path_to_sec + "/output_slam", "immesh_tum.txt")
+    os.rename(old_file, path_traj)
+
+    output = run_command("evo_ape tum {} {} --align --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
+    
+    for line in output.stdout:
+        print(line, end="")
+        if "rmse" in line:
+            numbers = re.findall('\d+\.\d+|\d+', line)
+            rmse = numbers[0]
+    
+    logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
+    logging.info(path_to_sec)
+    logging.info("APE - RMSE result: {}".format(rmse))
+    print("RMSE added to log: {}".format(rmse))
+
+
 def get_sec_list (dataset_dir, flag_is_all=True):
     if flag_is_all:
         list_sec = os.listdir(dataset_dir)
     else:
-        list_sec = ["2024-03-12-keble-college-03",
-                    "2024-03-12-keble-college-04",
-                    "2024-03-12-keble-college-05",
+        list_sec = [
+                    # "2024-03-12-keble-college-02",
+                    # "2024-03-12-keble-college-03",
+                    # "2024-03-12-keble-college-04",
+                    # "2024-03-12-keble-college-05",
                     "2024-03-13-observatory-quarter-01",
                     "2024-03-13-observatory-quarter-02",
                     "2024-03-14-blenheim-palace-01",
@@ -156,8 +186,11 @@ def get_sec_list (dataset_dir, flag_is_all=True):
 
 if __name__ == "__main__":
 
-    dataset_dir = '/media/mice85/blackdrive1/oxford_spires_dataset/data/' # TODO: get path from arg an define folders in the future class.
+    # -------------------------------------------------------------------------------- #
+    # TODO: get path from arg an define folders in the future class.
+    dataset_dir = "/media/mice85/blackdrive1/oxford_spires_dataset/data/" 
     flag_is_all = False
+    # -------------------------------------------------------------------------------- #
 
     list_sec = get_sec_list (dataset_dir, flag_is_all)
     
@@ -168,7 +201,7 @@ if __name__ == "__main__":
 
         path_to_sec = dataset_dir + sec
         path_to_rosbag = path_to_sec + "/rosbag/"
-
+        path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
         path_to_output = create_output_folder (path_to_sec)
 
         run_immesh (path_to_rosbag, path_to_output)
@@ -178,3 +211,7 @@ if __name__ == "__main__":
         convert_to_tum (path_to_output)
 
         time.sleep(5)
+
+        eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir)
+
+        # break
