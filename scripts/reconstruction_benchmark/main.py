@@ -203,12 +203,16 @@ class ReconstructionBenchmark:
         if not ns_metric_json_file.exists():
             ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
 
-    def run_nerfstudio(self, method="nerfacto", ns_data_dir=None, json_filename="transforms_metric.json"):
+    def run_nerfstudio(
+        self, method="nerfacto", ns_data_dir=None, json_filename="transforms_metric.json", eval_mode="fraction"
+    ):
         ns_data_dir = self.ns_data_dir if ns_data_dir is None else Path(ns_data_dir)
         ns_model_dir = ns_data_dir / "trained_models"
         assert ns_data_dir.exists(), f"nerfstudio directory not found at {ns_data_dir}"
-        ns_config = generate_nerfstudio_config(method, ns_data_dir / json_filename, ns_model_dir, iterations=5000)
-        final_cloud_file = run_nerfstudio(ns_config)
+        ns_config, ns_data_config = generate_nerfstudio_config(
+            method, ns_data_dir / json_filename, ns_model_dir, eval_mode=eval_mode
+        )
+        final_cloud_file = run_nerfstudio(ns_config, ns_data_config)
         final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
 
     def evaluate_reconstruction(self, input_cloud_path):

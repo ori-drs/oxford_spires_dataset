@@ -16,18 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 def generate_nerfstudio_config(
-    method, data_dir, output_dir, iterations=5000, eval_step=500, vis="wandb", cam_opt_mode="off"
+    method, data_dir, output_dir, iterations=5000, eval_step=500, vis="wandb", cam_opt_mode="off", eval_mode="fraction"
 ):
+    exp_name = Path(data_dir).name if Path(data_dir).is_dir() else Path(data_dir).parent.name
     ns_config = {
         "method": method,
-        "data": str(data_dir),
+        "experiment-name": str(exp_name),
         "output-dir": str(output_dir),
         "vis": vis,
         "max-num-iterations": iterations,
         "pipeline.model.camera-optimizer.mode": cam_opt_mode,
         "steps-per-eval-image": eval_step,
     }
-    return ns_config
+    ns_data_config = {
+        "dataparser": "nerfstudio-data",
+        "data": str(data_dir),
+        "eval-mode": eval_mode,
+    }
+    return ns_config, ns_data_config
 
 
 def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
@@ -51,10 +57,11 @@ def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
             item_symlink.symlink_to(relative_item)
 
 
-def update_argv(nerfstudio_config):
-    assert sys.argv[0].endswith(".py") and len(sys.argv) == 1, "No args should be provided for the script"
+def update_argv(nerfstudio_config, follow_up=False):
+    if not follow_up:
+        assert sys.argv[0].endswith(".py") and len(sys.argv) == 1, "No args should be provided for the script"
     for k, v in nerfstudio_config.items():
-        if k == "method":
+        if k in ("method", "dataparser"):
             sys.argv.append(f"{v}")
         else:
             sys.argv.append(f"--{k}")
@@ -62,14 +69,14 @@ def update_argv(nerfstudio_config):
     print_with_colour(" ".join(sys.argv))
 
 
-def run_nerfstudio(ns_config):
-    logger.info(f"Running '{ns_config['method']}' on {ns_config['data']}")
+def run_nerfstudio(ns_config, ns_data_config):
+    logger.info(f"Running '{ns_config['method']}' on {ns_data_config['data']}")
     logging.disable(logging.DEBUG)
     update_argv(ns_config)
+    update_argv(ns_data_config, follow_up=True)
     train_entrypoint()
     sys.argv = [sys.argv[0]]
-    ns_data = Path(ns_config["data"])
-    folder_name = ns_data.name if ns_data.is_dir() else ns_data.parent.name
+    folder_name = ns_config["experiment-name"]
     # rename nerfacto-big or nerfacto-huge to nerfacto, splatfacto-big to splatfacto
     method_dir_name = ns_config["method"].replace("-big", "").replace("-huge", "")
     output_log_dir = Path(ns_config["output-dir"]) / folder_name / method_dir_name
