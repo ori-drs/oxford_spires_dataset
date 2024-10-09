@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_nerfstudio_config(
-    method, data_dir, output_dir, iterations=30000, eval_step=500, vis="wandb", cam_opt_mode="off"
+    method, data_dir, output_dir, iterations=5000, eval_step=500, vis="wandb", cam_opt_mode="off"
 ):
     ns_config = {
         "method": method,
