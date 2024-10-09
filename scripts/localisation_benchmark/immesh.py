@@ -1,15 +1,13 @@
+import logging
 import os
+import re
 import sys
 import time
-import re
-import logging
-
-from evo.tools import file_interface
 
 import libtmux
+from evo.tools import file_interface
 
-package_dir = "/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset"
-sys.path.append(package_dir)
+sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
 from oxford_spires_utils.bash_command import run_command
 
@@ -188,6 +186,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------------------------- #
     # TODO: get path from arg an define folders in the future class.
+    package_dir = "/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset"
     dataset_dir = "/media/mice85/blackdrive1/oxford_spires_dataset/data/" 
     flag_is_all = False
     # -------------------------------------------------------------------------------- #
@@ -214,4 +213,4 @@ if __name__ == "__main__":
 
         eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir)
 
-        # break
+        break
