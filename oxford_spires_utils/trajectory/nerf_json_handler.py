@@ -56,6 +56,21 @@ class NeRFJsonHandler:
                 print(f"removed {file_path} from json")
         print(f"filter_folder {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
 
+    def rename_filename(self, old_folder=None, new_folder=None, prefix="", suffix="", base_folder=None):
+        for frame in self.traj["frames"]:
+            file_path = Path(frame["file_path"])
+            if old_folder is not None and new_folder is not None:
+                assert str(file_path).startswith(old_folder), f"{file_path} does not start with {old_folder}"
+                new_file_path = Path(str(file_path).replace(old_folder, new_folder))
+            new_file_path = str(new_file_path.parent / (prefix + new_file_path.stem + suffix + new_file_path.suffix))
+            frame["file_path"] = new_file_path
+            if base_folder is not None:
+                abs_old_file = Path(base_folder) / file_path
+                assert abs_old_file.exists(), f"{abs_old_file} not exist"
+                abs_new_file = Path(base_folder) / new_file_path
+                abs_new_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(abs_old_file, abs_new_file)
+
     def keep_timestamp_only(self, start_time, end_time):
         frames_copy = self.traj["frames"].copy()
         for frame in frames_copy:
