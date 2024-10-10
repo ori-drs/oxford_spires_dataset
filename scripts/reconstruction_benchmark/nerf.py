@@ -84,7 +84,7 @@ def run_nerfstudio(ns_config, ns_data_config):
     latest_output_config = lastest_output_folder / "config.yml"
 
     # evaluate renders
-    logger.info(f"Evaluating from {lastest_output_folder}")
+    logger.info(f"Evaluating {latest_output_folder.name} from {lastest_output_folder}")
     render_dir = lastest_output_folder / "renders"
     run_nerfstudio_eval(latest_output_config, render_dir)
     logging.disable(logging.NOTSET)
