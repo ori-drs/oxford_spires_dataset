@@ -250,5 +250,10 @@ if __name__ == "__main__":
     # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
     # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
     # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
+    # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
+    # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
+    # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
+    # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
+
     recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_metric.json")
     recon_benchmark.run_nerfstudio("splatfacto")
