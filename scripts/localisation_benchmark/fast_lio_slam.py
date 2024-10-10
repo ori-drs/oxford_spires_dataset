@@ -5,10 +5,9 @@ import sys
 import time
 
 import libtmux
-
+import numpy as np
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface
-import numpy as np
 
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
@@ -126,10 +125,10 @@ def get_sec_list (dataset_dir, flag_is_all=True):
         list_sec = os.listdir(dataset_dir)
     else:
         list_sec = [
-                    "2024-03-12-keble-college-02",
-                    "2024-03-12-keble-college-03",
-                    "2024-03-12-keble-college-04",
-                    "2024-03-12-keble-college-05",
+                    # "2024-03-12-keble-college-02",
+                    # "2024-03-12-keble-college-03",
+                    # "2024-03-12-keble-college-04",
+                    # "2024-03-12-keble-college-05",
                     # "2024-03-13-observatory-quarter-01",
                     # "2024-03-13-observatory-quarter-02",
                     # "2024-03-14-blenheim-palace-01",
