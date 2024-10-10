@@ -16,19 +16,19 @@ def get_sec_list (dataset_dir, flag_is_all=True):
                     "2024-03-12-keble-college-03",
                     "2024-03-12-keble-college-04",
                     "2024-03-12-keble-college-05",
-                    # "2024-03-13-observatory-quarter-01",
-                    # "2024-03-13-observatory-quarter-02",
-                    # "2024-03-14-blenheim-palace-01",
-                    # "2024-03-14-blenheim-palace-02",
-                    # "2024-03-14-blenheim-palace-05",
-                    # "2024-03-18-christ-church-01",
-                    # "2024-03-18-christ-church-02",
-                    # "2024-03-18-christ-church-03",
-                    # "2024-03-20-christ-church-05",
-                    # "2024-05-20-bodleian-library-02",
-                    # "2024-05-20-bodleian-library-03",
-                    # "2024-05-20-bodleian-library-04",
-                    # "2024-05-20-bodleian-library-05"
+                    "2024-03-13-observatory-quarter-01",
+                    "2024-03-13-observatory-quarter-02",
+                    "2024-03-14-blenheim-palace-01",
+                    "2024-03-14-blenheim-palace-02",
+                    "2024-03-14-blenheim-palace-05",
+                    "2024-03-18-christ-church-01",
+                    "2024-03-18-christ-church-02",
+                    "2024-03-18-christ-church-03",
+                    "2024-03-20-christ-church-05",
+                    "2024-05-20-bodleian-library-02",
+                    "2024-05-20-bodleian-library-03",
+                    "2024-05-20-bodleian-library-04",
+                    "2024-05-20-bodleian-library-05"
                     ]
     return list_sec
 
@@ -36,6 +36,7 @@ def evaluation_ape_rmse (path_to_gt, path_traj, dataset_dir, method):
     
     output = run_command("evo_ape tum {} {} --align --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
     
+    rmse = -1
     for line in output.stdout:
         print(line, end="")
         if "rmse" in line:
@@ -69,11 +70,11 @@ if __name__ == "__main__":
         path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
 
         print("RUNNING VILENS EVALUATION ...")
-        path_traj = path_to_sec + "/output_slam" + "/vilens_tum.txt"
+        path_traj = path_to_sec + "/output_slam" + "/vilens_poses_tum.txt"
         rmse = evaluation_ape_rmse (path_to_gt, path_traj, dataset_dir, "VILENS")
 
         file_name = "hba_poses_tum.txt"
-        path_traj = path_to_sec + "/output_slam" + "/hba_tum.txt"
+        path_traj = path_to_sec + "/output_slam" + "/hba_poses_tum.txt"
         print("RUNNING HBA EVALUATION ...")
-        rmse = evaluation_ape_rmse (path_gt, path_traj, dataset_dir, "HBA")
+        rmse = evaluation_ape_rmse (path_to_gt, path_traj, dataset_dir, "HBA")
     
