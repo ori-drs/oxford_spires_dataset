@@ -81,6 +81,8 @@ def run_immesh (path_to_rosbag, path_to_output):
     server.kill()
 
 def convert_to_tum (path_to_output):
+
+    print("Convert from ROS /path format to TUM!!")
     
     server = libtmux.Server()
     server.cmd('new-session', '-d', '-P', '-F#{session_id}')
@@ -123,8 +125,12 @@ def convert_to_tum (path_to_output):
             print('Timeout!!')
             break
 
+    old_file = os.path.join(path_to_output, "immesh_tum.txt")
+    path_traj = os.path.join(path_to_sec + "/output_slam", "immesh_tum.txt")
+    os.rename(old_file, path_traj)
+
     print("PROCESS FINISHED!!")
-    print("Output in: {}/immesh_tum.txt".format(path_to_output))
+    print("Output in: {}/output_slam/immesh_tum.txt".format(path_to_sec))
     print("*********************************************************")
 
     server.kill()
@@ -137,20 +143,8 @@ def create_output_folder (path_to_sec):
 
 def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir):
 
-    # traj_tum_pose = file_interface.read_tum_trajectory_file(path_to_output + "/immesh_tum.txt")
-    # gt_tum_pose = file_interface.read_tum_trajectory_file(path_to_gt)
-    # t_offset = 0.0; #gt_tum_pose.timestamps[0] - traj_tum_pose.timestamps[0]
-    # print(t_offset)
-
-    run_command("cd {} && evo_traj tum immesh_tum.txt --transform_right {}/scripts/localisation_benchmark/tf.json  --save_as_tum".format(path_to_output, package_dir), print_output=True)
-
-    time.sleep(5)
-
-    old_file = os.path.join(path_to_output, "immesh_tum.tum")
     path_traj = os.path.join(path_to_sec + "/output_slam", "immesh_tum.txt")
-    os.rename(old_file, path_traj)
-
-    output = run_command("evo_ape tum {} {} --align_origin --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
+    output = run_command("evo_ape tum {} {} --align --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
     
     rmse = -1
     for line in output.stdout:
@@ -161,12 +155,8 @@ def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_d
     
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
-    # if rmse > 0.0:
     logging.info("APE - RMSE result (ImMesh): {}".format(rmse))
     print("RMSE added to log: {}".format(rmse))
-    # else:
-    #     logging.info("No rmse calculated!!!")
-    #     print("No rmse calculated!!!")
 
 
 def get_sec_list (dataset_dir, flag_is_all=True):
@@ -215,13 +205,13 @@ if __name__ == "__main__":
         path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
         path_to_output = create_output_folder (path_to_sec)
 
-        run_immesh (path_to_rosbag, path_to_output)
+        # run_immesh (path_to_rosbag, path_to_output)
 
-        time.sleep(5)
+        # time.sleep(5)
 
-        convert_to_tum (path_to_output)
+        # convert_to_tum (path_to_output)
 
-        time.sleep(5)
+        # time.sleep(5)
 
         eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir)
 
