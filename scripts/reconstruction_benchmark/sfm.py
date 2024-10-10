@@ -55,6 +55,7 @@ def run_colmap(
     camera_model="OPENCV_FISHEYE",
     matcher="vocab_tree_matcher",
     loop_detection_period=10,
+    sift_max_num_features=8192,
     max_image_size=1000,
 ):
     logger.debug(f"Running colmap; img_path {image_path}; output: {output_path}, {camera_model}")
@@ -70,6 +71,7 @@ def run_colmap(
         f"--database_path {database_path}",
         "--ImageReader.single_camera_per_folder 1",
         f"--ImageReader.camera_model {camera_model}",
+        f"--SiftExtraction.max_num_features {sift_max_num_features}",
     ]
     colmap_feature_extractor_cmd = " ".join(colmap_feature_extractor_cmd)
     logger.info(f"Running {colmap_feature_extractor_cmd}")
