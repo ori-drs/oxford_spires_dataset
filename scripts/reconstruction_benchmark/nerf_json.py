@@ -26,6 +26,7 @@ def merge_json_files(json_train_file, json_eval_file, image_dir, new_image_dir, 
     json_train.rename_filename(
         old_folder="images", new_folder=new_image_dir.stem, prefix="train_", base_folder=str(Path(image_dir).parent)
     )
+    json_train.save_json(str(merged_json_file.with_name("transforms_train.json")))
     json_eval.rename_filename(
         old_folder="images", new_folder=new_image_dir.stem, prefix="eval_", base_folder=str(Path(image_dir).parent)
     )
