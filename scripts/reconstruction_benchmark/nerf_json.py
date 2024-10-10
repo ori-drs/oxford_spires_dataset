@@ -40,12 +40,12 @@ def merge_json_files(json_train_file, json_eval_file, image_dir, new_image_dir, 
 dataset_folder = "/home/docker_dev/oxford_spires_dataset/data/roq-full"
 
 train_name = "seq_1_fountain"
-start_time = 1710338123.042936934
-end_time = 1710338186.342030327
+train_start_time = 1710338123.042936934
+train_end_time = 1710338186.342030327
 
 eval_name = "seq_1_fountain_back"
-start_time = 1710338353.039451086
-end_time = 1710338386.638942551
+eval_start_time = 1710338353.039451086
+eval_end_time = 1710338386.638942551
 
 use_undistorted_image = True
 
@@ -57,8 +57,8 @@ json_file = colmap_folder / "transforms.json"
 
 train_save_path = Path(json_file).parent / f"{train_name}.json"
 eval_save_path = Path(json_file).parent / f"{eval_name}.json"
-split_json(json_file, start_time, end_time, train_save_path)
-split_json(json_file, start_time, end_time, eval_save_path)
+split_json(json_file, train_start_time, train_end_time, train_save_path)
+split_json(json_file, eval_start_time, eval_end_time, eval_save_path)
 
 
 image_dir = dataset_folder / "images" if not use_undistorted_image else colmap_folder / "images"
