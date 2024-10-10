@@ -5,7 +5,6 @@ import sys
 import time
 
 import libtmux
-from evo.tools import file_interface
 
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
@@ -40,6 +39,7 @@ def run_immesh (path_to_rosbag, path_to_output):
 
     # Check if the rosbag is "Done."
     t  = time.time()
+    flag_end = False
     while (1):
         pane_2.clear()
         time.sleep(1)
@@ -51,10 +51,13 @@ def run_immesh (path_to_rosbag, path_to_output):
                 sys.stdout.write("\033[F")
             if 'Done.' in line:
                 t  = time.time()
+                flag_end = True
                 sys.stdout.write("\033[K")
                 print('Done.') 
                 break
-        if (time.time() - t) > 20.0: # To avoid infinite
+        if flag_end:
+            break
+        if (time.time() - t) > 60.0: # To avoid infinite
             print('Timeout!!')
             break
     
@@ -98,6 +101,7 @@ def convert_to_tum (path_to_output):
 
     # Check if the rosbag is "Done."
     t  = time.time()
+    flag_end = False
     while (1):
         pane_2.clear()
         time.sleep(1)
@@ -109,10 +113,13 @@ def convert_to_tum (path_to_output):
                 sys.stdout.write("\033[F")
             if 'Done.' in line:
                 t  = time.time()
+                flag_end = True
                 sys.stdout.write("\033[K")
                 print('Done.') 
                 break
-        if (time.time() - t) > 20.0: # To avoid infinite
+        if flag_end:
+            break
+        if (time.time() - t) > 60.0: # To avoid infinite
             print('Timeout!!')
             break
 
@@ -130,12 +137,12 @@ def create_output_folder (path_to_sec):
 
 def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir):
 
-    traj_tum_pose = file_interface.read_tum_trajectory_file(path_to_output + "/immesh_tum.txt")
-    gt_tum_pose = file_interface.read_tum_trajectory_file(path_to_gt)
-    t_offset = gt_tum_pose.timestamps[0] - traj_tum_pose.timestamps[0]
-    print(t_offset)
+    # traj_tum_pose = file_interface.read_tum_trajectory_file(path_to_output + "/immesh_tum.txt")
+    # gt_tum_pose = file_interface.read_tum_trajectory_file(path_to_gt)
+    # t_offset = 0.0; #gt_tum_pose.timestamps[0] - traj_tum_pose.timestamps[0]
+    # print(t_offset)
 
-    run_command("cd {} && evo_traj tum immesh_tum.txt --t_offset {} --transform_right {}/scripts/localisation_benchmark/tf.json  --save_as_tum".format(path_to_output, t_offset, package_dir), print_output=True)
+    run_command("cd {} && evo_traj tum immesh_tum.txt --transform_right {}/scripts/localisation_benchmark/tf.json  --save_as_tum".format(path_to_output, package_dir), print_output=True)
 
     time.sleep(5)
 
@@ -143,8 +150,9 @@ def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_d
     path_traj = os.path.join(path_to_sec + "/output_slam", "immesh_tum.txt")
     os.rename(old_file, path_traj)
 
-    output = run_command("evo_ape tum {} {} --align --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
+    output = run_command("evo_ape tum {} {} --align_origin --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False)
     
+    rmse = -1
     for line in output.stdout:
         print(line, end="")
         if "rmse" in line:
@@ -153,8 +161,12 @@ def eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_d
     
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
-    logging.info("APE - RMSE result: {}".format(rmse))
+    # if rmse > 0.0:
+    logging.info("APE - RMSE result (ImMesh): {}".format(rmse))
     print("RMSE added to log: {}".format(rmse))
+    # else:
+    #     logging.info("No rmse calculated!!!")
+    #     print("No rmse calculated!!!")
 
 
 def get_sec_list (dataset_dir, flag_is_all=True):
@@ -162,23 +174,23 @@ def get_sec_list (dataset_dir, flag_is_all=True):
         list_sec = os.listdir(dataset_dir)
     else:
         list_sec = [
-                    # "2024-03-12-keble-college-02",
-                    # "2024-03-12-keble-college-03",
-                    # "2024-03-12-keble-college-04",
-                    # "2024-03-12-keble-college-05",
-                    "2024-03-13-observatory-quarter-01",
-                    "2024-03-13-observatory-quarter-02",
-                    "2024-03-14-blenheim-palace-01",
-                    "2024-03-14-blenheim-palace-02",
-                    "2024-03-14-blenheim-palace-05",
-                    "2024-03-18-christ-church-01",
-                    "2024-03-18-christ-church-02",
-                    "2024-03-18-christ-church-03",
-                    "2024-03-20-christ-church-05",
-                    "2024-05-20-bodleian-library-02",
-                    "2024-05-20-bodleian-library-03",
-                    "2024-05-20-bodleian-library-04",
-                    "2024-05-20-bodleian-library-05"
+                    "2024-03-12-keble-college-02",
+                    "2024-03-12-keble-college-03",
+                    "2024-03-12-keble-college-04",
+                    "2024-03-12-keble-college-05",
+                    # "2024-03-13-observatory-quarter-01",
+                    # "2024-03-13-observatory-quarter-02",
+                    # "2024-03-14-blenheim-palace-01",
+                    # "2024-03-14-blenheim-palace-02",
+                    # "2024-03-14-blenheim-palace-05",
+                    # "2024-03-18-christ-church-01",
+                    # "2024-03-18-christ-church-02",
+                    # "2024-03-18-christ-church-03",
+                    # "2024-03-20-christ-church-05",
+                    # "2024-05-20-bodleian-library-02",
+                    # "2024-05-20-bodleian-library-03",
+                    # "2024-05-20-bodleian-library-04",
+                    # "2024-05-20-bodleian-library-05"
                     ]
     return list_sec
 
@@ -199,7 +211,7 @@ if __name__ == "__main__":
     for sec in list_sec:
 
         path_to_sec = dataset_dir + sec
-        path_to_rosbag = path_to_sec + "/rosbag/"
+        path_to_rosbag = "/home/mice85/data/" + sec + "/rosbag/" #path_to_sec + "/rosbag/"
         path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
         path_to_output = create_output_folder (path_to_sec)
 
@@ -213,4 +225,4 @@ if __name__ == "__main__":
 
         eval_immesh (path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir)
 
-        break
+        # break
