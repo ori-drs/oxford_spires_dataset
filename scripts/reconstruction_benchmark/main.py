@@ -1,3 +1,4 @@
+import argparse
 import logging
 import shutil
 from copy import deepcopy
@@ -229,10 +230,22 @@ class ReconstructionBenchmark:
         save_error_cloud(input_cloud_np, gt_cloud_np, str(error_cloud_file))
 
 
+def get_args():
+    parser = argparse.ArgumentParser(description="Reconstruction Benchmark")
+    default_recon_config_file = Path(__file__).parent.parent.parent / "config" / "recon_benchmark.yaml"
+    parser.add_argument(
+        "--config-file",
+        type=str,
+        default=str(default_recon_config_file),
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
     setup_logging()
+    recon_config_file = get_args().config_file
     logger.info("Starting Reconstruction Benchmark")
-    with open(Path(__file__).parent.parent.parent / "config" / "recon_benchmark.yaml", "r") as f:
+    with open(recon_config_file, "r") as f:
         recon_config = yaml.safe_load(f)["reconstruction_benchmark"]
     with open(Path(__file__).parent.parent.parent / "config" / "sensor.yaml", "r") as f:
         sensor_config = yaml.safe_load(f)["sensor"]
