@@ -8,7 +8,7 @@ from oxford_spires_utils.trajectory.nerf_json_handler import NeRFJsonHandler
 from oxford_spires_utils.trajectory.utils import pose_to_ply
 
 
-def split_json(json_file, start_time, end_time, save_path):
+def select_json_with_time_range(json_file, start_time, end_time, save_path):
     nerf_json_handler = NeRFJsonHandler(json_file)
     nerf_json_handler.sort_frames()
     nerf_json_handler.keep_timestamp_only(start_time, end_time)
@@ -57,8 +57,8 @@ json_file = colmap_folder / "transforms.json"
 
 train_save_path = Path(json_file).parent / f"{train_name}.json"
 eval_save_path = Path(json_file).parent / f"{eval_name}.json"
-split_json(json_file, train_start_time, train_end_time, train_save_path)
-split_json(json_file, eval_start_time, eval_end_time, eval_save_path)
+select_json_with_time_range(json_file, train_start_time, train_end_time, train_save_path)
+select_json_with_time_range(json_file, eval_start_time, eval_end_time, eval_save_path)
 
 
 image_dir = dataset_folder / "images" if not use_undistorted_image else colmap_folder / "images"
