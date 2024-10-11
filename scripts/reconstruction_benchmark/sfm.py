@@ -188,6 +188,7 @@ def export_json(input_bin_dir, json_file_name="transforms.json", output_dir=None
             frame["mask_path"] = camera_mask_path.relative_to(camera_mask_path.parent.parent).as_posix()
 
         frames.append(frame)
+    frames = sorted(frames, key=lambda x: x["file_path"])
 
     out = {}
     out["camera_model"] = camera.model
