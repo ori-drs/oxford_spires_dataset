@@ -1,0 +1,9 @@
+reconstruction_benchmark:
+  project_folder: "/home/docker_dev/oxford_spires_dataset/data/2024-03-13-observatory-quarter-01"
+  gt_folder: "/home/docker_dev/oxford_spires_dataset/data/ground_truth_cloud/observatory-quarter"
+
+  run_gt_cloud_processing: True
+  run_lidar_cloud_processing: True
+  run_colmap: True
+  run_mvs: True
+  run_nerfstudio: True
