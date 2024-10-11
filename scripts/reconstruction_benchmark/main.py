@@ -257,6 +257,7 @@ if __name__ == "__main__":
         recon_benchmark.process_gt_cloud()
     if recon_config["run_lidar_cloud_processing"]:
         recon_benchmark.process_lidar_clouds()
+    if recon_config["run_lidar_cloud_evaluation"]:
         recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_cloud_merged_path)
         recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_occ_benchmark_file)
     if recon_config["run_colmap"]:
@@ -264,6 +265,7 @@ if __name__ == "__main__":
     if recon_config["run_mvs"]:
         recon_benchmark.run_openmvs()
         recon_benchmark.compute_sim3()
+    if recon_config["run_mvs_evaluation"]:
         recon_benchmark.evaluate_reconstruction(recon_benchmark.scaled_mvs_cloud_gt_frame_file)
     if recon_config["run_nerfstudio"]:
         # undistorted_ns_dir = recon_benchmark.ns_data_dir.with_name(recon_benchmark.ns_data_dir.name + "_undistorted")
