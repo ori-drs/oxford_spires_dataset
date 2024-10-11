@@ -20,6 +20,9 @@ class NeRFJsonHandler:
     def get_n_frames(self):
         return len(self.traj["frames"])
 
+    def sort_frames(self):
+        self.traj["frames"].sort(key=lambda x: x["file_path"])
+
     def sync_with_folder(self, folder_path, valid_ext=".jpg"):
         # get all files in subfolder
         ref_files = list(Path(folder_path).glob("**/*" + valid_ext))

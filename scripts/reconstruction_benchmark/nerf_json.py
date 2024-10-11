@@ -10,8 +10,8 @@ from oxford_spires_utils.trajectory.utils import pose_to_ply
 
 def split_json(json_file, start_time, end_time, save_path):
     nerf_json_handler = NeRFJsonHandler(json_file)
+    nerf_json_handler.sort_frames()
     nerf_json_handler.keep_timestamp_only(start_time, end_time)
-    # save_path = Path(json_file).parent / f"{new_name}.json"
     nerf_json_handler.save_json(save_path)
 
     nerf_traj = NeRFTrajReader(save_path)
