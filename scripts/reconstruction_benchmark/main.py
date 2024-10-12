@@ -94,15 +94,6 @@ class ReconstructionBenchmark:
             self.gt_cloud_individual_pcd_folder, self.cloud_downsample_voxel_size, self.gt_cloud_merged_path
         )
 
-    def evaluate_lidar_clouds(self):
-        evaluate_lidar_cloud(
-            self.lidar_output_folder,
-            self.individual_clouds_folder,
-            self.gt_octree_path,
-            self.gt_cloud_merged_path,
-            self.octomap_resolution,
-        )
-
     def load_lidar_gt_transform(self, transform_matrix_path=None):
         if transform_matrix_path is None:
             transform_matrix_path = self.project_folder / "T_gt_lidar.txt"
