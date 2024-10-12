@@ -220,10 +220,13 @@ class ReconstructionBenchmark:
         recon_metrics = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=[0.02, 0.05, 0.1])
         error_csv_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_metrics.csv")
         with open(error_csv_file, mode="w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=recon_metrics[1].keys() | recon_metrics[0].keys())
+            writer = csv.DictWriter(f, fieldnames=recon_metrics[1].keys())
             writer.writeheader()
-            for metric in recon_metrics:
+            for metric in recon_metrics[1:]:
                 writer.writerow(metric)
+            writer = csv.DictWriter(f, fieldnames=recon_metrics[0].keys())
+            writer.writeheader()
+            writer.writerow(recon_metrics[0])
 
         error_cloud_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_error.pcd")
         save_error_cloud(input_cloud_np, gt_cloud_np, str(error_cloud_file))
