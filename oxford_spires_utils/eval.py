@@ -30,6 +30,7 @@ def get_recon_metrics(
     distances = compute_p2p_distance(gt_cloud, input_cloud)
     completeness = np.mean(distances)
     recall = np.sum(distances < recall_threshold) / len(distances)
+    f1_score = 2 * (precision * recall) / (precision + recall)
 
     print("Done!")
     return {
@@ -37,6 +38,7 @@ def get_recon_metrics(
         "precision": precision,
         "completeness": completeness,
         "recall": recall,
+        "f1_score": f1_score,
     }
 
 
