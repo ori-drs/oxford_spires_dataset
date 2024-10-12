@@ -225,7 +225,7 @@ class ReconstructionBenchmark:
         removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
         input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
         gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
-        logger.info(get_recon_metrics(input_cloud_np, gt_cloud_np))
+        logger.info(get_recon_metrics(input_cloud_np, gt_cloud_np, precision_threshold=0.05, recall_threshold=0.05))
         error_cloud_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_error.pcd")
         save_error_cloud(input_cloud_np, gt_cloud_np, str(error_cloud_file))
 
