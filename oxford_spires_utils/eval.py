@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -5,6 +6,8 @@ import numpy as np
 import open3d as o3d
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.spatial import cKDTree as KDTree
+
+logger = logging.getLogger(__name__)
 
 
 def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray):
@@ -21,25 +24,25 @@ def get_recon_metrics(
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
-    print("Computing Accuracy and Precision ...")
+    logger.info(f"Computing Accuracy and Precision ({precision_threshold}) ...")
     distances = compute_p2p_distance(input_cloud, gt_cloud)
     accuracy = np.mean(distances)
     precision = np.sum(distances < precision_threshold) / len(distances)
 
-    print("Computing Completeness and Recall ...")
+    logger.info(f"Computing Completeness and Recall ({recall_threshold}) ...")
     distances = compute_p2p_distance(gt_cloud, input_cloud)
     completeness = np.mean(distances)
     recall = np.sum(distances < recall_threshold) / len(distances)
     f1_score = 2 * (precision * recall) / (precision + recall)
 
-    print("Done!")
-    return {
+    results = {
         "accuracy": accuracy,
         "precision": precision,
         "completeness": completeness,
         "recall": recall,
         "f1_score": f1_score,
     }
+    return results
 
 
 def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"):
