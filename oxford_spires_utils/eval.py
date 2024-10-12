@@ -9,7 +9,7 @@ from scipy.spatial import cKDTree as KDTree
 
 def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray):
     ref_kd_tree = KDTree(reference_cloud)
-    distances, _ = ref_kd_tree.query(query_cloud)
+    distances, _ = ref_kd_tree.query(query_cloud, workers=-1)
     return distances
 
 
