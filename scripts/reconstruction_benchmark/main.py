@@ -1,4 +1,5 @@
 import argparse
+import csv
 import logging
 import shutil
 from copy import deepcopy
@@ -225,7 +226,14 @@ class ReconstructionBenchmark:
         removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
         input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
         gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
-        _ = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=[0.02, 0.05, 0.1])
+        recon_metrics = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=[0.02, 0.05, 0.1])
+        error_csv_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_metrics.csv")
+        with open(error_csv_file, mode="w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=recon_metrics[1].keys() | recon_metrics[0].keys())
+            writer.writeheader()
+            for metric in recon_metrics:
+                writer.writerow(metric)
+
         error_cloud_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_error.pcd")
         save_error_cloud(input_cloud_np, gt_cloud_np, str(error_cloud_file))
 
