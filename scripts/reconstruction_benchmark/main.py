@@ -201,8 +201,8 @@ class ReconstructionBenchmark:
             self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file
         )
         ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
-        if not ns_metric_json_file.exists():
-            ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)  # TODO remove old ones?
+        ns_metric_json_file.unlink(missing_ok=True)
+        ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)
 
     def run_nerfstudio(
         self, method="nerfacto", ns_data_dir=None, json_filename="transforms_metric.json", eval_mode="fraction"
