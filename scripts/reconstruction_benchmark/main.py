@@ -70,6 +70,7 @@ class ReconstructionBenchmark:
         self.openmvs_bin = "/usr/local/bin/OpenMVS"
         self.mvs_output_folder = self.output_folder / "mvs"
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
+        self.scaled_mvs_cloud_gt_frame_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_gt_frame.pcd"
         self.colmap_undistort_max_image_size = 1000
 
         self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
@@ -196,7 +197,6 @@ class ReconstructionBenchmark:
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
         self.scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
         rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, self.scaled_mvs_cloud_file)
-        self.scaled_mvs_cloud_gt_frame_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_gt_frame.pcd"
         transform_cloud_to_gt_frame(
             self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file
         )
