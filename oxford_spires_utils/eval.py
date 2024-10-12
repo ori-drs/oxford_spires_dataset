@@ -45,6 +45,41 @@ def get_recon_metrics(
     return results
 
 
+def get_recon_metrics_multi_thresholds(
+    input_cloud: np.ndarray,
+    gt_cloud: np.ndarray,
+    thresholds: list = [0.02, 0.05, 0.1],
+):
+    assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
+    assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
+    results = []
+
+    logger.info("Computing Accuracy and Precision ...")
+    input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
+    accuracy = np.mean(input_to_gt_dist)
+
+    logger.info("Computing Completeness and Recall ...")
+    gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
+    completeness = np.mean(gt_to_input_dist)
+
+    logger.info(f"Accuracy: {accuracy:.4f}, Completeness: {completeness:.4f}")
+    results.append({"accuracy": accuracy, "completeness": completeness})
+    for threshold in thresholds:
+        precision = np.sum(input_to_gt_dist < threshold) / len(input_to_gt_dist)
+        recall = np.sum(gt_to_input_dist < threshold) / len(gt_to_input_dist)
+        f1_score = 2 * (precision * recall) / (precision + recall)
+        results.append(
+            {
+                "threshold": threshold,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1_score,
+            }
+        )
+        logger.info(f"threshold {threshold} m, precision: {precision:.4f}, recall: {recall:.4f}, f1: {f1_score:.4f}")
+    return results
+
+
 def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"):
     def get_BGYR_colourmap():
         colours = [
