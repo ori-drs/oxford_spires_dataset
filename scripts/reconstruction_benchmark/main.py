@@ -208,17 +208,19 @@ class ReconstructionBenchmark:
         final_cloud_file = run_nerfstudio(ns_config, ns_data_config)
         final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
 
-    def evaluate_reconstruction(self, input_cloud_path):
+    def evaluate_reconstruction(self, input_cloud_path, results_dir=None):
         assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
         assert Path(input_cloud_path).suffix == ".pcd", "Input cloud must be a pcd file"
         assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
-        filtered_input_cloud_path = Path(input_cloud_path).with_name(f"{Path(input_cloud_path).stem}_filtered.pcd")
+        recon_thresholds = [0.03, 0.05, 0.1, 0.2]
+        results_dir = self.recon_benchmark_dir if results_dir is None else Path(results_dir)
+        filtered_input_cloud_path = results_dir / f"{Path(input_cloud_path).stem}_filtered.pcd"
         logger.info(f'Removing unknown points from "{input_cloud_path}" using {self.gt_octree_path}')
         removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
         input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
         gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
-        recon_metrics = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=[0.02, 0.05, 0.1])
-        error_csv_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_metrics.csv")
+        recon_metrics = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=recon_thresholds)
+        error_csv_file = results_dir / f"{Path(input_cloud_path).stem}_metrics.csv"
         with open(error_csv_file, mode="w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=recon_metrics[1].keys())
             writer.writeheader()
@@ -228,7 +230,7 @@ class ReconstructionBenchmark:
             writer.writeheader()
             writer.writerow(recon_metrics[0])
 
-        error_cloud_file = filtered_input_cloud_path.with_name(f"{filtered_input_cloud_path.stem}_error.pcd")
+        error_cloud_file = results_dir / f"{Path(input_cloud_path).stem}_error.pcd"
         save_error_cloud(input_cloud_np, gt_cloud_np, str(error_cloud_file))
 
 
