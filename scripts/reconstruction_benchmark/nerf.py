@@ -80,19 +80,19 @@ def run_nerfstudio(ns_config, ns_data_config):
     # rename nerfacto-big or nerfacto-huge to nerfacto, splatfacto-big to splatfacto
     method_dir_name = ns_config["method"].replace("-big", "").replace("-huge", "")
     output_log_dir = Path(ns_config["output-dir"]) / folder_name / method_dir_name
-    lastest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
-    latest_output_config = lastest_output_folder / "config.yml"
+    latest_output_folder = sorted([x for x in output_log_dir.glob("*") if x.is_dir()])[-1]
+    latest_output_config = latest_output_folder / "config.yml"
 
     # evaluate renders
-    logger.info(f"Evaluating {latest_output_folder.name} from {lastest_output_folder}")
-    render_dir = lastest_output_folder / "renders"
+    logger.info(f"Evaluating {latest_output_folder.name} from {latest_output_folder}")
+    render_dir = latest_output_folder / "renders"
     run_nerfstudio_eval(latest_output_config, render_dir)
     logging.disable(logging.NOTSET)
 
     # export cloud
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
     output_cloud_file = run_nerfstudio_exporter(latest_output_config, export_method)
-    ns_se3, scale_matrix = load_ns_transform(lastest_output_folder)
+    ns_se3, scale_matrix = load_ns_transform(latest_output_folder)
     cloud = o3d.io.read_point_cloud(str(output_cloud_file))
     cloud.transform(scale_matrix)
     cloud.transform(np.linalg.inv(ns_se3))
