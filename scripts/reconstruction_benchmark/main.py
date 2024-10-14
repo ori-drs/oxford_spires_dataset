@@ -132,6 +132,7 @@ class ReconstructionBenchmark:
             matcher=matcher,
             camera_model=camera_model,
             max_image_size=self.colmap_undistort_max_image_size,
+            loop_detection_period=5,
         )
         export_json(
             self.colmap_sparse_0_folder,
