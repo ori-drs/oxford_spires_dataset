@@ -9,3 +9,4 @@ reconstruction_benchmark:
   run_mvs: True
   run_mvs_evaluation: True
   run_nerfstudio: True
+  run_novel_view_synthesis_only: True
