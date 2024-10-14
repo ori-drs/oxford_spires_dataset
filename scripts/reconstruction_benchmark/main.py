@@ -197,7 +197,12 @@ class ReconstructionBenchmark:
         ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)
 
     def run_nerfstudio(
-        self, method="nerfacto", ns_data_dir=None, json_filename="transforms_metric.json", eval_mode="fraction"
+        self,
+        method="nerfacto",
+        ns_data_dir=None,
+        json_filename="transforms_metric.json",
+        eval_mode="fraction",
+        export_cloud=True,
     ):
         ns_data_dir = self.ns_data_dir if ns_data_dir is None else Path(ns_data_dir)
         ns_model_dir = ns_data_dir / "trained_models"
@@ -205,8 +210,9 @@ class ReconstructionBenchmark:
         ns_config, ns_data_config = generate_nerfstudio_config(
             method, ns_data_dir / json_filename, ns_model_dir, eval_mode=eval_mode
         )
-        final_cloud_file = run_nerfstudio(ns_config, ns_data_config)
-        final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
+        final_cloud_file = run_nerfstudio(ns_config, ns_data_config, export_cloud)
+        if final_cloud_file is not None:
+            final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
 
     def evaluate_reconstruction(self, input_cloud_path, results_dir=None):
         assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
@@ -273,13 +279,13 @@ if __name__ == "__main__":
         recon_benchmark.evaluate_reconstruction(recon_benchmark.scaled_mvs_cloud_gt_frame_file)
     if recon_config["run_nerfstudio"]:
         # undistorted_ns_dir = recon_benchmark.ns_data_dir.with_name(recon_benchmark.ns_data_dir.name + "_undistorted")
-        # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir)
-        # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir)
+        # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("nerfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("splatfacto", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train.json", eval_mode="fraction", ns_data_dir=undistorted_ns_dir, export_cloud=False)
+        # recon_benchmark.run_nerfstudio("splatfacto-big", json_filename="transforms_train_eval.json", eval_mode="filename", ns_data_dir=undistorted_ns_dir, export_cloud=False)
         recon_benchmark.run_nerfstudio("nerfacto", json_filename="transforms_metric.json")
         recon_benchmark.run_nerfstudio("splatfacto")

@@ -69,7 +69,7 @@ def update_argv(nerfstudio_config, follow_up=False):
     print_with_colour(" ".join(sys.argv))
 
 
-def run_nerfstudio(ns_config, ns_data_config):
+def run_nerfstudio(ns_config, ns_data_config, export_cloud=True):
     logger.info(f"Running '{ns_config['method']}' on {ns_data_config['data']}")
     logging.disable(logging.DEBUG)
     update_argv(ns_config)
@@ -90,6 +90,8 @@ def run_nerfstudio(ns_config, ns_data_config):
     logging.disable(logging.NOTSET)
 
     # export cloud
+    if not export_cloud:
+        return None
     export_method = "gaussian-splat" if ns_config["method"] == "splatfacto" else "pointcloud"
     output_cloud_file = run_nerfstudio_exporter(latest_output_config, export_method)
     ns_se3, scale_matrix = load_ns_transform(latest_output_folder)
