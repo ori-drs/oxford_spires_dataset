@@ -9,13 +9,13 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 import yaml
-from mvs import rescale_openmvs_cloud, run_openmvs, transform_cloud_to_gt_frame
+from mvs import rescale_openmvs_cloud, run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import export_json, rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.eval import get_recon_metrics_multi_thresholds, save_error_cloud
-from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds
+from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_to_gt_frame
 from oxford_spires_utils.se3 import is_se3_matrix
 from oxford_spires_utils.sensor import Sensor
 from oxford_spires_utils.trajectory.align import align

@@ -123,13 +123,6 @@ def rescale_openmvs_cloud(original_cloud_file, sim3_matrix, output_cloud_file):
     logger.info(f"Rescaled OpenMVS point cloud to to metric and save as {output_cloud_file}")
 
 
-def transform_cloud_to_gt_frame(cloud_file, se3_matrix, output_cloud_file):
-    cloud = o3d.io.read_point_cloud(str(cloud_file))
-    cloud.transform(se3_matrix)
-    o3d.io.write_point_cloud(str(output_cloud_file), cloud)
-    logger.info(f"Transformed point cloud to the ground truth frame and saved as {output_cloud_file}")
-
-
 if __name__ == "__main__":
     image_path = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/raw"
     colmap_output_path = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/processed/output_colmap"
