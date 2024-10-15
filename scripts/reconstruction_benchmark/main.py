@@ -15,7 +15,7 @@ from sfm import export_json, rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
 from oxford_spires_utils.eval import get_recon_metrics_multi_thresholds, save_error_cloud
-from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_to_gt_frame
+from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_with_se3
 from oxford_spires_utils.se3 import is_se3_matrix
 from oxford_spires_utils.sensor import Sensor
 from oxford_spires_utils.trajectory.align import align
@@ -190,9 +190,7 @@ class ReconstructionBenchmark:
         mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
         self.scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
         rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, self.scaled_mvs_cloud_file)
-        transform_cloud_to_gt_frame(
-            self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file
-        )
+        transform_cloud_with_se3(self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file)
         ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
         ns_metric_json_file.unlink(missing_ok=True)
         ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)
