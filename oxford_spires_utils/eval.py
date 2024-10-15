@@ -107,7 +107,7 @@ def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_
     test_cloud.points = o3d.utility.Vector3dVector(input_cloud)
     test_cloud.colors = o3d.utility.Vector3dVector(distances_cmap[:, :3])
     o3d.io.write_point_cloud(save_path, test_cloud)
-    print(f"Error cloud saved to {save_path}")
+    logger.info(f"diff cloud saved to {save_path}")
 
 
 if __name__ == "__main__":
