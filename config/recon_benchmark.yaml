@@ -6,6 +6,7 @@ reconstruction_benchmark:
   run_lidar_cloud_processing: True
   run_lidar_cloud_evaluation: True
   run_colmap: True
+  run_colmap_sim3: True
   run_mvs: True
   run_mvs_evaluation: True
   run_nerfstudio: True

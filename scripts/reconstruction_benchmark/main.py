@@ -157,15 +157,19 @@ class ReconstructionBenchmark:
         num_sparse_folders = len(list(self.colmap_sparse_folder.glob("*")))
         if num_sparse_folders > 1:
             print_with_colour(f"Multiple sparse folders found in {self.colmap_output_folder}. Using the first one.")
-        run_openmvs(
+        assert self.transform_matrix is not None, "Ground truth to lidar transform not loaded"
+        mvs_cloud_file = run_openmvs(
             self.image_folder,
             self.colmap_output_folder,
             self.colmap_sparse_0_folder,
             self.mvs_output_folder,
             self.openmvs_bin,
         )
+        scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
+        rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, scaled_mvs_cloud_file)
+        transform_cloud_with_se3(scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file)
 
-    def compute_sim3(self):
+    def compute_colmap_sim3(self):
         colmap_traj_file = self.colmap_output_folder / "transforms.json"
         rescaled_colmap_traj_file = self.colmap_output_folder / self.metric_json_filename  # TODO refactor
         lidar_slam_traj = VilensSlamTrajReader(self.lidar_slam_traj_file).read_file()
@@ -183,14 +187,11 @@ class ReconstructionBenchmark:
         lidar_slam_traj_cam_frame = deepcopy(lidar_slam_traj)
         lidar_slam_traj_cam_frame.transform(T_base_cam, right_mul=True)
         # T_lidar_colmap = align(lidar_slam_traj, colmap_traj_single_cam, self.colmap_output_folder)
-        T_lidar_colmap = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
-        rescale_colmap_json(colmap_traj_file, T_lidar_colmap, rescaled_colmap_traj_file)
+        self.T_lidar_colmap = align(lidar_slam_traj_cam_frame, colmap_traj_single_cam, self.colmap_output_folder)
+        rescale_colmap_json(colmap_traj_file, self.T_lidar_colmap, rescaled_colmap_traj_file)
         rescaled_colmap_traj = NeRFTrajReader(rescaled_colmap_traj_file).read_file()
         pose_to_ply(rescaled_colmap_traj, self.colmap_output_folder / "rescaled_colmap_traj.ply", [0.0, 1.0, 0.0])
-        mvs_cloud_file = self.mvs_output_folder / "scene_dense_nerf_world.ply"
-        self.scaled_mvs_cloud_file = self.mvs_output_folder / "OpenMVS_dense_cloud_metric.pcd"
-        rescale_openmvs_cloud(mvs_cloud_file, T_lidar_colmap, self.scaled_mvs_cloud_file)
-        transform_cloud_with_se3(self.scaled_mvs_cloud_file, self.transform_matrix, self.scaled_mvs_cloud_gt_frame_file)
+
         ns_metric_json_file = self.ns_data_dir / self.metric_json_filename
         ns_metric_json_file.unlink(missing_ok=True)
         ns_metric_json_file.symlink_to(rescaled_colmap_traj_file)
@@ -272,9 +273,10 @@ if __name__ == "__main__":
         recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_cloud_merged_path)
     if recon_config["run_colmap"]:
         recon_benchmark.run_colmap("sequential_matcher")
+    if recon_config["run_colmap_sim3"]:
+        recon_benchmark.compute_colmap_sim3()
     if recon_config["run_mvs"]:
         recon_benchmark.run_openmvs()
-        recon_benchmark.compute_sim3()
     if recon_config["run_mvs_evaluation"]:
         recon_benchmark.evaluate_reconstruction(recon_benchmark.scaled_mvs_cloud_gt_frame_file)
     if recon_config["run_nerfstudio"]:

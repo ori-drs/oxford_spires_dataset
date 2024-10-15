@@ -82,8 +82,10 @@ def run_openmvs(image_path, colmap_output_path, sparse_folder, mvs_dir, openmvs_
         logger.error(f"Failed to generate dense point cloud at {output_ply_file}")
     dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
     dense_ply.transform(colmap_to_nerf_world_transform)
-    o3d.io.write_point_cloud(str(output_ply_file.with_name("scene_dense_nerf_world.ply")), dense_ply)
+    output_file = output_ply_file.with_name("scene_dense_nerf_world.pcd")
+    o3d.io.write_point_cloud(str(output_file), dense_ply)
     logger.info("Transformed MVS point cloud to the world frame defined by the nerf convention")
+    return output_file
     # Reconstruct the mesh
     # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
     # run_command(" ".join(reconstruct_cmd), print_command=True)
