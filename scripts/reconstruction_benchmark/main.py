@@ -270,7 +270,6 @@ if __name__ == "__main__":
         recon_benchmark.process_lidar_clouds()
     if recon_config["run_lidar_cloud_evaluation"]:
         recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_cloud_merged_path)
-        recon_benchmark.evaluate_reconstruction(recon_benchmark.lidar_occ_benchmark_file)
     if recon_config["run_colmap"]:
         recon_benchmark.run_colmap("sequential_matcher")
     if recon_config["run_mvs"]:
