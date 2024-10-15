@@ -210,11 +210,11 @@ class ReconstructionBenchmark:
         ns_config, ns_data_config = generate_nerfstudio_config(
             method, ns_data_dir / json_filename, ns_model_dir, eval_mode=eval_mode
         )
-        final_cloud_file = run_nerfstudio(ns_config, ns_data_config, export_cloud)
-        if final_cloud_file is not None:
-            new_final_cloud_file = self.recon_benchmark_dir / final_cloud_file.name
-            final_cloud_file.rename(new_final_cloud_file)
-            self.evaluate_reconstruction(new_final_cloud_file)
+        metric_cloud_file = run_nerfstudio(ns_config, ns_data_config, export_cloud)
+        if metric_cloud_file is not None:
+            metric_cloud_gt_frame = self.recon_benchmark_dir / (metric_cloud_file.stem + "_gt_frame.pcd")
+            transform_cloud_with_se3(metric_cloud_file, self.transform_matrix, metric_cloud_gt_frame)
+            self.evaluate_reconstruction(metric_cloud_gt_frame)
 
     def evaluate_reconstruction(self, input_cloud_path, results_dir=None):
         assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
