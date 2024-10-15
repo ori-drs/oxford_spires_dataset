@@ -60,7 +60,7 @@ class ReconstructionBenchmark:
         self.recon_benchmark_dir.mkdir(exist_ok=True, parents=True)
         # TODO: check lidar cloud folder has viewpoints and is pcd, check gt folder is pcd, check image folder is jpg/png
         self.octomap_resolution = 0.1
-        self.cloud_downsample_voxel_size = 0.05
+        self.cloud_downsample_voxel_size = 0.01
         self.gt_octree_path = self.recon_benchmark_dir / "gt_cloud.bt"
         self.gt_cloud_merged_path = self.recon_benchmark_dir / "gt_cloud_merged.pcd"
         self.gt_cloud_individual_e57_folder = self.gt_folder / "individual_cloud_e57"
