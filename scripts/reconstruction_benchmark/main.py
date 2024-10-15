@@ -72,7 +72,7 @@ class ReconstructionBenchmark:
         self.mvs_output_folder = self.output_folder / "mvs"
         self.mvs_output_folder.mkdir(exist_ok=True, parents=True)
         self.scaled_mvs_cloud_gt_frame_file = self.recon_benchmark_dir / "OpenMVS_dense_cloud_gt_frame.pcd"
-        self.colmap_undistort_max_image_size = 1000
+        self.colmap_undistort_max_image_size = -1
 
         self.ns_data_dir = self.output_folder / "nerfstudio" / self.project_folder.name
         self.metric_json_filename = "transforms_metric.json"
