@@ -98,7 +98,7 @@ def run_nerfstudio(ns_config, ns_data_config, export_cloud=True):
     cloud = o3d.io.read_point_cloud(str(output_cloud_file))
     cloud.transform(scale_matrix)
     cloud.transform(np.linalg.inv(ns_se3))
-    final_metric_cloud_file = output_cloud_file.with_name(f'{ns_config["method"]}_cloud_metric.ply')
+    final_metric_cloud_file = output_cloud_file.with_name(f'{ns_config["method"]}_cloud_metric.pcd')
     o3d.io.write_point_cloud(str(final_metric_cloud_file), cloud)
     return final_metric_cloud_file
 

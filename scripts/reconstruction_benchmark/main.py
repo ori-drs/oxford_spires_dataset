@@ -213,7 +213,9 @@ class ReconstructionBenchmark:
         )
         final_cloud_file = run_nerfstudio(ns_config, ns_data_config, export_cloud)
         if final_cloud_file is not None:
-            final_cloud_file.rename(self.recon_benchmark_dir / final_cloud_file.name)
+            new_final_cloud_file = self.recon_benchmark_dir / final_cloud_file.name
+            final_cloud_file.rename(new_final_cloud_file)
+            self.evaluate_reconstruction(new_final_cloud_file)
 
     def evaluate_reconstruction(self, input_cloud_path, results_dir=None):
         assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
