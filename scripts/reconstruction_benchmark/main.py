@@ -222,15 +222,16 @@ class ReconstructionBenchmark:
         assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
         recon_thresholds = [0.03, 0.05, 0.1, 0.2]
         results_dir = self.recon_benchmark_dir if results_dir is None else Path(results_dir)
-        filtered_input_cloud_path = results_dir / f"{Path(input_cloud_path).stem}_filtered.pcd"
-        logger.info(f'Removing unknown points from "{input_cloud_path}" using {self.gt_octree_path}')
-        removeUnknownPoints(str(input_cloud_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
         logger.info(f"Downsampling filtered cloud to {self.cloud_downsample_voxel_size} m")
-        input_cloud = o3d.io.read_point_cloud(str(filtered_input_cloud_path))
+        input_cloud = o3d.io.read_point_cloud(str(input_cloud_path))
         input_cloud_downsampled = input_cloud.voxel_down_sample(voxel_size=self.cloud_downsample_voxel_size)
-        input_cloud_downsampled_path = results_dir / (filtered_input_cloud_path.stem + "_downsampled.pcd")
+        input_cloud_downsampled_path = results_dir / (input_cloud_path.stem + "_downsampled.pcd")
         o3d.io.write_point_cloud(str(input_cloud_downsampled_path), input_cloud_downsampled)
-        input_cloud_np = np.asarray(input_cloud_downsampled.points)
+
+        logger.info(f"Removing unknown points using {self.gt_octree_path}")
+        filtered_input_cloud_path = results_dir / f"{Path(input_cloud_downsampled_path).stem}_filtered.pcd"
+        removeUnknownPoints(str(input_cloud_downsampled_path), str(self.gt_octree_path), str(filtered_input_cloud_path))
+        input_cloud_np = np.asarray(o3d.io.read_point_cloud(str(filtered_input_cloud_path)).points)
         gt_cloud_np = np.asarray(o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).points)
         recon_metrics = get_recon_metrics_multi_thresholds(input_cloud_np, gt_cloud_np, thresholds=recon_thresholds)
         error_csv_file = results_dir / f"{Path(input_cloud_path).stem}_metrics.csv"
