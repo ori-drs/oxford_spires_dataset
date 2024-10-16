@@ -222,8 +222,11 @@ class ReconstructionBenchmark:
         assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
         recon_thresholds = [0.03, 0.05, 0.1, 0.2]
         results_dir = self.recon_benchmark_dir if results_dir is None else Path(results_dir)
-        logger.info(f"Downsampling filtered cloud to {self.cloud_downsample_voxel_size} m")
         input_cloud = o3d.io.read_point_cloud(str(input_cloud_path))
+        logger.info(f"Cropping input cloud using bounding box from {self.gt_cloud_merged_path}")
+        gt_bbox = o3d.io.read_point_cloud(str(self.gt_cloud_merged_path)).get_axis_aligned_bounding_box()
+        input_cloud = input_cloud.crop(gt_bbox)
+        logger.info(f"Downsampling filtered cloud to {self.cloud_downsample_voxel_size} m")
         input_cloud_downsampled = input_cloud.voxel_down_sample(voxel_size=self.cloud_downsample_voxel_size)
         input_cloud_downsampled_path = results_dir / (input_cloud_path.stem + "_downsampled.pcd")
         o3d.io.write_point_cloud(str(input_cloud_downsampled_path), input_cloud_downsampled)
