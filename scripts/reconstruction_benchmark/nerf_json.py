@@ -78,6 +78,9 @@ json_file = colmap_folder / "transforms.json"
 train_image_folder = dataset_folder / "train_val_image" / "train"
 eval_image_folder = dataset_folder / "train_val_image" / "eval"
 
+assert (train_image_folder / "images").exists(), f"{train_image_folder/'images'} does not exist"
+assert (eval_image_folder / "images").exists(), f"{eval_image_folder/'images'} does not exist"
+
 train_save_path = Path(json_file).parent / f"{train_name}.json"
 eval_save_path = Path(json_file).parent / f"{eval_name}.json"
 select_json_with_folder(json_file, train_image_folder, train_save_path)
