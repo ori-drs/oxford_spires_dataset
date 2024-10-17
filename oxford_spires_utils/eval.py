@@ -46,9 +46,7 @@ def get_recon_metrics(
 
 
 def get_recon_metrics_multi_thresholds(
-    input_cloud: np.ndarray,
-    gt_cloud: np.ndarray,
-    thresholds: list = [0.02, 0.05, 0.1],
+    input_cloud: np.ndarray, gt_cloud: np.ndarray, thresholds: list = [0.02, 0.05, 0.1], max_distance=2.0
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
@@ -56,10 +54,12 @@ def get_recon_metrics_multi_thresholds(
 
     logger.info("Computing Accuracy and Precision ...")
     input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
+    input_to_gt_dist = input_to_gt_dist[input_to_gt_dist <= max_distance]
     accuracy = np.mean(input_to_gt_dist)
 
     logger.info("Computing Completeness and Recall ...")
     gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
+    gt_to_input_dist = gt_to_input_dist[gt_to_input_dist <= max_distance]
     completeness = np.mean(gt_to_input_dist)
 
     logger.info(f"Accuracy: {accuracy:.4f}, Completeness: {completeness:.4f}")
@@ -80,7 +80,7 @@ def get_recon_metrics_multi_thresholds(
     return results
 
 
-def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"):
+def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr", max_distance=2.0):
     def get_BGYR_colourmap():
         colours = [
             (0, 0, 255),  # Blue
@@ -96,6 +96,8 @@ def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_
         return cmap
 
     distances = compute_p2p_distance(input_cloud, reference_cloud)
+    input_cloud = input_cloud[distances <= max_distance]
+    distances = distances[distances <= max_distance]
     distances = np.clip(distances, 0, 1)
     if cmap == "bgyr":
         cmap = get_BGYR_colourmap()
