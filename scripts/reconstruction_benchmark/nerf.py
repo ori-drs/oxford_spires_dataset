@@ -121,6 +121,7 @@ def run_nerfstudio_exporter(config_file, export_method):
         "method": export_method,
         "load-config": config_file,
         "output-dir": config_file.parent,
+        "num-points": 100000000,
     }
     if export_method == "pointcloud":
         exporter_config["normal-method"] = "open3d"
