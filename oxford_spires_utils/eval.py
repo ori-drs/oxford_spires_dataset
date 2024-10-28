@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,10 +7,12 @@ import open3d as o3d
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.spatial import cKDTree as KDTree
 
+logger = logging.getLogger(__name__)
+
 
 def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray):
     ref_kd_tree = KDTree(reference_cloud)
-    distances, _ = ref_kd_tree.query(query_cloud)
+    distances, _ = ref_kd_tree.query(query_cloud, workers=-1)
     return distances
 
 
@@ -21,26 +24,63 @@ def get_recon_metrics(
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
-    print("Computing Accuracy and Precision ...")
+    logger.info(f"Computing Accuracy and Precision ({precision_threshold}) ...")
     distances = compute_p2p_distance(input_cloud, gt_cloud)
     accuracy = np.mean(distances)
     precision = np.sum(distances < precision_threshold) / len(distances)
 
-    print("Computing Completeness and Recall ...")
+    logger.info(f"Computing Completeness and Recall ({recall_threshold}) ...")
     distances = compute_p2p_distance(gt_cloud, input_cloud)
     completeness = np.mean(distances)
     recall = np.sum(distances < recall_threshold) / len(distances)
+    f1_score = 2 * (precision * recall) / (precision + recall)
 
-    print("Done!")
-    return {
+    results = {
         "accuracy": accuracy,
         "precision": precision,
         "completeness": completeness,
         "recall": recall,
+        "f1_score": f1_score,
     }
+    return results
 
 
-def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr"):
+def get_recon_metrics_multi_thresholds(
+    input_cloud: np.ndarray, gt_cloud: np.ndarray, thresholds: list = [0.02, 0.05, 0.1], max_distance=2.0
+):
+    assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
+    assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
+    results = []
+
+    logger.info("Computing Accuracy and Precision ...")
+    input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
+    input_to_gt_dist = input_to_gt_dist[input_to_gt_dist <= max_distance]
+    accuracy = np.mean(input_to_gt_dist)
+
+    logger.info("Computing Completeness and Recall ...")
+    gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
+    gt_to_input_dist = gt_to_input_dist[gt_to_input_dist <= max_distance]
+    completeness = np.mean(gt_to_input_dist)
+
+    logger.info(f"Accuracy: {accuracy:.4f}, Completeness: {completeness:.4f}")
+    results.append({"accuracy": accuracy, "completeness": completeness})
+    for threshold in thresholds:
+        precision = np.sum(input_to_gt_dist < threshold) / len(input_to_gt_dist)
+        recall = np.sum(gt_to_input_dist < threshold) / len(gt_to_input_dist)
+        f1_score = 2 * (precision * recall) / (precision + recall)
+        results.append(
+            {
+                "threshold": threshold,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1_score,
+            }
+        )
+        logger.info(f"threshold {threshold} m, precision: {precision:.4f}, recall: {recall:.4f}, f1: {f1_score:.4f}")
+    return results
+
+
+def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr", max_distance=2.0):
     def get_BGYR_colourmap():
         colours = [
             (0, 0, 255),  # Blue
@@ -56,6 +96,8 @@ def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_
         return cmap
 
     distances = compute_p2p_distance(input_cloud, reference_cloud)
+    input_cloud = input_cloud[distances <= max_distance]
+    distances = distances[distances <= max_distance]
     distances = np.clip(distances, 0, 1)
     if cmap == "bgyr":
         cmap = get_BGYR_colourmap()
@@ -67,7 +109,7 @@ def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_
     test_cloud.points = o3d.utility.Vector3dVector(input_cloud)
     test_cloud.colors = o3d.utility.Vector3dVector(distances_cmap[:, :3])
     o3d.io.write_point_cloud(save_path, test_cloud)
-    print(f"Error cloud saved to {save_path}")
+    logger.info(f"diff cloud saved to {save_path}")
 
 
 if __name__ == "__main__":

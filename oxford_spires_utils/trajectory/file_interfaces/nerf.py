@@ -30,7 +30,7 @@ class NeRFTrajReader(BasicTrajReader):
         self.valid_folder_path = nerf_reader_valid_folder_path
         self.sort_timestamp = nerf_reader_sort_timestamp
 
-    def read_file(self):
+    def read_file(self, has_timestamp=True):
         """
         Read NeRF trajectory file (transforms.json)
         @return: PosePath3D from evo
@@ -44,21 +44,24 @@ class NeRFTrajReader(BasicTrajReader):
             if self.valid_folder_path != "":
                 if not frame["file_path"].startswith(self.valid_folder_path):
                     continue
-            t_float128 = NeRFTrajUtils.get_t_float128_from_fname(frame["file_path"])
             T = np.array(frame["transform_matrix"])
             assert T.shape == (4, 4)
             assert np.allclose(T[3, :], np.array([0, 0, 0, 1]))
-            timestamps.append(t_float128)
             poses_se3.append(T)
+            if has_timestamp:
+                t_float128 = NeRFTrajUtils.get_t_float128_from_fname(frame["file_path"])
+                timestamps.append(t_float128)
 
-        timestamps = np.array(timestamps)
         poses_se3 = np.array(poses_se3)
-        if self.sort_timestamp:
-            sort_idx = np.argsort(timestamps)
-            timestamps = timestamps[sort_idx]
-            poses_se3 = poses_se3[sort_idx]
+        if has_timestamp:
+            timestamps = np.array(timestamps)
+            if self.sort_timestamp:
+                sort_idx = np.argsort(timestamps)
+                timestamps = timestamps[sort_idx]
+                poses_se3 = poses_se3[sort_idx]
+            return evo.core.trajectory.PoseTrajectory3D(poses_se3=poses_se3, timestamps=timestamps)
 
-        return evo.core.trajectory.PoseTrajectory3D(poses_se3=poses_se3, timestamps=timestamps)
+        return evo.core.trajectory.PosePath3D(poses_se3=poses_se3)
 
 
 class NeRFTrajWriter(BasicTrajWriter):

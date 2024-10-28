@@ -122,9 +122,23 @@ RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colm
 ####################
 
 FROM colmap as nerfstudio
+ARG NERFSTUDIO_VERSION=v1.1.4
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir torch==2.1.2+cu118 torchvision==0.16.2+cu118 'numpy<2.0.0' --extra-index-url https://download.pytorch.org/whl/cu118
 RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
+RUN git clone https://github.com/nerfstudio-project/nerfstudio.git --branch ${NERFSTUDIO_VERSION} ${HOME_DIR}/nerfstudio &&\
+    cd ${HOME_DIR}/nerfstudio &&\
+    pip install -e .
+
+FROM colmap as sdfstudio
+ARG SDFSTUDIO_COMMIT=370902a
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
+RUN git clone https://github.com/autonomousvision/sdfstudio.git ${HOME_DIR}/sdfstudio &&\
+    cd ${HOME_DIR}/sdfstudio &&\
+    git checkout ${SDFSTUDIO_COMMIT} &&\
+    pip install -e .
 
 ####################
 # Deployment image #

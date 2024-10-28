@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,8 @@ from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 
 from oxford_spires_utils.se3 import is_se3_matrix, xyz_quat_xyzw_to_se3_matrix
+
+logger = logging.getLogger(__name__)
 
 
 def transform_3d_cloud(cloud_np, transform_matrix):
@@ -174,3 +177,13 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         if has_colour:
             colours_np = np.array(saved_cloud.colors)
             assert np.allclose(colours_np, colours / 255, rtol=1e-5, atol=1e-8)
+
+
+def transform_cloud_with_se3(cloud_file, se3_matrix, output_cloud_file):
+    assert str(cloud_file).endswith(".pcd") or str(cloud_file).endswith(".ply")
+    assert is_se3_matrix(se3_matrix)[0], is_se3_matrix(se3_matrix)[1]
+    assert str(output_cloud_file).endswith(".pcd") or str(output_cloud_file).endswith(".ply")
+    cloud = o3d.io.read_point_cloud(str(cloud_file))
+    cloud.transform(se3_matrix)
+    o3d.io.write_point_cloud(str(output_cloud_file), cloud)
+    logger.info(f"Transformed point cloud with SE(3) and saved as {output_cloud_file}")

@@ -4,7 +4,7 @@ scipy>=1.10.1
 pytest>=8.0.0
 pypcd4>=1.1.0
 pye57>=0.4.13
-nerfstudio==1.1.4
+# nerfstudio==1.1.4
 evo>=1.29.0
 pytransform3d>=3.5.0
 huggingface_hub>=0.25.1

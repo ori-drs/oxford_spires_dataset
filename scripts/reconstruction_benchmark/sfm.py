@@ -49,7 +49,15 @@ def get_vocab_tree(image_num) -> Path:
     return vocab_tree_filename
 
 
-def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
+def run_colmap(
+    image_path,
+    output_path,
+    camera_model="OPENCV_FISHEYE",
+    matcher="vocab_tree_matcher",
+    loop_detection_period=10,
+    sift_max_num_features=8192,
+    max_image_size=1000,
+):
     logger.debug(f"Running colmap; img_path {image_path}; output: {output_path}, {camera_model}")
     assert camera_model in camera_model_list, f"{camera_model} not supported. Supported models: {camera_model_list}"
     database_path = output_path / "database.db"
@@ -63,23 +71,30 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
         f"--database_path {database_path}",
         "--ImageReader.single_camera_per_folder 1",
         f"--ImageReader.camera_model {camera_model}",
+        f"--SiftExtraction.max_num_features {sift_max_num_features}",
     ]
     colmap_feature_extractor_cmd = " ".join(colmap_feature_extractor_cmd)
     logger.info(f"Running {colmap_feature_extractor_cmd}")
     run_command(colmap_feature_extractor_cmd, print_command=False)
-    colmap_db = COLMAPDatabase.connect(database_path)
-    total_image_num = colmap_db.execute("SELECT COUNT(*) FROM images").fetchone()[0]
-    logger.debug(f"Total number of images in COLMAP database: {total_image_num}")
 
     image_num = len(list(image_path.rglob("*")))
-    colmap_vocab_tree_matcher_cmd = [
-        "colmap vocab_tree_matcher",
+    colmap_matcher_cmd = [
+        f"colmap {matcher}",
         f"--database_path {database_path}",
-        f"--VocabTreeMatching.vocab_tree_path {get_vocab_tree(image_num)}",
     ]
-    colmap_vocab_tree_matcher_cmd = " ".join(colmap_vocab_tree_matcher_cmd)
-    logger.info(f"Running {colmap_vocab_tree_matcher_cmd}")
-    run_command(colmap_vocab_tree_matcher_cmd, print_command=False)
+    if matcher == "vocab_tree_matcher":
+        colmap_matcher_cmd.append(f"--VocabTreeMatching.vocab_tree_path {get_vocab_tree(image_num)}")
+    elif matcher == "sequential_matcher":
+        colmap_matcher_cmd.append("--SequentialMatching.loop_detection 1")
+        colmap_matcher_cmd.append(f"--SequentialMatching.vocab_tree_path {get_vocab_tree(image_num)}")
+        colmap_matcher_cmd.append(f"--SequentialMatching.loop_detection_period {loop_detection_period}")
+    else:
+        raise ValueError(
+            f"matcher {matcher} not supported. Supported matchers: ['vocab_tree_matcher', 'sequential_matcher']"
+        )
+    colmap_matcher_cmd = " ".join(colmap_matcher_cmd)
+    logger.info(f"Running {colmap_matcher_cmd}")
+    run_command(colmap_matcher_cmd, print_command=False)
 
     mapper_ba_global_function_tolerance = 1e-5
     colmap_mapper_cmd = [
@@ -103,15 +118,20 @@ def run_colmap(image_path, output_path, camera_model="OPENCV_FISHEYE"):
     logger.info(f"Running {colmap_ba_cmd}")
     run_command(colmap_ba_cmd, print_command=False)
 
+    colmap_image_undistorter_cmd = [
+        "colmap image_undistorter",
+        f"--image_path {image_path}",
+        f"--input_path {sparse_0_path}",
+        f"--output_path {output_path/'dense'}",
+        "--output_type COLMAP",
+        f"--max_image_size {max_image_size}",
+    ]
+    colmap_image_undistorter_cmd = " ".join(colmap_image_undistorter_cmd)
+    logger.info(f"Running {colmap_image_undistorter_cmd}")
+    run_command(colmap_image_undistorter_cmd, print_command=False)
+
     # from nerfstudio.process_data.colmap_utils import colmap_to_json
     # num_image_matched = colmap_to_json(recon_dir=sparse_0_path, output_dir=output_path)
-    logger.info("Exporting COLMAP to json file")
-    num_frame_matched = export_json(
-        sparse_0_path, json_file_name="transforms.json", output_dir=output_path, camera_model=camera_model
-    )
-    logger.info(
-        f"COLMAP matched {num_frame_matched} / {total_image_num} images {num_frame_matched / total_image_num * 100:.2f}%"
-    )
 
 
 def rescale_colmap_json(json_file, sim3_matrix, output_file):
@@ -138,11 +158,13 @@ def rescale_colmap_json(json_file, sim3_matrix, output_file):
         json.dump(data, f, indent=2)
 
 
-def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir=None, camera_model="OPENCV_FISHEYE"):
+def export_json(input_bin_dir, json_file_name="transforms.json", output_dir=None, db_file=None):
+    logger.info("Exporting COLMAP to json file")
     camera_mask_path = None
     input_bin_dir = Path(input_bin_dir)
     cameras_path = input_bin_dir / "cameras.bin"
     images_path = input_bin_dir / "images.bin"
+    database_path = output_dir / "database.db" if db_file is None else Path(db_file)
     output_dir = input_bin_dir if output_dir is None else Path(output_dir)
 
     cameras = read_cameras_binary(cameras_path)
@@ -158,7 +180,7 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
         c2w = np.linalg.inv(w2c)  # this is the coordinate for openMVS
         c2w = get_nerf_pose(c2w)
 
-        frame = generate_json_camera_data(camera, camera_model)
+        frame = generate_json_camera_data(camera)
         frame["file_path"] = Path(f"./images/{im_data.name}").as_posix()  # assume images not in image path in colmap
         frame["transform_matrix"] = c2w.tolist()
         frame["colmap_img_id"] = img_id
@@ -166,20 +188,28 @@ def export_json(input_bin_dir=None, json_file_name="transforms.json", output_dir
             frame["mask_path"] = camera_mask_path.relative_to(camera_mask_path.parent.parent).as_posix()
 
         frames.append(frame)
+    frames = sorted(frames, key=lambda x: x["file_path"])
 
     out = {}
-    out["camera_model"] = camera_model
+    out["camera_model"] = camera.model
     out["frames"] = frames
+    num_frame_matched = len(frames)
+
+    colmap_db = COLMAPDatabase.connect(database_path)
+    total_image_num = colmap_db.execute("SELECT COUNT(*) FROM images").fetchone()[0]
+    logger.info(
+        f"COLMAP matched {num_frame_matched} / {total_image_num} images {num_frame_matched / total_image_num * 100:.2f}%"
+    )
 
     # Save for scale adjustment later
     assert json_file_name[-5:] == ".json"
     with open(output_dir / json_file_name, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=4)
-    return len(frames)
 
 
-def generate_json_camera_data(camera, camera_model):
-    assert camera_model in ["OPENCV_FISHEYE", "OPENCV"]
+def generate_json_camera_data(camera):
+    camera_model = camera.model
+    assert camera_model in ["OPENCV_FISHEYE", "OPENCV", "PINHOLE"]
     data = {
         "fl_x": float(camera.params[0]),
         "fl_y": float(camera.params[1]),

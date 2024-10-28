@@ -52,23 +52,10 @@ def run_colmap_mvs(image_path, colmap_output_path, sparse_folder, max_image_size
     run_command(colmap_delauany_mesh_filter_cmd, print_command=True)
 
 
-def run_openmvs(
-    image_path, colmap_output_path, sparse_folder, mvs_dir, max_image_size, openmvs_bin="/usr/local/bin/OpenMVS"
-):
+def run_openmvs(image_path, colmap_output_path, sparse_folder, mvs_dir, openmvs_bin="/usr/local/bin/OpenMVS"):
     logger.info(f"Running OpenMVS; img_path {image_path}; output: {mvs_dir}")
     colmap_output_path = Path(colmap_output_path)
     mvs_dir.mkdir(parents=True, exist_ok=True)
-
-    colmap_image_undistorter_cmd = [
-        "colmap image_undistorter",
-        f"--image_path {image_path}",
-        f"--input_path {sparse_folder}",
-        f"--output_path {colmap_output_path/'dense'}",
-        "--output_type COLMAP",
-        f"--max_image_size {max_image_size}",
-    ]
-    colmap_image_undistorter_cmd = " ".join(colmap_image_undistorter_cmd)
-    run_command(colmap_image_undistorter_cmd, print_command=True)
 
     # Export to openMVS
     export_cmd = [
@@ -95,8 +82,10 @@ def run_openmvs(
         logger.error(f"Failed to generate dense point cloud at {output_ply_file}")
     dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
     dense_ply.transform(colmap_to_nerf_world_transform)
-    o3d.io.write_point_cloud(str(output_ply_file.with_name("scene_dense_nerf_world.ply")), dense_ply)
+    output_file = output_ply_file.with_name("scene_dense_nerf_world.pcd")
+    o3d.io.write_point_cloud(str(output_file), dense_ply)
     logger.info("Transformed MVS point cloud to the world frame defined by the nerf convention")
+    return output_file
     # Reconstruct the mesh
     # reconstruct_cmd = [f"{openmvs_bin}/ReconstructMesh", "scene_dense.mvs", "-p scene_dense.ply", f"-w {mvs_dir}"]
     # run_command(" ".join(reconstruct_cmd), print_command=True)
