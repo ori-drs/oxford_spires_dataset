@@ -18,13 +18,16 @@ def print_with_colour(text, colour=TerminalColors.CYAN):
     print(f"{colour}{text}{TerminalColors.ENDC}")
 
 
-def run_command(cmd, log_path=None, print_command=True):
+def run_command(cmd, log_path=None, print_command=True, print_output=True):
     if print_command:
         print_with_colour(f"Running command: {cmd}")
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, universal_newlines=True)
-    for line in process.stdout:
-        print(line, end="")
-        if log_path is not None:
-            assert isinstance(log_path, (Path, str))
-            with open(log_path, "a") as f:
-                f.write(line)
+    if print_output:
+        for line in process.stdout:
+            print(line, end="")
+            if log_path is not None:
+                assert isinstance(log_path, (Path, str))
+                with open(log_path, "a") as f:
+                    f.write(line)
+    else:
+        return process
