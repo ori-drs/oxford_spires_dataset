@@ -217,9 +217,9 @@ class ReconstructionBenchmark:
             self.evaluate_reconstruction(metric_cloud_gt_frame)
 
     def evaluate_reconstruction(self, input_cloud_path, results_dir=None):
-        assert input_cloud_path.exists(), f"Input cloud not found at {input_cloud_path}"
+        assert Path(input_cloud_path).exists(), f"Input cloud not found at {input_cloud_path}"
         assert Path(input_cloud_path).suffix == ".pcd", "Input cloud must be a pcd file"
-        assert self.gt_octree_path.exists(), f"Ground truth octree not found at {self.gt_octree_path}"
+        assert Path(self.gt_octree_path).exists(), f"Ground truth octree not found at {self.gt_octree_path}"
         recon_thresholds = [0.03, 0.05, 0.1, 0.2]
         results_dir = self.recon_benchmark_dir if results_dir is None else Path(results_dir)
         input_cloud = o3d.io.read_point_cloud(str(input_cloud_path))
