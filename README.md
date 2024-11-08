@@ -6,7 +6,12 @@ This is a pre-release of the software. The codebase will be refactored in the ne
 ## Localisation Benchmark
 The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
 
+Build the docker container and run the methods:
 ```bash
+cd oxford_spires_dataset
+docker compose -f .docker_loc/docker-compose.yml run --build spires
+
+# in the docker
 python scripts/localisation_benchmark/colmap.py
 python scripts/localisation_benchmark/fast_lio_slam.py
 python scripts/localisation_benchmark/immesh.py
@@ -17,7 +22,7 @@ python scripts/localisation_benchmark/vilens_hba.py
 ## Reconstruction Benchmark
 The reconstruction benchmark runs Structure-from-Motion ([COLMAP](https://colmap.github.io/)), Multi-view Stereo ([OpenMVS](https://github.com/cdcseacave/openMVS)), radiance field methods ([Nerfstudio](https://github.com/nerfstudio-project/nerfstudio/tree/main/nerfstudio)'s Nerfacto and Splatfacto), and generates 3D point cloud reconstruction, which is evaluated against the TLS-captured ground truth 3D point cloud.
 
-Build the docker container and run 
+Build the docker container and run the methods:
 ```bash
 cd oxford_spires_dataset
 docker compose -f .docker/docker-compose.yml run --build spires
