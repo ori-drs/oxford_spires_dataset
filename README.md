@@ -4,7 +4,14 @@ This repository contains scripts that are used to evaluate localisation, 3D reco
 This is a pre-release of the software. The codebase will be refactored in the near future.
 
 ## Localisation Benchmark
-The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
+The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
+
+```bash
+python scripts/localisation_benchmark/colmap.py
+python scripts/localisation_benchmark/fast_lio_slam.py
+python scripts/localisation_benchmark/immesh.py
+python scripts/localisation_benchmark/vilens_hba.py
+```
 
 
 ## Reconstruction Benchmark
