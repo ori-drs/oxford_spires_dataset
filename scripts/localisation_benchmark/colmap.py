@@ -21,10 +21,10 @@ def convert_to_tum (path_to_output, path_to_sec):
     handler.save_json(path_to_output + "transforms_colmap_single.json")
 
     escaled_colmap_traj = NeRFTrajReader(path_to_output + "transforms_colmap_single.json").read_file()
-    TUMTrajWriter("{}/output_slam/colmap_tum.txt".format(path_to_sec)).write_file(escaled_colmap_traj)
+    TUMTrajWriter("{}/output/colmap-tum.txt".format(path_to_sec)).write_file(escaled_colmap_traj)
 
     print("PROCESS FINISHED!!")
-    print("Output in: {}/output_slam/colmap_tum.txt".format(path_to_sec))
+    print("Output in: {}/output/colmap-tum.txt".format(path_to_sec))
     print("*********************************************************")
 
 
@@ -45,11 +45,11 @@ def get_sec_list (dataset_dir, flag_is_all=True):
                     "2024-03-18-christ-church-01",
                     "2024-03-18-christ-church-02",
                     "2024-03-18-christ-church-03",
-                    # "2024-03-20-christ-church-05",
-                    # "2024-05-20-bodleian-library-02",
-                    # "2024-05-20-bodleian-library-03",
-                    # "2024-05-20-bodleian-library-04",
-                    # "2024-05-20-bodleian-library-05"
+                    "2024-03-20-christ-church-05",
+                    "2024-05-20-bodleian-library-02",
+                    "2024-05-20-bodleian-library-03",
+                    "2024-05-20-bodleian-library-04",
+                    "2024-05-20-bodleian-library-05"
                     ]
     return list_sec
 
@@ -74,7 +74,7 @@ def evaluation_ape_rmse (path_to_gt, path_traj, dataset_dir, method):
     return rmse
 
 def create_output_folder (path_to_sec):
-    path_to_output = path_to_sec + "/output_slam" + "/colmap/"
+    path_to_output = path_to_sec + "/output" + "/colmap/"
     # if not os.path.exists(path_to_output):
     #         os.makedirs(path_to_output)
     return path_to_output
@@ -96,12 +96,12 @@ if __name__ == "__main__":
     for sec in list_sec:
         
         path_to_sec = dataset_dir + sec
-        path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
+        path_to_gt = path_to_sec + "/processed/trajectory/gt-tum.txt"
 
         path_to_output = create_output_folder (path_to_sec)
 
         convert_to_tum (path_to_output, path_to_sec)
 
-        path_traj = path_to_sec + "/output_slam" + "/colmap_tum.txt"
+        path_traj = path_to_sec + "/output" + "/colmap-tum.txt"
         rmse = evaluation_ape_rmse (path_to_gt, path_traj, dataset_dir, "COLMAP")
     
