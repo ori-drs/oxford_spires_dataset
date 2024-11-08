@@ -46,7 +46,7 @@ def get_recon_metrics(
 
 
 def get_recon_metrics_multi_thresholds(
-    input_cloud: np.ndarray, gt_cloud: np.ndarray, thresholds: list = [0.02, 0.05, 0.1], max_distance=2.0
+    input_cloud: np.ndarray, gt_cloud: np.ndarray, thresholds: list = [0.02, 0.05, 0.1], max_distance=9999.0
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
