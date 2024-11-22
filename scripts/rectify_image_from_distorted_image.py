@@ -52,7 +52,7 @@ class ImageRectifier:
             self.sensor_dict['cameras'][cam_label]['rectified_height'] = new_height
             
             print(f"Camera {cam_label} rectified image size: Width={new_width}, Height={new_height}, please copy this value \n")
-            print(f"")
+            print("")
 
 
     def process_image(self, image, output_path, cam_label):
