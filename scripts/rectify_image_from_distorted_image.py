@@ -37,7 +37,8 @@ class ImageRectifier:
                 balance=balance,
                 new_size=new_size
             )
-            print(f"{cam_label} has :",new_K)
+            print(f"{cam_label} has:")
+            print(new_K)
             
             self.sensor_dict['cameras'][cam_label]['map1'] , self.sensor_dict['cameras'][cam_label]['map2']  = cv2.fisheye.initUndistortRectifyMap(
                convert_to_intrinsic_matrix(np.array(cam_data['intrinsics'])),
@@ -85,7 +86,6 @@ class ImageRectifier:
                     output_file = output_path / rel_path
                     self.process_image(image, output_file, cam_label)
                     # print(f"Processed: {img_path.name}")
-            print("Done")
 
 def convert_to_intrinsic_matrix(intrinsics):
     if len(intrinsics) != 4:
@@ -104,13 +104,13 @@ if __name__ == "__main__":
     '''
     Args:
     - calib_file_path: base calibration file 
-    - distorted_image_input_path: distorted images, entire dir  
-    - rectified_image_output_path: output path
+    - distorted_image_input_path: distorted images folder directory 
+    - rectified_image_output_path: output folder name to save undistorted rectified images
     '''
     
-    calib_file_path = '/home/haedamoh/nerf_data_pipeline/config/fnt_19_base_spires_v2.yaml'
-    distorted_image_input_path = '/home/shared/oxford_spires/processed_ndp/2024-03-13-roq_2/raw/images'
-    rectified_image_output_path = '/home/shared/oxford_spires/processed_ndp/2024-03-13-roq_2/raw/images_rectified'
+    calib_file_path = './config/sensor.yaml'
+    distorted_image_input_path = '/data/2024-03-12-keble-college-01/images'
+    rectified_image_output_path = '/data/2024-03-12-keble-college-01/test/images_rectified'
 
     # Initialize rectifier
     rectifier = ImageRectifier(calib_file_path)
