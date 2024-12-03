@@ -10,10 +10,10 @@ from ._core import (
 )
 
 __all__ = [
+    "OcTree",
     "__doc__",
     "__version__",
+    "convertOctreeToPointCloud",
     "processPCDFolder",
     "removeUnknownPoints",
-    "OcTree",
-    "convertOctreeToPointCloud",
 ]
