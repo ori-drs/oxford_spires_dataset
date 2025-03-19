@@ -87,8 +87,6 @@ def create_dataset_manager_tab():
     global status_label, dir_select
 
     with ui.column().classes("max-w-2xl mx-auto p-4"):
-        ui.label("OxSpires Dataset Manager").classes("text-h4 q-mb-md text-center")
-
         # Directory selection section
         ui.label("Select Base Directory").classes("text-h6 q-mb-md text-center")
         with ui.row().classes("justify-center"):
@@ -214,9 +212,9 @@ def create_analysis_tab():
             ui.button("Run Analysis", color="primary").classes("q-mt-md")
 
 
-# Create the main application UI
-ui.label("Oxford Spires Dataset Tool").classes("text-h3 text-center q-my-md")
-
+# Create the main application UI with better centering
+with ui.row().classes("w-full justify-center"):
+    ui.label("Oxford Spires Dataset").classes("text-h4 q-my-md")
 # Create tabs
 with ui.tabs().classes("w-full justify-center") as tabs:
     ui.tab("Dataset Manager", icon="cloud_download")
