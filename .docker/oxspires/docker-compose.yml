@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  deploy:
+    build:
+      context: ../..
+      dockerfile: .docker/oxspires/Dockerfile
+    ports:
+      - "8080:8080" # host port to container port 
+    restart: unless-stopped
+    command: python gui.py
+
+  debug:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - /home/data:/home/data
+      - ./:/app
+    tty: true
+    stdin_open: true
+    command: bash
+
+  filebrowser:
+    image: filebrowser/filebrowser
+    user: "${UID}:${GID}"
+    ports:
+      - "8081:80"
+    volumes:
+      - "/:/srv"
+      - "/home/yifu/workspace/slam_utils/filebrowser/filebrowser.db:/database.db"
+    restart: unless-stopped
