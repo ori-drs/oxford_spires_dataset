@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 as base
 
 # Set Python version as build argument with default
 ARG PYTHON_VERSION=3.10
@@ -16,14 +16,22 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+ARG GID=1012
+ARG UID=1012
+ENV UNAME=docker_dev
+RUN addgroup --gid $GID $UNAME
+RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $UNAME
+USER ${UNAME}
+ARG HOME_DIR=/home/${UNAME}
 
-ARG OXSPIRES_DIR=/home/oxford_spires_dataset
+ARG OXSPIRES_DIR=${HOME_DIR}/oxford_spires_dataset
 WORKDIR ${OXSPIRES_DIR}
 
-COPY ./scripts/dataset_manager/gui.py .
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./oxford_spires_utils/ ./oxford_spires_utils/
 COPY ./pyproject.toml .
 RUN pip install .
+
+
 
