@@ -17,8 +17,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /home/data:/home/data
-      - ./:/app
+      - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
+      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
+      - ~/data/test://home/docker_dev/data
     tty: true
     stdin_open: true
     command: bash
