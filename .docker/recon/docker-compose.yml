@@ -1,9 +1,9 @@
 services:
-  spires:
+  oxspires_recon:
     container_name: spires_container
     build:
-      context: ..
-      dockerfile: .docker/Dockerfile
+      context: ../..
+      dockerfile: .docker/recon/Dockerfile
       target: deploy
       args:
         - USERNAME=${USER:-user}

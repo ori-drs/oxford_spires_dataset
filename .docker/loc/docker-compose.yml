@@ -1,9 +1,9 @@
 services:
-  spires:
+  oxspires_loc:
     container_name: spires_container
     build:
-      context: ..
-      dockerfile: .docker_loc/Dockerfile
+      context: ../..
+      dockerfile: .docker/loc/Dockerfile
       args:
         - USERNAME=${USER:-user}
         - UID=${UID}
