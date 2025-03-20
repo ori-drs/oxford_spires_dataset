@@ -34,5 +34,5 @@ COPY ./pyproject.toml .
 RUN pip install .
 
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
-
+RUN echo "alias spires_gui=\"python ${OXSPIRES_DIR}/scripts/dataset_manager/gui.py\"" >> ~/.bashrc
 
