@@ -11,6 +11,7 @@ downloader = DatasetDownloader()
 # Define status_label as a global variable
 status_label = None
 dir_select = None
+status_table = None
 
 
 def get_common_directories():
@@ -35,19 +36,39 @@ def update_directory_status():
         status_label.text = f"Directory does not exist: {base_dir}"
         return
 
-    # Count files and directories
-    files = list(base_dir.rglob("*"))
-    dirs = [f for f in files if f.is_dir()]
-    files = [f for f in files if f.is_file()]
+    # Clear existing rows in the table
+    print(status_table)
+    print("Clearing table")
+    # status_table.clear()
+    # remove the current rows
+    status_table.rows = []
+    print(status_table)
+    # Refresh local sequences
+    downloader.load_local_sequences()
 
-    # Check if directory is empty
-    is_empty = len(files) == 0 and len(dirs) == 0
+    # Add rows for each remote sequence
+    for sequence in downloader.local_sequences:
+        if sequence in downloader.remote_sequences:
+            # status = downloader.get_local_sequence_status(sequence)
+            status = "available"
+        else:
+            status = "invalid"
 
+        # Create status indicators
+        status_icon = {
+            "available": "✅ Complete",
+            "incomplete": "⚠️ Incomplete",
+            "not_found": "❌ Not Downloaded",
+            "invalid": "❓ Invalid",
+        }.get(status, "❓ Unknown")
+
+        # Add the row to the table
+        row = {"sequence": sequence, "status": status_icon}
+        status_table.add_row(row)
+        print(status_table)
+    # Update the status label with the current directory information
     status_text = f"Current directory: {base_dir}\n"
-    status_text += f"Status: {'Empty' if is_empty else 'Not Empty'}\n"
-    status_text += f"Number of files: {len(files)}\n"
-    status_text += f"Number of directories: {len(dirs)}"
-
+    # status_text += f"Found {len(downloader.local_sequences)} local sequences"
     status_label.text = status_text
 
 
@@ -76,12 +97,13 @@ async def handle_directory_change(e):
 
     # Update the downloader's base directory
     downloader.base_dir = new_dir  # Pass Path object directly instead of string
+    downloader.load_local_sequences()  # Refresh local sequences list
     update_directory_status()
 
 
 def create_dataset_manager_tab():
     """Create the Dataset Manager tab."""
-    global status_label, dir_select
+    global status_label, dir_select, status_table
 
     # First, define all the functions we'll need
     async def download_sequence():
@@ -97,10 +119,12 @@ def create_dataset_manager_tab():
         progress.visible = True
         status_label.text = f"Downloading sequence: {sequence_select.value}"
 
-        success = await asyncio.to_thread(downloader.download_sequence, sequence_select.value)
+        # Use download_subfolder instead of download_sequence
+        success = await asyncio.to_thread(downloader.download_subfolder, f"{sequence_select.value}/raw")
 
         if success:
             ui.notify("Sequence downloaded successfully!", type="positive")
+            downloader.load_local_sequences()  # Refresh local sequences
             update_directory_status()  # Update status after successful download
         else:
             ui.notify("Failed to download sequence", type="negative")
@@ -142,22 +166,26 @@ def create_dataset_manager_tab():
         with ui.row().classes("justify-center"):
             dir_select = ui.select(options=get_common_directories(), label="Select Directory", with_input=True)
             dir_select.props('style="width: 300px"')
-
-            # Set initial value
             dir_select.value = str(downloader.base_dir)
-
-            # Handle directory changes
             dir_select.on("update:model-value", handle_directory_change)
 
-        # Directory status
+        # Status label
         status_label = ui.label("").classes("text-center q-mt-md q-mb-md whitespace-pre-line")
+
+        # Create a table to display the status of sequences
+        # status_table = ui.table(columns=["Sequence", "Status"], rows=[]).classes("q-mt-md")
+        columns = [
+            {"name": "sequence", "label": "Sequence", "field": "sequence", "required": True, "align": "left"},
+            {"name": "status", "label": "Status", "field": "status", "sortable": True},
+        ]
+        rows = []
+        status_table = ui.table(columns=columns, rows=rows, row_key="name")
+        update_directory_status()
 
         # Sequence download section
         ui.label("Download Sequence").classes("text-h6 q-mb-md text-center")
         with ui.row().classes("justify-center"):
-            sequence_select = ui.select(
-                options=downloader.list_available_sequences(), label="Select Sequence", with_input=True
-            )
+            sequence_select = ui.select(options=downloader.remote_sequences, label="Select Sequence", with_input=True)
             sequence_select.props('style="width: 300px"')
 
         # Add download sequence button here
@@ -178,8 +206,8 @@ def create_dataset_manager_tab():
         with ui.row().classes("justify-center gap-4"):
             ui.button("Download Ground Truth", on_click=download_ground_truth).props("color=secondary")
 
-        # Initialize directory status
-        update_directory_status()
+    # Call the function to update the directory status
+    update_directory_status()
 
 
 def create_visualization_tab():
