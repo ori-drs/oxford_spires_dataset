@@ -86,6 +86,59 @@ def create_dataset_manager_tab():
     """Create the Dataset Manager tab."""
     global status_label, dir_select
 
+    # First, define all the functions we'll need
+    async def download_sequence():
+        if not sequence_select.value:
+            ui.notify("Please select a sequence", type="warning")
+            return
+
+        # Check if directory exists before downloading
+        if not Path(downloader.base_dir).exists():
+            ui.notify("Selected directory does not exist. Please select a valid directory.", type="negative")
+            return
+
+        progress.visible = True
+        status_label.text = f"Downloading sequence: {sequence_select.value}"
+
+        success = await asyncio.to_thread(downloader.download_sequence, sequence_select.value)
+
+        if success:
+            ui.notify("Sequence downloaded successfully!", type="positive")
+            update_directory_status()  # Update status after successful download
+        else:
+            ui.notify("Failed to download sequence", type="negative")
+
+        progress.visible = False
+
+    async def download_ground_truth():
+        if not site_select.value:
+            ui.notify("Please select a site", type="warning")
+            return
+
+        # Check if directory exists before downloading
+        if not Path(downloader.base_dir).exists():
+            ui.notify("Selected directory does not exist. Please select a valid directory.", type="negative")
+            return
+
+        progress.visible = True
+        status_label.text = f"Downloading ground truth for: {site_select.value}"
+
+        success = await asyncio.to_thread(downloader.download_ground_truth, site_select.value)
+
+        if success:
+            ui.notify("Ground truth downloaded successfully!", type="positive")
+            update_directory_status()  # Update status after successful download
+        else:
+            ui.notify("Failed to download ground truth", type="negative")
+
+        progress.visible = False
+
+    # Pre-declare variables that will be used in the nested functions
+    sequence_select = None
+    site_select = None
+    progress = None
+
+    # Now build the UI
     with ui.column().classes("max-w-2xl mx-auto p-4"):
         # Directory selection section
         ui.label("Select Base Directory").classes("text-h6 q-mb-md text-center")
@@ -110,6 +163,10 @@ def create_dataset_manager_tab():
             )
             sequence_select.props('style="width: 300px"')
 
+        # Add download sequence button here
+        with ui.row().classes("justify-center q-mb-lg"):
+            ui.button("Download Sequence", on_click=download_sequence).props("color=primary")
+
         # Ground truth download section
         ui.label("Download Ground Truth").classes("text-h6 q-mb-md text-center")
         with ui.row().classes("justify-center"):
@@ -120,55 +177,8 @@ def create_dataset_manager_tab():
         progress = ui.linear_progress(0).classes("w-full")
         progress.visible = False
 
-        async def download_sequence():
-            if not sequence_select.value:
-                ui.notify("Please select a sequence", type="warning")
-                return
-
-            # Check if directory exists before downloading
-            if not Path(downloader.base_dir).exists():
-                ui.notify("Selected directory does not exist. Please select a valid directory.", type="negative")
-                return
-
-            progress.visible = True
-            status_label.text = f"Downloading sequence: {sequence_select.value}"
-
-            success = await asyncio.to_thread(downloader.download_sequence, sequence_select.value)
-
-            if success:
-                ui.notify("Sequence downloaded successfully!", type="positive")
-                update_directory_status()  # Update status after successful download
-            else:
-                ui.notify("Failed to download sequence", type="negative")
-
-            progress.visible = False
-
-        async def download_ground_truth():
-            if not site_select.value:
-                ui.notify("Please select a site", type="warning")
-                return
-
-            # Check if directory exists before downloading
-            if not Path(downloader.base_dir).exists():
-                ui.notify("Selected directory does not exist. Please select a valid directory.", type="negative")
-                return
-
-            progress.visible = True
-            status_label.text = f"Downloading ground truth for: {site_select.value}"
-
-            success = await asyncio.to_thread(downloader.download_ground_truth, site_select.value)
-
-            if success:
-                ui.notify("Ground truth downloaded successfully!", type="positive")
-                update_directory_status()  # Update status after successful download
-            else:
-                ui.notify("Failed to download ground truth", type="negative")
-
-            progress.visible = False
-
-        # Download buttons
+        # Only ground truth download button here
         with ui.row().classes("justify-center gap-4"):
-            ui.button("Download Sequence", on_click=download_sequence).props("color=primary")
             ui.button("Download Ground Truth", on_click=download_ground_truth).props("color=secondary")
 
         # Initialize directory status
