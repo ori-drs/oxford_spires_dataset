@@ -48,11 +48,7 @@ def update_directory_status():
 
     # Add rows for each remote sequence
     for sequence in downloader.local_sequences:
-        if sequence in downloader.remote_sequences:
-            # status = downloader.get_local_sequence_status(sequence)
-            status = "available"
-        else:
-            status = "invalid"
+        status = downloader.get_local_sequence_status(sequence)
 
         # Create status indicators
         status_icon = {

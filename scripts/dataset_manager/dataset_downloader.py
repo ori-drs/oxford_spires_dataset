@@ -166,6 +166,38 @@ class DatasetDownloader:
             self.logger.error(f"Failed to download ground truth for {site_name}: {str(e)}")
             return False
 
+    def get_local_sequence_status(self, sequence_name: str) -> str:
+        """
+        Get the status of a local sequence.
+
+        Args:
+            sequence_name: Name of the sequence
+
+        Returns:
+            str: Status of the sequence ('available', 'incomplete', or 'not_found')
+        """
+        if sequence_name not in self.remote_sequences:
+            return "invalid"
+
+        sequence_path = self.base_dir / sequence_name
+
+        if not sequence_path.exists():
+            return "not_found"
+
+        # Check if raw directory exists (which should contain all the sequence data)
+        raw_path = sequence_path / "raw"
+        if not raw_path.exists():
+            return "incomplete"
+
+        # Check for key files that should be present in a complete download
+        # You can adjust these checks based on what files you consider essential
+        camera_dir = raw_path / "camera"
+        if not camera_dir.exists() or not list(camera_dir.glob("*.txt")):
+            return "incomplete"
+
+        # If we got this far, the sequence is likely complete
+        return "available"
+
     def list_available_sites(self) -> List[str]:
         """
         List all available sites for ground truth data.
