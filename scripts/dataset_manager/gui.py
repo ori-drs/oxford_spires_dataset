@@ -19,9 +19,6 @@ def get_common_directories():
         str(Path.home()),
         str(Path.home() / "data"),
         str(Path.home() / "workspace"),
-        str(Path.home() / "Downloads"),
-        "/data",
-        "/home/data",
     ]
     return [d for d in common_dirs if os.path.exists(d)]
 
