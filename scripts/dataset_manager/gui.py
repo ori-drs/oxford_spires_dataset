@@ -219,24 +219,29 @@ def create_analysis_tab():
             ui.button("Run Analysis", color="primary").classes("q-mt-md")
 
 
-# Create the main application UI with better centering
-with ui.row().classes("w-full justify-center"):
-    ui.label("Oxford Spires Dataset").classes("text-h4 q-my-md")
-# Create tabs
-with ui.tabs().classes("w-full justify-center") as tabs:
-    ui.tab("Dataset Manager", icon="cloud_download")
-    ui.tab("Visualization", icon="bar_chart")
-    ui.tab("Analysis", icon="analytics")
+def main():
+    # Create the main application UI with better centering
+    with ui.row().classes("w-full justify-center"):
+        ui.label("Oxford Spires Dataset").classes("text-h4 q-my-md")
+    # Create tabs
+    with ui.tabs().classes("w-full justify-center") as tabs:
+        ui.tab("Dataset Manager", icon="cloud_download")
+        ui.tab("Visualization", icon="bar_chart")
+        ui.tab("Analysis", icon="analytics")
 
-# Create tab panels that are linked to the tabs
-with ui.tab_panels(tabs, value="Dataset Manager").classes("w-full"):
-    with ui.tab_panel("Dataset Manager"):
-        create_dataset_manager_tab()
+    # Create tab panels that are linked to the tabs
+    with ui.tab_panels(tabs, value="Dataset Manager").classes("w-full"):
+        with ui.tab_panel("Dataset Manager"):
+            create_dataset_manager_tab()
 
-    with ui.tab_panel("Visualization"):
-        create_visualization_tab()
+        with ui.tab_panel("Visualization"):
+            create_visualization_tab()
 
-    with ui.tab_panel("Analysis"):
-        create_analysis_tab()
+        with ui.tab_panel("Analysis"):
+            create_analysis_tab()
 
-ui.run(host="0.0.0.0", port=8080)
+    ui.run(host="0.0.0.0", port=8080)
+
+
+if __name__ in {"__main__", "__mp_main__"}:
+    main()
