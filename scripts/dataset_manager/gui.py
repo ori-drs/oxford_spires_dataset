@@ -1,8 +1,8 @@
 import asyncio
-import os
 from pathlib import Path
 
 from dataset_downloader import DatasetDownloader
+from dir_utils import get_common_directories
 from nicegui import ui
 
 
@@ -34,16 +34,6 @@ class OxSpiresGUI:
                 self.create_analysis_tab()
 
         ui.run(host="0.0.0.0", port=8080)
-
-    @staticmethod
-    def get_common_directories():
-        """Get a list of common directories to choose from."""
-        common_dirs = [
-            str(Path.home()),
-            str(Path.home() / "data"),
-            str(Path.home() / "workspace"),
-        ]
-        return [d for d in common_dirs if os.path.exists(d)]
 
     def update_directory_status(self):
         # global status_label, sequence_status_list
@@ -181,9 +171,7 @@ class OxSpiresGUI:
             # Directory selection section
             ui.label("Select Base Directory").classes("text-h6 q-mb-md text-center")
             with ui.row().classes("justify-center"):
-                self.dir_select = ui.select(
-                    options=self.get_common_directories(), label="Select Directory", with_input=True
-                )
+                self.dir_select = ui.select(options=get_common_directories(), label="Select Directory", with_input=True)
                 self.dir_select.props('style="width: 300px"')
                 self.dir_select.value = str(self.downloader.base_dir)
                 self.dir_select.on("update:model-value", self.handle_directory_change)
