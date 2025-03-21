@@ -11,7 +11,7 @@ downloader = DatasetDownloader()
 # Define status_label as a global variable
 status_label = None
 dir_select = None
-status_table = None
+sequence_status_list = None
 
 
 def get_common_directories():
@@ -25,10 +25,15 @@ def get_common_directories():
 
 
 def update_directory_status():
+    # global status_label, sequence_status_list
     """Update the status information for the current directory."""
 
     # If status_label hasn't been created yet, return early
     if status_label is None:
+        print("status_label is None")
+        return
+    if sequence_status_list is None:
+        print("sequence_status_list is None")
         return
 
     base_dir = Path(downloader.base_dir)
@@ -37,7 +42,7 @@ def update_directory_status():
         return
 
     # Clear existing rows in the table
-    status_table.rows = []
+    sequence_status_list.clear()
     # Refresh local sequences
     downloader.load_local_sequences()
 
@@ -46,7 +51,7 @@ def update_directory_status():
         status = downloader.get_local_sequence_status(sequence)
 
         # Create status indicators
-        status_icon = {
+        {
             "available": "✅ Complete",
             "incomplete": "⚠️ Incomplete",
             "not_found": "❌ Not Downloaded",
@@ -54,8 +59,14 @@ def update_directory_status():
         }.get(status, "❓ Unknown")
 
         # Add the row to the table
-        row = {"sequence": sequence, "status": status_icon}
-        status_table.add_row(row)
+        # row = {"sequence": sequence, "status": status_icon}
+        # status_table.add_row(row)
+
+        with sequence_status_list:
+            with ui.expansion("Expand!", icon="check").classes("w-full"):
+                ui.label("inside the expansion")
+            with ui.expansion("Incomplete!", icon="warning").classes("w-full"):
+                ui.label("inside the expansion")
     # Update the status label with the current directory information
     status_text = f"Current directory: {base_dir}\n"
     status_label.text = status_text
@@ -92,7 +103,7 @@ async def handle_directory_change(e):
 
 def create_dataset_manager_tab():
     """Create the Dataset Manager tab."""
-    global status_label, dir_select, status_table
+    global status_label, dir_select, sequence_status_list
 
     # First, define all the functions we'll need
     async def download_sequence():
@@ -162,13 +173,9 @@ def create_dataset_manager_tab():
         status_label = ui.label("").classes("text-center q-mt-md q-mb-md whitespace-pre-line")
 
         # Create a table to display the status of sequences
-        # status_table = ui.table(columns=["Sequence", "Status"], rows=[]).classes("q-mt-md")
-        columns = [
-            {"name": "sequence", "label": "Sequence", "field": "sequence", "required": True, "align": "left"},
-            {"name": "status", "label": "Status", "field": "status", "sortable": True},
-        ]
-        rows = []
-        status_table = ui.table(columns=columns, rows=rows, row_key="name")
+        sequence_status_list = ui.card().classes("w-full q-mt-md")
+        print("sequence_status_list", sequence_status_list)
+
         update_directory_status()
 
         # Sequence download section
