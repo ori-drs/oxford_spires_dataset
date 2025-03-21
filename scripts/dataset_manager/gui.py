@@ -37,12 +37,7 @@ def update_directory_status():
         return
 
     # Clear existing rows in the table
-    print(status_table)
-    print("Clearing table")
-    # status_table.clear()
-    # remove the current rows
     status_table.rows = []
-    print(status_table)
     # Refresh local sequences
     downloader.load_local_sequences()
 
@@ -61,10 +56,8 @@ def update_directory_status():
         # Add the row to the table
         row = {"sequence": sequence, "status": status_icon}
         status_table.add_row(row)
-        print(status_table)
     # Update the status label with the current directory information
     status_text = f"Current directory: {base_dir}\n"
-    # status_text += f"Found {len(downloader.local_sequences)} local sequences"
     status_label.text = status_text
 
 
