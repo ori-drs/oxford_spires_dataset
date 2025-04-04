@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import yaml
-from fast_lio_slam import run_fast_lio_slam, convert_to_tum
 
 # TODO: loggin
 # def setup_logging():
