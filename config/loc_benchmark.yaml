@@ -1,0 +1,23 @@
+localisation_benchmark:
+  # package_dir: "/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset"
+  dataset_folder: "/home/miguelangel/data/Oxford-Spires-Dataset/" 
+  flag_is_all: false # If true it rund all the sequences in the 'dataset_dir'. If false it runs the sequences in 'list_sec'
+
+  list_sec: [
+              "2024-03-12-keble-college-02",
+              "2024-03-12-keble-college-03",
+              # "2024-03-12-keble-college-04",
+              # "2024-03-12-keble-college-05",
+              # "2024-03-13-observatory-quarter-01",
+              # "2024-03-13-observatory-quarter-02",
+              # "2024-03-14-blenheim-palace-01",
+              # "2024-03-14-blenheim-palace-02",
+              # "2024-03-14-blenheim-palace-05",
+              # "2024-03-18-christ-church-01",
+              # "2024-03-18-christ-church-02",
+              # "2024-03-18-christ-church-03",
+              # "2024-03-20-christ-church-05",
+              # "2024-05-20-bodleian-library-02"
+              ]
+  
+  run_fast_lio_slam: true
