@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from spires_cpp import (
-    OcTree,
-    convertOctreeToPointCloud,
-    processPCDFolder,
-    removeUnknownPoints,
-)
+from spires_cpp import OcTree, convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 pcd_folder = "/home/yifu/data/nerf_data_pipeline/2024-03-13-maths_1/raw/individual_clouds_new"
 resolution = 0.1
