@@ -74,9 +74,9 @@ class TUMTrajReader(BasicTrajReader):
                 print("skipping lines with wrong prefix or suffix")
                 continue
             t_float128 = TimeStamp(t_string=fname[len(prefix) : len(fname) - len(suffix)]).t_float128
-            assert (
-                TimeStamp.get_string_from_t_float128(t_float128) == fname[len(prefix) : len(fname) - len(suffix)]
-            ), f"loss of precision in timestamp: before {fname[len(prefix) : len(fname)-len(suffix)]}; after {t_float}"
+            assert TimeStamp.get_string_from_t_float128(t_float128) == fname[len(prefix) : len(fname) - len(suffix)], (
+                f"loss of precision in timestamp: before {fname[len(prefix) : len(fname) - len(suffix)]}; after {t_float}"
+            )
             time_stamp.append(t_float128)
             translation = splited[1:4]
             quaternion_xyzw = splited[4:8]

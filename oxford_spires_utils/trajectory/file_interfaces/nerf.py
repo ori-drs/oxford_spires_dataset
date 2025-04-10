@@ -163,14 +163,14 @@ class NeRFTrajWriter(BasicTrajWriter):
         @params template_meta: template json file
         """
         meta = deepcopy(template_meta)
-        assert (
-            len(meta["frames"]) == pose.num_poses
-        ), "Number of frames in template file does not match the number of poses"
+        assert len(meta["frames"]) == pose.num_poses, (
+            "Number of frames in template file does not match the number of poses"
+        )
         for i in range(pose.num_poses):
             # assume order of frames in template file is the same as the order of poses
-            assert pose.timestamps[i] == NeRFTrajUtils.get_t_float128_from_fname(
-                meta["frames"][i]["file_path"]
-            ), "Timestamps of frames in template file does not match the timestamps of poses"
+            assert pose.timestamps[i] == NeRFTrajUtils.get_t_float128_from_fname(meta["frames"][i]["file_path"]), (
+                "Timestamps of frames in template file does not match the timestamps of poses"
+            )
             meta["frames"][i]["transform_matrix"] = pose.poses_se3[i].tolist()
         return meta
 

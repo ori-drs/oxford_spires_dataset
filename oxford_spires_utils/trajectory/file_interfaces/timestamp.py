@@ -74,9 +74,9 @@ class TimeStamp:
 
         t_float128 = np.float128(self.t_string)
         # check
-        assert (
-            TimeStamp.get_string_from_t_float128(t_float128) == self.t_string
-        ), f"Precision Lost: t_float128 {t_float128} should be {self.t_string}"
+        assert TimeStamp.get_string_from_t_float128(t_float128) == self.t_string, (
+            f"Precision Lost: t_float128 {t_float128} should be {self.t_string}"
+        )
 
         return t_float128
 
@@ -109,9 +109,9 @@ class TimeStamp:
         @param f: np.float128
         @return: (sec, nsec), both str, nsec is 9 digits
         """
-        assert isinstance(
-            t_float128, np.float128
-        ), f"t_float128 should be of type np.float128, but is {type(t_float128)}"
+        assert isinstance(t_float128, np.float128), (
+            f"t_float128 should be of type np.float128, but is {type(t_float128)}"
+        )
         sec, nsec = str(t_float128).split(".")
         nsec = nsec.ljust(NSECONDS_DIGITS, "0")
         assert len(nsec) == NSECONDS_DIGITS, f"nsec {nsec} should be {NSECONDS_DIGITS} digits"
