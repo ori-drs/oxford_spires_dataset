@@ -40,9 +40,9 @@ class Camera:
     def __post_init__(self):
         assert self.camera_model in supported_camera_models, f"Camera model {self.camera_model} not supported"
         assert len(self.intrinsics) == 4, f"Expected 4 intrinsics, got {len(self.intrinsics)}"
-        assert (
-            len(self.extra_params) == expected_num_extra_param[self.camera_model]
-        ), f"Expected {expected_num_extra_param[self.camera_model]} extra params, got {len(self.extra_params)}"
+        assert len(self.extra_params) == expected_num_extra_param[self.camera_model], (
+            f"Expected {expected_num_extra_param[self.camera_model]} extra params, got {len(self.extra_params)}"
+        )
         self.T_cam_lidar_overwrite = (
             get_transformation_matrix(self.T_cam_lidar_t_xyz_q_xyzw_overwrite)
             if len(self.T_cam_lidar_t_xyz_q_xyzw_overwrite) > 0

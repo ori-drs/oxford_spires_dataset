@@ -122,7 +122,7 @@ def run_colmap(
         "colmap image_undistorter",
         f"--image_path {image_path}",
         f"--input_path {sparse_0_path}",
-        f"--output_path {output_path/'dense'}",
+        f"--output_path {output_path / 'dense'}",
         "--output_type COLMAP",
         f"--max_image_size {max_image_size}",
     ]

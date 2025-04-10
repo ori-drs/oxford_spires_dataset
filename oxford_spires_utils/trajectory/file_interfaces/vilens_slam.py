@@ -31,6 +31,7 @@ class VilensSlamTrajReader(BasicTrajReader):
         quat_wxyz = np.roll(quat_xyzw, 1, axis=1)  # xyzw -> wxyz
         return evo.core.trajectory.PoseTrajectory3D(xyz, quat_wxyz, timestamps=timestamps)
 
+
 class VilensSlamTrajWriter(BasicTrajWriter):
     """
     write VILENS SLAM trajectory format file (poses.csv)
@@ -41,7 +42,7 @@ class VilensSlamTrajWriter(BasicTrajWriter):
 
     def write_file(self, pose):
         """
-        this is used for CSV style trajectory file 
+        this is used for CSV style trajectory file
         @param self.file_path: path to save the file
         @param pose: PoseTrajectory3D from evo
         """
