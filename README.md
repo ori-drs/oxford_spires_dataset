@@ -35,7 +35,7 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 Currently, the NVS benchmakr is included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
 ## Contributing
-Please refer to Angular's guide for contributing(https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md).
+Please refer to [Angular's guide](https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md) for contributing.
 
 ### Formatting
 We use [Ruff](https://github.com/astral-sh/ruff) as the formatter and linter for Python, and Clang for C++. 
