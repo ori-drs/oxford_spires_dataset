@@ -6,10 +6,11 @@ repos:
       # Run the linter.
       - id: ruff
         types_or: [python, pyi, jupyter]
-        args: [ --fix ]
+        args: [--fix, --config, pyproject.toml]
       # Run the formatter.
       - id: ruff-format
         types_or: [python, pyi, jupyter]
+        args: [--config, pyproject.toml]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v18.1.8  # Replace with the latest version
