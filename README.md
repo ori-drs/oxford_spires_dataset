@@ -42,11 +42,11 @@ We use [Ruff](https://github.com/astral-sh/ruff) as the formatter and linter for
 
 Installing the [`pre-commit`](https://pre-commit.com/) will format and lint your code before you commit:
 ```bash
-$ pip install pre-commit
-$ pre-commit install
+pip install pre-commit
+pre-commit install
 ```
 You can also run Ruff manually:
 ```bash
-$ ruff check --fix --config pyproject.toml
-$ ruff format --config pyproject.toml
+ruff check --fix --config pyproject.toml
+ruff format --config pyproject.toml
 ```
