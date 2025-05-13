@@ -1,5 +1,8 @@
 # Oxford Spires Dataset
-This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/). 
+This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/).
+- [Website](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires)
+- [Arxiv](https://arxiv.org/abs/2411.10546)
+- [Video](https://www.youtube.com/watch?v=AKZ-YrOob_4)
 
 This is a pre-release of the software. The codebase will be refactored in the near future. Please feel free to ask questions about the dataset and report bugs in the Github Issues.
 
