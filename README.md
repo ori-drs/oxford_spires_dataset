@@ -1,7 +1,17 @@
 # Oxford Spires Dataset
-This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/). 
+This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR).
+- [Website](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires)
+- [Arxiv](https://arxiv.org/abs/2411.10546)
+- [Video](https://www.youtube.com/watch?v=AKZ-YrOob_4)
 
 This is a pre-release of the software. The codebase will be refactored in the near future. Please feel free to ask questions about the dataset and report bugs in the Github Issues.
+
+## Download
+You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`.
+```bash
+python scripts/dataset_download.py
+```
+You can also download the dataset from [Google Drive](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive).
 
 ## Localisation Benchmark
 The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
@@ -35,19 +45,14 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 Currently, the NVS benchmakr is included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
 ## Contributing
-Please refer to [Angular's guide](https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md) for contributing.
+Please refer to the [contributing](docs/contributing.md) page.
 
-### Formatting
-We use [Ruff](https://github.com/astral-sh/ruff) as the formatter and linter for Python, and Clang for C++.
-
-Installing [`pre-commit`](https://pre-commit.com/) will format and lint your code before you commit:
-```bash
-# pip install pre-commit
-pre-commit install
-```
-Alternatively, you can also run Ruff manually:
-```bash
-# pip install ruff
-ruff check --fix --config pyproject.toml
-ruff format --config pyproject.toml
+## Citation
+```bibtex
+@article{tao2025spires,
+title={The Oxford Spires Dataset: Benchmarking Large-Scale LiDAR-Visual Localisation, Reconstruction and Radiance Field Methods},
+author={Tao, Yifu and Mu{\~n}oz-Ba{\~n}{\'o}n, Miguel {\'A}ngel and Zhang, Lintong and Wang, Jiahao and Fu, Lanke Frank Tarimo and Fallon, Maurice},
+journal={International Journal of Robotics Research}, 
+year={2025},
+}
 ```
