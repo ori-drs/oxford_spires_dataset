@@ -1,5 +1,5 @@
 # Oxford Spires Dataset
-This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/).
+This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR).
 - [Website](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires)
 - [Arxiv](https://arxiv.org/abs/2411.10546)
 - [Video](https://www.youtube.com/watch?v=AKZ-YrOob_4)
@@ -46,3 +46,13 @@ Currently, the NVS benchmakr is included in the reconstruction benchmark script,
 
 ## Contributing
 Please refer to the [contributing](docs/contributing.md) page.
+
+## Citation
+```bibtex
+@article{tao2025spires,
+title={The Oxford Spires Dataset: Benchmarking Large-Scale LiDAR-Visual Localisation, Reconstruction and Radiance Field Methods},
+author={Tao, Yifu and Mu{\~n}oz-Ba{\~n}{\'o}n, Miguel {\'A}ngel and Zhang, Lintong and Wang, Jiahao and Fu, Lanke Frank Tarimo and Fallon, Maurice},
+journal={International Journal of Robotics Research}, 
+year={2025},
+}
+```
