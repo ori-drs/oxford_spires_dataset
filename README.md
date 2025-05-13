@@ -3,6 +3,13 @@ This repository contains scripts that are used to evaluate localisation, 3D reco
 
 This is a pre-release of the software. The codebase will be refactored in the near future. Please feel free to ask questions about the dataset and report bugs in the Github Issues.
 
+## Download
+You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`.
+```bash
+python scripts/dataset_download.py
+```
+You can also download the dataset from [Google Drive](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive).
+
 ## Localisation Benchmark
 The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
 
