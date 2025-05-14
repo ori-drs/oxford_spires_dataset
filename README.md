@@ -42,8 +42,11 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 ```
 
 ## Novel-view Synthesis Benchmark
-Currently, the NVS benchmakr is included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
-
+```bash
+# This will download data from Hugging Face first
+python scripts/reconstruction_benchmark/nvs_benchmark.py
+```
+the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 ## Contributing
 Please refer to the [contributing](docs/contributing.md) page.
 
