@@ -59,7 +59,12 @@ def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
 
 def update_argv(nerfstudio_config, follow_up=False):
     if not follow_up:
-        assert sys.argv[0].endswith(".py") and len(sys.argv) == 1, "No args should be provided for the script"
+        assert sys.argv[0].endswith(".py")
+        if sys.argv[0].endswith("main.py"):
+            assert len(sys.argv) <= 3, "Only the config file should be provided."
+            assert sys.argv[1] == "--config-file"
+            sys.argv = [sys.argv[0]]
+        assert len(sys.argv) == 1, "No args should be provided for the script"
     for k, v in nerfstudio_config.items():
         if k in ("method", "dataparser"):
             sys.argv.append(f"{v}")
