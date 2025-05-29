@@ -5,7 +5,16 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from nerf_data_pipeline.utils.bash_command import run_command
+
+
+def run_command(cmd, log_path=None):
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, universal_newlines=True)
+    for line in process.stdout:
+        print(line, end="")
+        if log_path is not None:
+            assert isinstance(log_path, (Path, str))
+            with open(log_path, "a") as f:
+                f.write(line)
 
 
 def run_cmvs(
