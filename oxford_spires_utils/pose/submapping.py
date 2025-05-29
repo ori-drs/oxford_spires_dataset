@@ -6,11 +6,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from evo.core.trajectory import PoseTrajectory3D
-from nerf_data_pipeline.depth.lidar_fisheye_projection import get_depth_from_cloud
-from nerf_data_pipeline.depth.mesh_depth import get_depth_from_mesh, get_vertices_visibility_from_mesh
-from nerf_data_pipeline.depth.utils import save_projection_outputs
-from nerf_data_pipeline.pose.utils import PosePlotter
 from sklearn.cluster import SpectralClustering
+
+from oxford_spires_utils.depth.lidar_fisheye_projection import get_depth_from_cloud
+from oxford_spires_utils.depth.mesh_depth import get_depth_from_mesh, get_vertices_visibility_from_mesh
+from oxford_spires_utils.depth.utils import save_projection_outputs
+from oxford_spires_utils.pose.utils import PosePlotter
 
 
 class SubmapHandler:

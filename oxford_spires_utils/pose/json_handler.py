@@ -3,7 +3,8 @@ import shutil
 from pathlib import Path
 
 import numpy as np
-from nerf_data_pipeline.pose.json_handler_submap_utils import get_xyz, save_submap_cluster, viz_submap_cluster
+
+from oxford_spires_utils.pose.json_handler_submap_utils import get_xyz, save_submap_cluster, viz_submap_cluster
 
 
 class JsonHandler:
