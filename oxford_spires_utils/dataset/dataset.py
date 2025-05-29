@@ -7,11 +7,12 @@ import pyrender
 import trimesh
 import yaml
 from evo.core.trajectory import PosePath3D
-from nerf_data_pipeline.dataset.sensor import Sensor
-from nerf_data_pipeline.dataset.utils import find_closest_in_sorted
-from nerf_data_pipeline.pose.file_interfaces import VilensSlamTrajReader
-from nerf_data_pipeline.pose.file_interfaces.timestamp import TimeStamp
-from nerf_data_pipeline.pose.json_handler import JsonHandler
+
+from oxford_spires_utils.dataset.sensor import Sensor
+from oxford_spires_utils.dataset.utils import find_closest_in_sorted
+from oxford_spires_utils.pose.file_interfaces import VilensSlamTrajReader
+from oxford_spires_utils.pose.file_interfaces.timestamp import TimeStamp
+from oxford_spires_utils.pose.json_handler import JsonHandler
 
 
 class VilensSlamOutputHandler:
