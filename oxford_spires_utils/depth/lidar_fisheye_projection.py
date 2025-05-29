@@ -3,11 +3,12 @@ import shutil
 from pathlib import Path
 
 import numpy as np
-from nerf_data_pipeline.dataset.utils import get_accumulated_pcd, get_image_pcd_sync_pair
-from nerf_data_pipeline.depth.projection import encode_points_as_depthmap, project_pcd_on_image
-from nerf_data_pipeline.depth.utils import apply_hidden_point_removal, load_fnt_params, save_projection_outputs
-from nerf_data_pipeline.depth.visualize_depthmap_pose import get_transforms
 from tqdm.auto import tqdm
+
+from oxford_spires_utils.dataset.utils import get_accumulated_pcd, get_image_pcd_sync_pair
+from oxford_spires_utils.depth.projection import encode_points_as_depthmap, project_pcd_on_image
+from oxford_spires_utils.depth.utils import apply_hidden_point_removal, load_fnt_params, save_projection_outputs
+from oxford_spires_utils.depth.visualize_depthmap_pose import get_transforms
 
 
 def get_depth_from_cloud(

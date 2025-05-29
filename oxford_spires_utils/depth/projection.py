@@ -4,7 +4,8 @@ from typing import Optional, Tuple
 import cv2
 import numpy as np
 import open3d as o3d
-from nerf_data_pipeline.dataset.utils import get_pcd
+
+from oxford_spires_utils.dataset.utils import get_pcd
 
 
 def project_pcd_on_image(

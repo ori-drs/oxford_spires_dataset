@@ -3,12 +3,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 import open3d as o3d
-from nerf_data_pipeline.dataset.utils import find_closest_in_sorted
-from nerf_data_pipeline.depth.projection import decode_points_from_depthmap
-from nerf_data_pipeline.depth.utils import load_fnt_params
-from nerf_data_pipeline.pose.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
-from nerf_data_pipeline.pose.pose_convention import PoseConvention
 from tqdm import tqdm
+
+from oxford_spires_utils.dataset.utils import find_closest_in_sorted
+from oxford_spires_utils.depth.projection import decode_points_from_depthmap
+from oxford_spires_utils.depth.utils import load_fnt_params
+from oxford_spires_utils.pose.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxford_spires_utils.pose.pose_convention import PoseConvention
 
 
 def get_transforms(
