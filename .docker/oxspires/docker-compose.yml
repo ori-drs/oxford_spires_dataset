@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  oxspires_utils:
+    build:
+      context: ../..
+      dockerfile: .docker/oxspires/Dockerfile
+      target: base
+      args:
+        - USERNAME=${USERNAME}
+        - UID=${UID}
+        - GID=${GID}
+    runtime: nvidia
+    tty: true
+    volumes:
+      - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
+      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
+      - ~/data/test://home/docker_dev/data
