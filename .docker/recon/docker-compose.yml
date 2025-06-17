@@ -6,7 +6,7 @@ services:
       dockerfile: .docker/recon/Dockerfile
       target: deploy
       args:
-        - USERNAME=${USER:-user}
+        - USERNAME=${USERNAME}
         - UID=${UID}
         - GID=${GID}
     environment:
