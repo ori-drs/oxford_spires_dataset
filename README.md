@@ -34,6 +34,12 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 ## Novel-view Synthesis Benchmark
 Currently, the NVS benchmakr is included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
+## Just Use oxford_spires_utils  
+To just install `oxford_spires_utils`, build the docker container:
+```bash
+docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
+```
+
 ## Contributing
 Please refer to Angular's guide for contributing(https://github.com/angular/angular/blob/22b96b96902e1a42ee8c5e807720424abad3082a/CONTRIBUTING.md).
 
