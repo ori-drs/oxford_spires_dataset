@@ -19,7 +19,7 @@ The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://gith
 Build the docker container and run the methods:
 ```bash
 cd oxford_spires_dataset
-docker compose -f .docker_loc/docker-compose.yml run --build spires
+docker compose -f .docker/loc/docker-compose.yml run --build oxspires_loc
 
 # in the docker
 python scripts/localisation_benchmark/colmap.py
@@ -35,7 +35,7 @@ The reconstruction benchmark runs Structure-from-Motion ([COLMAP](https://colmap
 Build the docker container and run the methods:
 ```bash
 cd oxford_spires_dataset
-docker compose -f .docker/docker-compose.yml run --build spires
+docker compose -f .docker/recon/docker-compose.yml run --build oxspires_recon
 
 # inside the docker
 python scripts/reconstruction_benchmark/main.py --config-file config/recon_benchmark.yaml
