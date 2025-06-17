@@ -28,7 +28,8 @@ RUN apt-get update && \
     rosdep update
 
 # create catkin workspace
-ARG CATKIN_WS_DIR=/home/catkin_ws
+ARG USERNAME
+ARG CATKIN_WS_DIR=/home/${USERNAME}/catkin_ws
 RUN . /opt/ros/noetic/setup.sh && mkdir -p ${CATKIN_WS_DIR}/src && cd ${CATKIN_WS_DIR} && catkin build && \
     echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> ~/.bashrc
 
@@ -110,7 +111,6 @@ RUN pip install evo
 # Final setup
 ARG GID
 ARG UID
-ARG USERNAME
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
