@@ -28,7 +28,8 @@ RUN apt-get update && \
     rosdep update
 
 # create catkin workspace
-ARG CATKIN_WS_DIR=/home/catkin_ws
+ARG USERNAME
+ARG CATKIN_WS_DIR=/home/${USERNAME}/catkin_ws
 RUN . /opt/ros/noetic/setup.sh && mkdir -p ${CATKIN_WS_DIR}/src && cd ${CATKIN_WS_DIR} && catkin build && \
     echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> ~/.bashrc
 
@@ -110,11 +111,10 @@ RUN pip install evo
 # Final setup
 ARG GID
 ARG UID
-ENV UNAME=docker_dev
-RUN addgroup --gid $GID $UNAME
-RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $UNAME
+RUN addgroup --gid $GID $USERNAME
+RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
-ARG SPIRES_DIR=/home/oxford_spires_dataset
+ARG SPIRES_DIR=/home/${USERNAME}/oxford_spires_dataset
 WORKDIR ${SPIRES_DIR}
 
 COPY ./oxford_spires_utils/ ${SPIRES_DIR}/oxford_spires_utils/
@@ -122,8 +122,8 @@ COPY ./pyproject.toml ${SPIRES_DIR}/pyproject.toml
 # RUN pip install -e .
 
 # Make the outputs of the container match the host
-RUN chown -R ${UID}:${GID} ${SPIRES_DIR}
-USER ${UNAME}
+RUN chown -R ${UID}:${GID} /home/${USERNAME}
+USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
 RUN echo "alias recon_benchmark=\"python ${SPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc

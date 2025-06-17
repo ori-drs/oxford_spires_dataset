@@ -5,7 +5,7 @@ services:
       context: ../..
       dockerfile: .docker/loc/Dockerfile
       args:
-        - USERNAME=${USER:-user}
+        - USERNAME=${USERNAME}
         - UID=${UID}
         - GID=${GID}
     environment:
