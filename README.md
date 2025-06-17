@@ -18,6 +18,7 @@ The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://gith
 
 Build the docker container and run the methods:
 ```bash
+git clone https://github.com/ori-drs/oxford_spires_dataset.git
 cd oxford_spires_dataset
 docker compose -f .docker/loc/docker-compose.yml run --build oxspires_loc
 
@@ -34,7 +35,6 @@ The reconstruction benchmark runs Structure-from-Motion ([COLMAP](https://colmap
 
 Build the docker container and run the methods:
 ```bash
-cd oxford_spires_dataset
 docker compose -f .docker/recon/docker-compose.yml run --build oxspires_recon
 
 # inside the docker
@@ -47,6 +47,13 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 python scripts/reconstruction_benchmark/nvs_benchmark.py
 ```
 the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
+
+## Just Use oxford_spires_utils  
+To just install `oxford_spires_utils`, build the docker container:
+```bash
+docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
+```
+
 ## Contributing
 Please refer to the [contributing](docs/contributing.md) page.
 
