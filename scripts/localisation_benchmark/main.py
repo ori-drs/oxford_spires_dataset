@@ -20,6 +20,8 @@ class LocalisationBenchmark:
         self.list_sec = []
         self.gt_file = "/processed/trajectory/gt-tum.txt"
         self.vilens_file = "/processed/trajectory/vilens-slam-tum.txt"
+        self.hba_file = "/processed/trajectory/hba-tum.txt"
+        self.colmap_file = "/processed/trajectory/colmap-tum.txt"
         self.hf_repo_id = "ori-drs/oxford_spires_dataset"
     
     def process_fast_lio_slam (self):
@@ -77,6 +79,7 @@ def get_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
+    
     # setup_logging()
     loc_config_file = get_args().config_file
     # logger.info("Starting Reconstruction Benchmark")
@@ -93,18 +96,35 @@ if __name__ == "__main__":
     for sec in loc_benchmark.list_sec:
 
         path_to_sec = loc_benchmark.loc_config["dataset_folder"] + sec
+
         path_to_gt = path_to_sec + loc_benchmark.gt_file
         path_to_vilens = path_to_sec + loc_benchmark.vilens_file
+        path_to_hba = path_to_sec + loc_benchmark.hba_file
+        path_to_colmap = path_to_sec + loc_benchmark.colmap_file
 
         print("SEQUENCE: " + path_to_sec)
         print("GT: " + path_to_gt)
 
-
+        print("-----------------------------------------------------")
+        print("ATE - VILENS-SLAM")
+        print("-----------------------------------------------------")
         loc_benchmark.evaluation_ape_rmse (path_to_gt, path_to_vilens)
+
+        print("-----------------------------------------------------")
+        print("ATE - COLMAP")
+        print("-----------------------------------------------------")
+        loc_benchmark.evaluation_ape_rmse (path_to_gt, path_to_colmap)
 
         if loc_benchmark.loc_config["run_fast_lio_slam"]:
             print("RUNING FAST-LIO-SLAM")
             # path_to_output = create_output_folder (path_to_sec, "/fastlio_raw_output/")
-            loc_benchmark.process_fast_lio_slam
-        else:
-            print("EVALUATING FILES PROVIDED")
+            loc_benchmark.process_fast_lio_slam()
+        
+        # print("ATE - FAST-LIO-SLAM")
+        # print("-----------------------------------------------------")
+        # loc_benchmark.evaluation_ape_rmse (path_to_gt, path_to_fast)
+
+        print("-----------------------------------------------------")
+        print("ATE - HBA")
+        print("-----------------------------------------------------")
+        loc_benchmark.evaluation_ape_rmse (path_to_gt, path_to_hba)

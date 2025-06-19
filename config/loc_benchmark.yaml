@@ -21,4 +21,4 @@ localisation_benchmark:
               # "sequences/2024-05-20-bodleian-library-02"
               ]
   
-  run_fast_lio_slam: false
+  run_fast_lio_slam: true
