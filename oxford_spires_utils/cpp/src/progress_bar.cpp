@@ -1,4 +1,4 @@
-#include "spires_cpp/octomap/progress_bar.h"
+#include "oxford_spires_utils/progress_bar.h"
 
 void displayProgressBar(size_t current, size_t total) {
   const int barWidth = 50; // Width of the progress bar

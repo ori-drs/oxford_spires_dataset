@@ -1,4 +1,4 @@
-#include "spires_cpp/octomap/filter_pcd_with_bt.h"
+#include "oxford_spires_utils/filter_pcd_with_bt.h"
 
 // Function to remove unknown points from the point cloud
 

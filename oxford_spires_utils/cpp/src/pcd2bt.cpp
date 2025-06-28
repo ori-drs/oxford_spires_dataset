@@ -1,4 +1,4 @@
-#include "spires_cpp/octomap/pcd2bt.h"
+#include "oxford_spires_utils/pcd2bt.h"
 
 // Function to list files in a directory
 std::vector<std::string> listFiles(const std::string &folderPath) {

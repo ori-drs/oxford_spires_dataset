@@ -13,7 +13,7 @@ find_package(Eigen3 REQUIRED)
 find_package(octomap REQUIRED)
 
 include_directories(
-    "oxford_spires_utils/cpp"
+    "oxford_spires_utils/cpp/include"
     ${PCL_INCLUDE_DIRS}
     ${Eigen3_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
@@ -22,6 +22,10 @@ include_directories(
 # Add modules
 pybind11_add_module(cpp
     "oxford_spires_utils/cpp/main.cpp"
+    "oxford_spires_utils/cpp/src/filter_pcd_with_bt.cpp"
+    "oxford_spires_utils/cpp/src/get_occ_free_from_bt.cpp"
+    "oxford_spires_utils/cpp/src/pcd2bt.cpp"
+    "oxford_spires_utils/cpp/src/progress_bar.cpp"
 )
 target_compile_features(cpp PUBLIC cxx_std_14)
 target_link_libraries(cpp PRIVATE pybind11::headers ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
