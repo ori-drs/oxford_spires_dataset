@@ -40,7 +40,6 @@ RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 /home/${US
 FROM cpp_build as final
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
-USER ${USERNAME}
 
 WORKDIR ${OXSPIRES_DIR}
 
@@ -50,4 +49,6 @@ COPY ./oxford_spires_utils/ ./oxford_spires_utils/
 COPY ./pyproject.toml .
 RUN pip install -e .
 
+RUN chown -R ${UID}:${GID} /home/${USERNAME}
+USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
