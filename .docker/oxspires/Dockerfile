@@ -4,6 +4,7 @@ ARG PYTHON_VERSION=3.10
 ARG GID
 ARG UID
 ARG USERNAME
+ARG HOME_DIR
 ARG OXSPIRES_DIR
 
 # Avoid prompts from apt
@@ -53,6 +54,6 @@ COPY ./oxford_spires_utils/ ./oxford_spires_utils/
 COPY ./pyproject.toml .
 RUN pip install -e .
 
-RUN chown -R ${UID}:${GID} /home/${USERNAME}
+RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}
 USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc

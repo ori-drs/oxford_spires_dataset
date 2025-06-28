@@ -14,6 +14,7 @@ from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstud
 from sfm import export_json, rescale_colmap_json, run_colmap
 
 from oxford_spires_utils.bash_command import print_with_colour
+from oxford_spires_utils.cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 from oxford_spires_utils.eval import get_recon_metrics_multi_thresholds, save_error_cloud
 from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_with_se3
 from oxford_spires_utils.se3 import is_se3_matrix
@@ -22,7 +23,6 @@ from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.trajectory.utils import pose_to_ply
 from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
-from oxford_spires_utils.cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 logger = logging.getLogger(__name__)
 
