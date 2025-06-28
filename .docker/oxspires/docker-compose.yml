@@ -17,4 +17,4 @@ services:
     volumes:
       - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
       - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
-      - ${HOST_SPIRES_DATA_DIR}:${SPIRES_DATA_DIR}
+      - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
