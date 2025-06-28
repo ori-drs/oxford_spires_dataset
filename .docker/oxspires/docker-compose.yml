@@ -5,7 +5,7 @@ services:
     build:
       context: ../..
       dockerfile: .docker/oxspires/Dockerfile
-      target: base
+      target: final
       args:
         - USERNAME=${USERNAME}
         - UID=${UID}

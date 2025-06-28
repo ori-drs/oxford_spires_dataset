@@ -19,9 +19,25 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ARG GID
-ARG UID
-ARG USERNAME
+FROM base as cpp_build
+# Dependency for Cpp utilities
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    cmake \
+    ninja-build \
+    libeigen3-dev \
+    libpcl-dev &&\
+    rm -rf /var/lib/apt/lists/*
+# Octomap
+RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 /home/${USERNAME}/octomap &&\
+    cd /home/${USERNAME}/octomap &&\
+    mkdir build &&\
+    cd build &&\
+    cmake .. &&\
+    make &&\
+    make install
+
+FROM cpp_build as final
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 USER ${USERNAME}
@@ -32,6 +48,6 @@ COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./oxford_spires_utils/ ./oxford_spires_utils/
 COPY ./pyproject.toml .
-RUN pip install .
+RUN pip install -e .
 
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
