@@ -22,7 +22,7 @@ from oxford_spires_utils.trajectory.align import align
 from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxford_spires_utils.trajectory.utils import pose_to_ply
 from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
-from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
+from oxford_spires_utils.cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 logger = logging.getLogger(__name__)
 
