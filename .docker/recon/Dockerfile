@@ -157,9 +157,8 @@ WORKDIR ${OXSPIRES_DIR}
 COPY ./requirements.txt ${OXSPIRES_DIR}/requirements.txt
 RUN pip install -r requirements.txt
 COPY ./oxford_spires_utils/ ${OXSPIRES_DIR}/oxford_spires_utils/
-COPY ./spires_cpp ${OXSPIRES_DIR}/spires_cpp/
 COPY ./pyproject.toml ${OXSPIRES_DIR}/pyproject.toml
-RUN cd ${OXSPIRES_DIR}/spires_cpp && pip install -e . 
+COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
 RUN pip install -e .
 RUN mkdir /home/${USERNAME}/.cache
 
