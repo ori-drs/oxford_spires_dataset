@@ -35,7 +35,11 @@ RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 /home/${US
     cd build &&\
     cmake .. &&\
     make &&\
-    make install
+    make install &&\
+    # temporary fix for missing dynamic library
+    echo "/usr/local/lib" | tee /etc/ld.so.conf.d/octomap.conf &&\
+    ldconfig
+
 
 FROM cpp_build as final
 RUN addgroup --gid $GID $USERNAME
