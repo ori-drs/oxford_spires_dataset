@@ -10,9 +10,11 @@ services:
         - USERNAME=${USERNAME}
         - UID=${UID}
         - GID=${GID}
+        - HOME_DIR=${HOME_DIR}
+        - OXSPIRES_DIR=${OXSPIRES_DIR}
     runtime: nvidia
     tty: true
     volumes:
       - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
       - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
-      - ~/data/test://home/docker_dev/data
+      - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}

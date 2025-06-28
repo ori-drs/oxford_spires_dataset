@@ -1,7 +1,10 @@
 FROM ubuntu:22.04 as base
 
-# Set Python version as build argument with default
 ARG PYTHON_VERSION=3.10
+ARG GID
+ARG UID
+ARG USERNAME
+ARG OXSPIRES_DIR
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,7 +26,6 @@ RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 USER ${USERNAME}
 
-ARG OXSPIRES_DIR=/home/${USERNAME}/oxford_spires_dataset
 WORKDIR ${OXSPIRES_DIR}
 
 COPY ./requirements.txt .
