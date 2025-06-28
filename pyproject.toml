@@ -1,7 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
+requires = ["scikit-build-core>=0.3.3", "pybind11"]
+build-backend = "scikit_build_core.build"
 [project]
 name = "oxford_spires_utils"
 version = "0.0.1"
@@ -28,6 +27,10 @@ style = [
 ]
 test = ["pytest", "pytest-datadir"]
 dev = ["oxford_spires_utils[test, style]", "ipdb"]
+
+[tool.scikit-build]
+sdist.exclude = ["oxford_spires_utils/cpp"]
+sdist.include = []
 
 [tool.setuptools.packages.find]
 include = ["oxford_spires_utils*"]
