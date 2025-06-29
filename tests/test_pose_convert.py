@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from oxford_spires_utils.utils import get_nerf_pose
+from oxspires_tools.utils import get_nerf_pose
 
 
 def colmap_to_nerf(c2w):

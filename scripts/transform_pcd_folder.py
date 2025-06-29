@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from oxford_spires_utils.utils import transform_pcd_folder
+from oxspires_tools.utils import transform_pcd_folder
 
 if __name__ == "__main__":
     pcd_folder_path = "/home/yifu/workspace/Spires_2025/2024-03-13-maths_1/input_cloud_test"

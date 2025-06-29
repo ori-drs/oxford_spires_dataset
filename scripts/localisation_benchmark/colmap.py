@@ -5,9 +5,9 @@ import sys
 
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
-from oxford_spires_utils.bash_command import run_command
-from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, TUMTrajWriter
-from oxford_spires_utils.trajectory.json_handler import JsonHandler
+from oxspires_tools.bash_command import run_command
+from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, TUMTrajWriter
+from oxspires_tools.trajectory.json_handler import JsonHandler
 
 
 def convert_to_tum(path_to_output, path_to_sec):

@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 
-from oxford_spires_utils.bash_command import run_command
-from oxford_spires_utils.se3 import s_se3_from_sim3
-from oxford_spires_utils.trajectory.pose_convention import colmap_to_nerf_world_transform
+from oxspires_tools.bash_command import run_command
+from oxspires_tools.se3 import s_se3_from_sim3
+from oxspires_tools.trajectory.pose_convention import colmap_to_nerf_world_transform
 
 logger = logging.getLogger(__name__)
 
