@@ -54,6 +54,11 @@ To just install `oxford_spires_utils`, build the docker container:
 docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
 ```
 
+Installing `oxford_spires_utils` requires PCL and Octomap installation. If you just want to install the python package, run:
+```bash
+BUILD_CPP=0 pip install .
+```
+
 ## Contributing
 Please refer to the [contributing](docs/contributing.md) page.
 

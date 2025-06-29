@@ -4,6 +4,12 @@ project(
     VERSION ${SKBUILD_PROJECT_VERSION}
     LANGUAGES CXX)
 
+# if BUILD_CPP==0, skip and only install Python. Will not require pcl and octomap
+if(DEFINED ENV{BUILD_CPP} AND "$ENV{BUILD_CPP}" STREQUAL "0")
+message(STATUS "Skipping C++ build because BUILD_CPP=0")
+return()
+endif()
+
 set(PYBIND11_NEWPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
