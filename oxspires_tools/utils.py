@@ -59,3 +59,13 @@ def get_nerf_pose(colmap_c2w):
     # new global frame # TODO this is unnecessary
     world_transform = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
     return world_transform @ colmap_c2w @ vision_2_graphics
+
+
+def get_pcd(points, colors=None):
+    """Get open3d pointcloud from points and colors"""
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+    if colors is not None:
+        assert colors.max() <= 1.0 and colors.min() >= 0.0, "Colors should be in range [0, 1]"
+        pcd.colors = o3d.utility.Vector3dVector(colors)
+    return pcd
