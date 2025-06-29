@@ -5,11 +5,6 @@ import cv2
 import numpy as np
 import open3d as o3d
 
-from oxspires_tools.depth.projection import (
-    encode_points_as_depthmap,
-    filter_points_outside_fov,
-    project_points_on_image,
-)
 from oxspires_tools.depth.surface_normal import compute_normalmap
 from oxspires_tools.depth.utils import apply_hidden_point_removal
 from oxspires_tools.utils import get_pcd
