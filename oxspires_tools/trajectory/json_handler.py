@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from oxford_spires_utils.trajectory.json_handler_submap_utils import get_xyz, save_submap_cluster, viz_submap_cluster
+from oxspires_tools.trajectory.json_handler_submap_utils import get_xyz, save_submap_cluster, viz_submap_cluster
 
 
 class JsonHandler:
