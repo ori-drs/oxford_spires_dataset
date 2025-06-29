@@ -48,13 +48,13 @@ python scripts/reconstruction_benchmark/nvs_benchmark.py
 ```
 the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
-## Just Use oxford_spires_utils  
-To just install `oxford_spires_utils`, build the docker container:
+## Just Use oxspires_tools  
+To just install `oxspires_tools`, build the docker container:
 ```bash
 docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
 ```
 
-Installing `oxford_spires_utils` requires PCL and Octomap installation. If you just want to install the python package, run:
+Installing `oxspires_tools` requires PCL and Octomap installation. If you just want to install the python package, run:
 ```bash
 BUILD_CPP=0 pip install .
 ```
