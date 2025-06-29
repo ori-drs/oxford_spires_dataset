@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oxford_spires_utils.cpp import OcTree, convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
+from oxspires_tools.cpp import OcTree, convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
 
 save_dir = "/home/docker_dev/oxford_spires_dataset/test_octree"
 save_dir = Path(save_dir)

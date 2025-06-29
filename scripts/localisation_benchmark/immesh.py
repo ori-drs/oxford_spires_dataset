@@ -8,7 +8,7 @@ import libtmux
 
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
-from oxford_spires_utils.bash_command import run_command
+from oxspires_tools.bash_command import run_command
 
 
 def run_immesh(path_to_rosbag, path_to_output):

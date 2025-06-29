@@ -119,7 +119,7 @@ RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
 WORKDIR ${OXSPIRES_DIR}
 
-COPY ./oxford_spires_utils/ ${OXSPIRES_DIR}/oxford_spires_utils/
+COPY ./oxspires_tools/ ${OXSPIRES_DIR}/oxspires_tools/
 COPY ./pyproject.toml ${OXSPIRES_DIR}/pyproject.toml
 # RUN pip install -e .
 

@@ -3,9 +3,9 @@ from pathlib import Path
 
 from nerf import create_nerfstudio_dir
 
-from oxford_spires_utils.trajectory.file_interfaces.nerf import NeRFTrajReader
-from oxford_spires_utils.trajectory.nerf_json_handler import NeRFJsonHandler
-from oxford_spires_utils.trajectory.utils import pose_to_ply
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.nerf_json_handler import NeRFJsonHandler
+from oxspires_tools.trajectory.utils import pose_to_ply
 
 
 def select_json_with_time_range(json_file, start_time, end_time, save_path):

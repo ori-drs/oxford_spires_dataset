@@ -8,7 +8,7 @@ from pypcd4 import PointCloud
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 
-from oxford_spires_utils.se3 import is_se3_matrix, xyz_quat_xyzw_to_se3_matrix
+from oxspires_tools.se3 import is_se3_matrix, xyz_quat_xyzw_to_se3_matrix
 
 logger = logging.getLogger(__name__)
 

@@ -156,7 +156,7 @@ WORKDIR ${OXSPIRES_DIR}
 
 COPY ./requirements.txt ${OXSPIRES_DIR}/requirements.txt
 RUN pip install -r requirements.txt
-COPY ./oxford_spires_utils/ ${OXSPIRES_DIR}/oxford_spires_utils/
+COPY ./oxspires_tools/ ${OXSPIRES_DIR}/oxspires_tools/
 COPY ./pyproject.toml ${OXSPIRES_DIR}/pyproject.toml
 COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
 RUN pip install -e .

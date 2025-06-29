@@ -50,9 +50,10 @@ WORKDIR ${OXSPIRES_DIR}
 
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY ./oxford_spires_utils/ ./oxford_spires_utils/
+COPY ./oxspires_tools/ ./oxspires_tools/
 COPY ./pyproject.toml .
 COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
+COPY ./tests ${OXSPIRES_DIR}/tests
 RUN pip install -e .
 
 RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}

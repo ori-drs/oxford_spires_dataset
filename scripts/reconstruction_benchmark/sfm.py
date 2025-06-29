@@ -8,9 +8,9 @@ import requests
 from nerfstudio.data.utils.colmap_parsing_utils import qvec2rotmat, read_cameras_binary, read_images_binary
 from tqdm import tqdm
 
-from oxford_spires_utils.bash_command import run_command
-from oxford_spires_utils.se3 import s_se3_from_sim3
-from oxford_spires_utils.utils import get_nerf_pose
+from oxspires_tools.bash_command import run_command
+from oxspires_tools.se3 import s_se3_from_sim3
+from oxspires_tools.utils import get_nerf_pose
 
 logger = logging.getLogger(__name__)
 camera_model_list = {"OPENCV_FISHEYE", "OPENCV", "PINHOLE"}

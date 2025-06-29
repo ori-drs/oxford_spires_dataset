@@ -1,4 +1,4 @@
-#include "oxford_spires_utils/get_occ_free_from_bt.h"
+#include "oxspires_tools/get_occ_free_from_bt.h"
 
 using namespace std;
 using namespace octomap;

@@ -1,7 +1,7 @@
-#include "oxford_spires_utils/filter_pcd_with_bt.h"
-#include "oxford_spires_utils/get_occ_free_from_bt.h"
-#include "oxford_spires_utils/pcd2bt.h"
-#include "oxford_spires_utils/progress_bar.h"
+#include "oxspires_tools/filter_pcd_with_bt.h"
+#include "oxspires_tools/get_occ_free_from_bt.h"
+#include "oxspires_tools/pcd2bt.h"
+#include "oxspires_tools/progress_bar.h"
 
 #include <pybind11/pybind11.h>
 
