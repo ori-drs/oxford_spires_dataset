@@ -4,13 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import open3d as o3d
+import yaml
 from tqdm.auto import tqdm
 
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
-from oxspires_tools.trajectory.nerf_traj_reader import NeRFTrajReader
+from oxspires_tools.sensor import Sensor
+from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
-from oxspires_tools.trajectory.vilens_slam_traj_reader import VilensSlamTrajReader
 from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair
 
 
@@ -189,3 +190,33 @@ def get_transforms(
         print("Press ECS to exit.")
         o3d.visualization.draw_geometries(pcds)
     return scaled_Ts
+
+
+if __name__ == "__main__":
+    config_yaml_path = Path("/home/docker_dev/oxford_spires_dataset/config/sensor.yaml")
+    with open(config_yaml_path, "r") as f:
+        yaml_data = yaml.safe_load(f)
+    sensor = Sensor(**yaml_data["sensor"])
+
+    project_lidar_to_fisheye(
+        sensor=sensor,
+        project_dir="/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output",
+        depth_dir="processed/depths_euc_accum_0",
+        normal_dir="processed/normals_euc_accum_0",
+        camera_topics_labelled=sensor.camera_topics_labelled,
+        image_folder_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/raw/images"),
+        image_folder_name="images",
+        depth_pose_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/processed/output_colmap/transforms_colmap_scaled.json"),
+        depth_pose_format="nerf",
+        slam_individual_clouds_new_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/raw/undist-clouds"),
+        is_euclidean=True,
+        accum_length=0,
+        max_time_diff_camera_and_pose=0.025,
+        image_ext=".jpg",  # image extension
+        depth_factor=256.0,  # depth encoding factor: (depth*depth_encode_factor).astype(np.uint16)
+        save_overlay=True,
+        save_normal_map=True,
+        pose_scale_factor=1.0,  # not 1 if colmap pose
+        camera_model="OPENCV_FISHEYE",
+        T_cam_base_overwrite=sensor.T_cam_base_overwrite
+    )  # fmt: skip
