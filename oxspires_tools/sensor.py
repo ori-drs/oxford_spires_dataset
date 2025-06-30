@@ -68,6 +68,7 @@ class Sensor:
     # lidars: List[Camera] = field(default_factory=list)
     max_time_diff_camera_and_pose: float = 0.025
     camera_model: str = "OPENCV_FISHEYE"  # https://colmap.github.io/cameras.html
+    camera_fov: float = 160.0  # in degrees, used in depth image projection
     T_base_imu_t_xyz_q_xyzw: List[float] = field(default_factory=list)
     T_base_lidar_t_xyz_q_xyzw: List[float] = field(default_factory=list)
     tf: TransformManager = field(init=False)
@@ -134,45 +135,46 @@ class Sensor:
     def get_camera(self, camera_name):
         return self.cameras[self.cam_idx_new[camera_name]]
 
-    def get_params_for_depth(self, cam_name, colmap_json_path: Path = None):
-        def get_K_D_h_w_from_colmap_frame(frame, camera_model, cam_name):
-            K = np.zeros((3, 3))
-            K[0, 0] = frame["fl_x"]
-            K[1, 1] = frame["fl_y"]
-            K[0, 2] = frame["cx"]
-            K[1, 2] = frame["cy"]
-            if camera_model == "OPENCV_FISHEYE":
-                D = np.array([frame["k1"], frame["k2"], frame["k3"], frame["k4"]])
-            elif camera_model == "OPENCV":
-                D = np.array([frame["k1"], frame["k2"], frame["p1"], frame["p2"]])
-            h = frame["h"]
-            w = frame["w"]
-            print(f"{cam_name} {camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
+    def get_K_D_h_w_from_colmap_frame(self, frame):
+        K = np.zeros((3, 3))
+        K[0, 0] = frame["fl_x"]
+        K[1, 1] = frame["fl_y"]
+        K[0, 2] = frame["cx"]
+        K[1, 2] = frame["cy"]
+        if self.camera_model == "OPENCV_FISHEYE":
+            D = np.array([frame["k1"], frame["k2"], frame["k3"], frame["k4"]])
+        elif self.camera_model == "OPENCV":
+            D = np.array([frame["k1"], frame["k2"], frame["p1"], frame["p2"]])
+        h = frame["h"]
+        w = frame["w"]
+        return K, D, h, w
 
-            return K, D, h, w
-
-        fov_deg = 140.0  # TODO!
-        if colmap_json_path is None:
+    def get_params_for_depth(self, cam_name, depth_pose_format, colmap_json_path: Path = None):
+        if depth_pose_format == "vilens_slam":
             print("Depth Image: Using Frontier_config / Kalibr for Intrinsics")
             K = self.get_camera(cam_name).get_K()
             D = np.array(self.get_camera(cam_name).extra_params)
             h = self.get_camera(cam_name).image_height
             w = self.get_camera(cam_name).image_width
             print(f"{cam_name} K: {K}, D: {D}, h: {h}, w: {w}")
-        else:
+        elif depth_pose_format == "nerf":
             print("Depth Image: Using NeRF transforms.json 's Intrinsics (from colmap)")
+            assert colmap_json_path is not None, "colmap_json_path must be provided for nerf format"
             colmap_traj = json.load(open(colmap_json_path, "r"))
             if len(self.camera_topics_labelled) > 1:
                 assert list(colmap_traj.keys()) == ["camera_model", "frames"]
                 assert colmap_traj["camera_model"] == self.camera_model
                 for frame in colmap_traj["frames"]:
                     if frame["file_path"].split("/")[1] == self.camera_topics_labelled[cam_name]:
-                        K, D, h, w = get_K_D_h_w_from_colmap_frame(frame, self.camera_model, cam_name)
+                        K, D, h, w = self.get_K_D_h_w_from_colmap_frame(frame)
                         break
             elif len(self.camera_topics_labelled) == 1:
                 assert colmap_traj["camera_model"] == self.camera_model
-                K, D, h, w = get_K_D_h_w_from_colmap_frame(colmap_traj, self.camera_model, cam_name)
+                K, D, h, w = self.get_K_D_h_w_from_colmap_frame(colmap_traj)
             else:
                 raise RuntimeError("Invalid camera_topics_labelled")
+            print(f"{cam_name} {self.camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
+        else:
+            raise ValueError(f"Unsupported depth pose format: {depth_pose_format}")
 
-        return K, D, h, w, fov_deg, self.camera_model
+        return K, D, h, w, self.camera_fov, self.camera_model
