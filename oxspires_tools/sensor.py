@@ -82,7 +82,7 @@ class Sensor:
     def set_sensor_frames(self):
         self.tf = TransformManager()
         self.tf.add_transform("imu", "base", self.T_base_imu)
-        self.tf.add_transform("base", "lidar", self.T_base_lidar)
+        self.tf.add_transform("lidar", "base", self.T_base_lidar)
         for camera in self.cameras:
             self.tf.add_transform("imu", camera.label, camera.T_cam_imu)
 
