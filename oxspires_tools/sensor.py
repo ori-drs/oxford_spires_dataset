@@ -32,7 +32,7 @@ class Camera:
     image_width: int
     intrinsics: List[float]  # fx, fy, cx, cy
     extra_params: List[float]
-    T_cam_lidar_t_xyz_q_xyzw_overwrite: List[float] = field(
+    T_cam_lidar_t_xyz_q_xyzw: List[float] = field(
         default_factory=list
     )  # overwrite that computed from T_cam_imu and T_base_lidar
     T_cam_imu_t_xyz_q_xyzw: List[float] = field(default_factory=list)
@@ -44,10 +44,8 @@ class Camera:
         assert len(self.extra_params) == expected_num_extra_param[self.camera_model], (
             f"Expected {expected_num_extra_param[self.camera_model]} extra params, got {len(self.extra_params)}"
         )
-        self.T_cam_lidar_overwrite = (
-            get_transformation_matrix(self.T_cam_lidar_t_xyz_q_xyzw_overwrite)
-            if len(self.T_cam_lidar_t_xyz_q_xyzw_overwrite) > 0
-            else None
+        self.T_cam_lidar = (
+            get_transformation_matrix(self.T_cam_lidar_t_xyz_q_xyzw) if len(self.T_cam_lidar_t_xyz_q_xyzw) > 0 else None
         )
         self.T_cam_imu = get_transformation_matrix(self.T_cam_imu_t_xyz_q_xyzw)
 
@@ -85,7 +83,7 @@ class Sensor:
         self.tf.add_transform("imu", "base", self.T_base_imu)
         self.tf.add_transform("lidar", "base", self.T_base_lidar)
         for camera in self.cameras:
-            self.tf.add_transform("lidar", camera.label, camera.T_cam_lidar_overwrite)
+            self.tf.add_transform("lidar", camera.label, camera.T_cam_lidar)
 
     def viz_sensor_frames(self, save_path="sensor_frames.png"):
         ax = self.tf.plot_frames_in("base", s=0.03)

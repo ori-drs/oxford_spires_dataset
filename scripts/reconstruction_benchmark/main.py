@@ -180,7 +180,7 @@ class ReconstructionBenchmark:
         # colmap_traj = NeRFTrajReader(colmap_traj_file).read_file()
         colmap_traj_single_cam = NeRFTrajReader(colmap_traj_file, valid_folder_path).read_file()
         pose_to_ply(colmap_traj_single_cam, self.colmap_output_folder / "colmap_traj_single_cam.ply", [0.0, 0.0, 1.0])
-        T_cam_lidar = camera_alignment.T_cam_lidar_overwrite  # TODO refactor
+        T_cam_lidar = camera_alignment.T_cam_lidar
         T_base_lidar = self.sensor.tf.get_transform("base", "lidar")
         T_base_cam = T_base_lidar @ np.linalg.inv(T_cam_lidar)
         # T_WB @ T_BC = T_WC
