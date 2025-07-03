@@ -117,12 +117,6 @@ class Sensor:
         self.T_base_lidar = get_transformation_matrix(self.T_base_lidar_t_xyz_q_xyzw)
         self.set_sensor_frames()
 
-        self.T_cam_base_overwrite = {
-            camera.label: camera.T_cam_lidar_overwrite @ np.linalg.inv(self.T_base_lidar)
-            for camera in self.cameras
-            if camera.T_cam_lidar_overwrite is not None
-        }
-
     def get_colmap_cam_id(self, camera_name=None, camera_topic=None):
         # colmap cam id starts from 1, not 0
         if camera_name is not None and camera_topic is None:
