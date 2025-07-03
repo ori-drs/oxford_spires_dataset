@@ -74,20 +74,3 @@ def save_projection_outputs(
         assert camera_image is not None
         overlay = get_overlay(camera_image, depthmap)
         cv2.imwrite(str(save_overlay_path), overlay)
-
-
-def get_K_D_h_w_from_colmap_frame(frame, camera_model, cam_name):
-    K = np.zeros((3, 3))
-    K[0, 0] = frame["fl_x"]
-    K[1, 1] = frame["fl_y"]
-    K[0, 2] = frame["cx"]
-    K[1, 2] = frame["cy"]
-    if camera_model == "OPENCV_FISHEYE":
-        D = np.array([frame["k1"], frame["k2"], frame["k3"], frame["k4"]])
-    elif camera_model == "OPENCV":
-        D = np.array([frame["k1"], frame["k2"], frame["p1"], frame["p2"]])
-    h = frame["h"]
-    w = frame["w"]
-    print(f"{cam_name} {camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
-
-    return K, D, h, w
