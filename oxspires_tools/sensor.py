@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 from evo.core.trajectory import xyz_quat_wxyz_to_se3_poses
+from matplotlib import pyplot as plt
 from pytransform3d.transform_manager import TransformManager
 
 supported_camera_models = ["OPENCV", "OPENCV_FISHEYE", "PINHOLE"]
@@ -84,6 +85,16 @@ class Sensor:
         self.tf.add_transform("base", "lidar", self.T_base_lidar)
         for camera in self.cameras:
             self.tf.add_transform("imu", camera.label, camera.T_cam_imu)
+
+    def viz_sensor_frames(self, save_path="sensor_frames.png"):
+        ax = self.tf.plot_frames_in("base", s=0.03)
+
+        ax.set_xlim(-0.07, 0.05)
+        ax.set_ylim(-0.07, 0.07)
+        ax.set_zlim(-0.0, 0.15)
+        ax.view_init(elev=30, azim=30)
+
+        plt.savefig(save_path)
 
     def __post_init__(self):
         self.cameras = [Camera(**camera) for camera in self.cameras]
