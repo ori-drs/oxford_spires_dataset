@@ -85,7 +85,7 @@ class Sensor:
         self.tf.add_transform("imu", "base", self.T_base_imu)
         self.tf.add_transform("lidar", "base", self.T_base_lidar)
         for camera in self.cameras:
-            self.tf.add_transform("imu", camera.label, camera.T_cam_imu)
+            self.tf.add_transform("lidar", camera.label, camera.T_cam_lidar_overwrite)
 
     def viz_sensor_frames(self, save_path="sensor_frames.png"):
         ax = self.tf.plot_frames_in("base", s=0.03)
