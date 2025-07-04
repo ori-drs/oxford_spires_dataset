@@ -1,4 +1,5 @@
 import re
+import zipfile
 from bisect import bisect_left
 from pathlib import Path
 from typing import List, Tuple
@@ -233,3 +234,11 @@ def get_transforms(
         print("Press ECS to exit.")
         o3d.visualization.draw_geometries(pcds)
     return scaled_Ts
+
+
+def unzip_files(zip_files):
+    for zip_file in zip_files:
+        with zipfile.ZipFile(zip_file, "r") as zip_ref:
+            zip_ref.extractall(zip_file.parent)
+            print(f"Extracted {zip_file} to {zip_file.parent}")
+    return zip_files
