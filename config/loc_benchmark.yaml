@@ -1,6 +1,6 @@
 localisation_benchmark:
   # package_dir: "/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset"
-  dataset_folder: "/home/miguelangel/data/Oxford-Spires-Dataset/" 
+  dataset_folder: "~/oxford_spires_dataset/data/" 
   flag_is_all: false # If true it rund all the sequences in the 'dataset_dir'. If false it runs the sequences in 'list_sec'
   flag_download_data: false
 

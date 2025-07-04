@@ -7,9 +7,9 @@ from pathlib import Path
 import yaml
 from huggingface_hub import snapshot_download
 
-sys.path.append("/home/miguelangel/git/oxford_spires_dataset")
+sys.path.append("/home/miguelangel/oxford_spires_dataset")
 
-from oxford_spires_utils.bash_command import run_command
+from oxspires_tools.bash_command import run_command
 
 # TODO: loggin
 # def setup_logging():

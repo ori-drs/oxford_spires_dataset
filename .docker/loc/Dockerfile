@@ -112,6 +112,7 @@ RUN apt-get update
 RUN apt-get install tmux -y
 RUN pip install libtmux
 RUN pip install evo
+RUN pip install huggingface-hub
 
 # Final setup
 RUN addgroup --gid $GID $USERNAME

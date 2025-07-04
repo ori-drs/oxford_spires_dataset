@@ -18,7 +18,7 @@ services:
     network_mode: "host"
     tty: true
     volumes:
-      - ../scripts:${OXSPIRES_DIR}/scripts
-      - ../tests:${OXSPIRES_DIR}/tests
+      - ../..:${OXSPIRES_DIR}
       - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
+      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
       - /tmp/.X11-unix:/tmp/.X11-uni # To display emerging windows, it is necessary to run 'xhost +' before composing the docker.
