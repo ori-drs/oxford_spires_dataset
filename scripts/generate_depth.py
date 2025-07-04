@@ -3,16 +3,13 @@ import shutil
 from pathlib import Path
 
 import numpy as np
-import open3d as o3d
 import yaml
 from tqdm.auto import tqdm
 
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
-from oxspires_tools.trajectory.pose_convention import PoseConvention
-from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair
+from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair, get_transforms
 
 
 def project_lidar_to_fisheye(
@@ -147,49 +144,6 @@ def project_lidar_to_fisheye(
                 save_normal_path=(target_normal_subdir / (image_path.stem + ".png")).as_posix(),
                 save_overlay_path=(target_overlay_subdir / (image_path.stem + ".jpg")).as_posix(),
             )
-
-
-def get_transforms(
-    robotics_pose_file,
-    depth_pose_format,
-    scale_factor,
-    T_BC,
-    camera_topic,
-    image_folder_name,
-    frame="camera",  # returned pose's frame. base: T_WB; camera: T_WC
-    visualise=False,
-):
-    # Read trajectory
-    if depth_pose_format == "vilens_slam":
-        reader = VilensSlamTrajReader(robotics_pose_file)
-        pose_traj = reader.read_file()
-        pose_traj.scale(scale_factor)  # T_WB
-        # pose_traj.transform(PoseConvention.get_transform("robotics", "vision"), right_mul=True)
-        if frame == "camera":
-            pose_traj.transform(T_BC, right_mul=True)  # T_BC * T_WB=T_WC
-        # raise NotImplementedError("TODO: fix this")
-    elif depth_pose_format == "nerf":
-        camera_folder = image_folder_name + "/" + camera_topic
-        reader = NeRFTrajReader(robotics_pose_file, camera_folder, nerf_reader_sort_timestamp=True)
-        pose_traj = reader.read_file()
-        pose_traj.scale(scale_factor)  # T_WC in nerf convention
-        pose_traj.transform(PoseConvention.get_transform("nerf", "vision"), right_mul=True)
-        if frame == "base":
-            T_CB = np.linalg.inv(T_BC)
-            pose_traj.transform(T_CB, right_mul=True)  # T_WB
-
-    pcds = [o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.01)]
-    scaled_Ts = {}
-    for key, T in zip(pose_traj.timestamps, pose_traj.poses_se3):
-        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5)
-        axis.transform(T)
-        pcds.append(axis)
-        scaled_Ts[str(key)] = T
-    if visualise:
-        print("Visualize loaded pose.")
-        print("Press ECS to exit.")
-        o3d.visualization.draw_geometries(pcds)
-    return scaled_Ts
 
 
 if __name__ == "__main__":

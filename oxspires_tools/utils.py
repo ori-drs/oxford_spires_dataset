@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from oxspires_tools.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxspires_tools.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
+from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
 
 
@@ -188,3 +189,47 @@ def get_image_pcd_sync_pair(
 
     print(f"Found {len(image_pcd_pairs)} image-pcd pairs")
     return image_pcd_pairs
+
+
+# TODO: refactor to the dataset class
+def get_transforms(
+    robotics_pose_file,
+    depth_pose_format,
+    scale_factor,
+    T_BC,
+    camera_topic,
+    image_folder_name,
+    frame="camera",  # returned pose's frame. base: T_WB; camera: T_WC
+    visualise=False,
+):
+    # Read trajectory
+    if depth_pose_format == "vilens_slam":
+        reader = VilensSlamTrajReader(robotics_pose_file)
+        pose_traj = reader.read_file()
+        pose_traj.scale(scale_factor)  # T_WB
+        # pose_traj.transform(PoseConvention.get_transform("robotics", "vision"), right_mul=True)
+        if frame == "camera":
+            pose_traj.transform(T_BC, right_mul=True)  # T_BC * T_WB=T_WC
+        # raise NotImplementedError("TODO: fix this")
+    elif depth_pose_format == "nerf":
+        camera_folder = image_folder_name + "/" + camera_topic
+        reader = NeRFTrajReader(robotics_pose_file, camera_folder, nerf_reader_sort_timestamp=True)
+        pose_traj = reader.read_file()
+        pose_traj.scale(scale_factor)  # T_WC in nerf convention
+        pose_traj.transform(PoseConvention.get_transform("nerf", "vision"), right_mul=True)
+        if frame == "base":
+            T_CB = np.linalg.inv(T_BC)
+            pose_traj.transform(T_CB, right_mul=True)  # T_WB
+
+    pcds = [o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.01)]
+    scaled_Ts = {}
+    for key, T in zip(pose_traj.timestamps, pose_traj.poses_se3):
+        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5)
+        axis.transform(T)
+        pcds.append(axis)
+        scaled_Ts[str(key)] = T
+    if visualise:
+        print("Visualize loaded pose.")
+        print("Press ECS to exit.")
+        o3d.visualization.draw_geometries(pcds)
+    return scaled_Ts
