@@ -6,6 +6,7 @@ import numpy as np
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface
 
+
 def run_fast_lio_slam(path_to_rosbag, path_to_output):
     server = libtmux.Server()
     server.cmd("new-session", "-d", "-P", "-F#{session_id}")
