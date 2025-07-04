@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from oxford_spires_utils.trajectory.file_interfaces import TimeStamp
+from oxspires_tools.trajectory.file_interfaces import TimeStamp
 
 
 def test_init_with_sec_nsec():

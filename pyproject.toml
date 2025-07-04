@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.3.3", "pybind11"]
+build-backend = "scikit_build_core.build"
 
 [project]
-name = "oxford_spires_utils"
-version = "0.0.1"
+name = "oxspires_tools"
+version = "0.1.0"
 description = "Utility functions for the Oxford Spires Dataset."
-# license = { text="Apache 2.0"}
+license = { text = "CC-BY-NC-SA-4.0"}
 requires-python = ">=3.8.0"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -14,10 +14,6 @@ classifiers = [
 dynamic = ["dependencies"]
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
-
-
-#[project.scripts]
-#ndp = "nerf_data_pipeline.apps.pipeline:app"
 
 [project.optional-dependencies]
 style = [
@@ -27,10 +23,14 @@ style = [
     "docformatter"
 ]
 test = ["pytest", "pytest-datadir"]
-dev = ["oxford_spires_utils[test, style]", "ipdb"]
+dev = ["oxspires_tools[test, style]", "ipdb"]
+
+[tool.scikit-build]
+sdist.exclude = ["oxspires_tools/cpp"]
+sdist.include = []
 
 [tool.setuptools.packages.find]
-include = ["oxford_spires_utils*"]
+include = ["oxspires_tools*"]
 
 [tool.ruff]
 line-length = 120
@@ -63,5 +63,5 @@ lint.ignore = [
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-known-first-party = ["oxford_spires_utils"]
+known-first-party = ["oxspires_tools"]
 split-on-trailing-comma = false

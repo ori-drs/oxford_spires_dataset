@@ -13,16 +13,16 @@ from mvs import rescale_openmvs_cloud, run_openmvs
 from nerf import create_nerfstudio_dir, generate_nerfstudio_config, run_nerfstudio
 from sfm import export_json, rescale_colmap_json, run_colmap
 
-from oxford_spires_utils.bash_command import print_with_colour
-from oxford_spires_utils.eval import get_recon_metrics_multi_thresholds, save_error_cloud
-from oxford_spires_utils.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_with_se3
-from oxford_spires_utils.se3 import is_se3_matrix
-from oxford_spires_utils.sensor import Sensor
-from oxford_spires_utils.trajectory.align import align
-from oxford_spires_utils.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
-from oxford_spires_utils.trajectory.utils import pose_to_ply
-from oxford_spires_utils.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
-from spires_cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
+from oxspires_tools.bash_command import print_with_colour
+from oxspires_tools.cpp import convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
+from oxspires_tools.eval import get_recon_metrics_multi_thresholds, save_error_cloud
+from oxspires_tools.point_cloud import merge_downsample_vilens_slam_clouds, transform_cloud_with_se3
+from oxspires_tools.se3 import is_se3_matrix
+from oxspires_tools.sensor import Sensor
+from oxspires_tools.trajectory.align import align
+from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxspires_tools.trajectory.utils import pose_to_ply
+from oxspires_tools.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
 
 logger = logging.getLogger(__name__)
 

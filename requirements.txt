@@ -8,3 +8,5 @@ pye57>=0.4.13
 evo>=1.29.0
 pytransform3d>=3.5.0
 huggingface_hub>=0.25.1
+ruff==0.11.4
+pre-commit==3.0.0

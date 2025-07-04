@@ -3,9 +3,9 @@ from pathlib import Path
 
 from nerf import create_nerfstudio_dir
 
-from oxford_spires_utils.trajectory.file_interfaces.nerf import NeRFTrajReader
-from oxford_spires_utils.trajectory.nerf_json_handler import NeRFJsonHandler
-from oxford_spires_utils.trajectory.utils import pose_to_ply
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.nerf_json_handler import NeRFJsonHandler
+from oxspires_tools.trajectory.utils import pose_to_ply
 
 
 def select_json_with_time_range(json_file, start_time, end_time, save_path):
@@ -78,8 +78,8 @@ json_file = colmap_folder / "transforms.json"
 train_image_folder = dataset_folder / "train_val_image" / "train"
 eval_image_folder = dataset_folder / "train_val_image" / "eval"
 
-assert (train_image_folder / "images").exists(), f"{train_image_folder/'images'} does not exist"
-assert (eval_image_folder / "images").exists(), f"{eval_image_folder/'images'} does not exist"
+assert (train_image_folder / "images").exists(), f"{train_image_folder / 'images'} does not exist"
+assert (eval_image_folder / "images").exists(), f"{eval_image_folder / 'images'} does not exist"
 
 train_save_path = Path(json_file).parent / f"{train_name}.json"
 eval_save_path = Path(json_file).parent / f"{eval_name}.json"

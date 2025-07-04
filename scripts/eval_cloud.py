@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import open3d as o3d
 
-from oxford_spires_utils.eval import save_error_cloud
+from oxspires_tools.eval import save_error_cloud
 
 
 def evaluate_cloud(input_cloud_path, gt_cloud_path):

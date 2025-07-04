@@ -1,0 +1,24 @@
+services:
+  oxspires_recon:
+    container_name: spires_container
+    build:
+      context: ../..
+      dockerfile: .docker/recon/Dockerfile
+      target: deploy
+      args:
+        - USERNAME=${USERNAME}
+        - UID=${UID}
+        - GID=${GID}
+        - HOME_DIR=${HOME_DIR}
+        - OXSPIRES_DIR=${OXSPIRES_DIR}
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    runtime: nvidia
+    network_mode: "host"
+    tty: true
+    volumes:
+      - ../..:${OXSPIRES_DIR}/
+      - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
+      - ~/.netrc:/home/docker_dev/.netrc
+      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token

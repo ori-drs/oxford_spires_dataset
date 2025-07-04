@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
-from oxford_spires_utils.se3 import (
+from oxspires_tools.se3 import (
     compute_scale_from_sim3,
     compute_se3_from_sim3,
     is_sim3_matrix,

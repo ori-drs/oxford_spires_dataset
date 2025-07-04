@@ -10,7 +10,7 @@ from nerfstudio.scripts.eval import entrypoint as eval_entrypoint
 from nerfstudio.scripts.exporter import entrypoint as exporter_entrypoint
 from nerfstudio.scripts.train import entrypoint as train_entrypoint
 
-from oxford_spires_utils.bash_command import print_with_colour
+from oxspires_tools.bash_command import print_with_colour
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,12 @@ def create_nerfstudio_dir(colmap_dir, ns_dir, image_dir):
 
 def update_argv(nerfstudio_config, follow_up=False):
     if not follow_up:
-        assert sys.argv[0].endswith(".py") and len(sys.argv) == 1, "No args should be provided for the script"
+        assert sys.argv[0].endswith(".py")
+        if sys.argv[0].endswith("main.py"):
+            assert len(sys.argv) <= 3, "Only the config file should be provided."
+            if len(sys.argv) >= 2 and sys.argv[1] == "--config-file":
+                sys.argv = [sys.argv[0]]
+        assert len(sys.argv) == 1, "No args should be provided for the script"
     for k, v in nerfstudio_config.items():
         if k in ("method", "dataparser"):
             sys.argv.append(f"{v}")
@@ -98,7 +103,7 @@ def run_nerfstudio(ns_config, ns_data_config, export_cloud=True):
     cloud = o3d.io.read_point_cloud(str(output_cloud_file))
     cloud.transform(scale_matrix)
     cloud.transform(np.linalg.inv(ns_se3))
-    final_metric_cloud_file = output_cloud_file.with_name(f'{ns_config["method"]}_cloud_metric.pcd')
+    final_metric_cloud_file = output_cloud_file.with_name(f"{ns_config['method']}_cloud_metric.pcd")
     o3d.io.write_point_cloud(str(final_metric_cloud_file), cloud)
     return final_metric_cloud_file
 
