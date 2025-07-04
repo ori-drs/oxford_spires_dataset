@@ -34,24 +34,21 @@ def project_lidar_to_fisheye(
     camera_model: str = "OPENCV_FISHEYE",
     T_cam_base_overwrite: np.ndarray = {},
 ):
-    # args = get_args()
-    # Project dir
     proj_dir = Path(project_dir).expanduser()
 
     if is_euclidean:
         print("Depth is euclidean: L2 distance between points and camera")
     else:
         print("Depth is not euclidean: z_value")
-    # Path settings
-    # pcd_dir = proj_dir / "individual_clouds"
-    # image_dir = proj_dir / "images"
-    overlay_dir = proj_dir / (depth_dir + "_overlay")
+
     output_depth_dir = proj_dir / depth_dir
     if output_depth_dir.exists():
         shutil.rmtree(output_depth_dir)
+    output_depth_dir.mkdir(parents=True)
+
+    overlay_dir = proj_dir / (depth_dir + "_overlay")
     if save_overlay and overlay_dir.exists():
         shutil.rmtree(overlay_dir)
-    output_depth_dir.mkdir(parents=True)
 
     if save_normal_map:
         output_normal_dir = proj_dir / normal_dir
@@ -67,7 +64,6 @@ def project_lidar_to_fisheye(
     for subdir, cam_name in zip(cam_subdirs, target_cam_names):
         print(f"Processing {cam_name} in {subdir} ...")
         # Transformation from base to camera (clouds in individual_clouds are base coordinates)
-        # T_cam_lidar = np.linalg.inv(Ts[f"base_{cam_name}"]) @ Ts[f"base_{lidar_name}"]
         K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
         T_base_cam = sensor.tf.get_transform(cam_name, "base")
         if cam_name in T_cam_base_overwrite.keys():
@@ -114,9 +110,6 @@ def project_lidar_to_fisheye(
             visualise=False,
         )
         for image_path, pcd_path, diff in tqdm(image_pcd_pairs):
-            # print(f"Processing {image_path} and {pcd_path} with diff={diff:.3f} sec")
-            # Load pointclouds
-            # pcd = o3d.io.read_point_cloud(pcd_path.as_posix())
             pcd = get_accumulated_pcd(
                 pcd_path,
                 T_WBs,
