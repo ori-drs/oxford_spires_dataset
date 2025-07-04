@@ -14,7 +14,9 @@ python scripts/dataset_download.py
 You can also download the dataset from [Google Drive](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive).
 
 ## Localisation Benchmark
-The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/gisbi-kim/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/gisbi-kim/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/hku-mars/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
+The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/ori-drs/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/ori-drs/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)), a LIVO method ([Fast-LIVO2](https://github.com/ori-drs/FAST-LIVO2)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/ori-drs/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
+
+Each link provided for the methods above is a fork containing a branch `config-used-OSD` with the configurations used for the evaluation.
 
 Build the docker container and run the methods:
 ```bash

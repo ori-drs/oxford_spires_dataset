@@ -1,6 +1,3 @@
-import logging
-import os
-import re
 import sys
 import time
 
@@ -8,10 +5,6 @@ import libtmux
 import numpy as np
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface
-
-sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
-
-from oxspires_tools.bash_command import run_command
 
 
 def run_fast_lio_slam(path_to_rosbag, path_to_output):
@@ -96,7 +89,6 @@ def convert_to_tum(path_to_output, path_to_sec):
 
     print("PROCESS FINISHED!!")
     print("Output in: {}/output_slam/fast_lio_tum.txt".format(path_to_sec))
-    print("*********************************************************")
 
 
 def eval_fast_lio_slam(path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir):
