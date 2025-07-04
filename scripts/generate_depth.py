@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
+from huggingface_hub import snapshot_download
 from tqdm.auto import tqdm
 
 from oxspires_tools.depth.main import get_depth_from_cloud
@@ -151,6 +152,17 @@ if __name__ == "__main__":
     with open(config_yaml_path, "r") as f:
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
+
+    hf_repo_id = "ori-drs/oxford_spires_dataset"
+    example_pattern = "sequences/2024-03-18-christ-church-01/processed/*"  # download all files in a particular sequence
+    local_dir = "data/hf"
+    snapshot_download(
+        repo_id=hf_repo_id,
+        allow_patterns=example_pattern,
+        local_dir=local_dir,
+        repo_type="dataset",
+        use_auth_token=False,
+    )
 
     project_lidar_to_fisheye(
         sensor=sensor,
