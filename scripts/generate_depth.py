@@ -79,14 +79,14 @@ def project_lidar_to_fisheye(
             T_cam_base = np.linalg.inv(T_base_cam)
 
         # Setup input dir
-        target_image_subdir = image_folder_path / subdir
-        target_depth_subdir = output_depth_dir / subdir
+        target_image_subdir = Path(image_folder_path) / subdir
+        target_depth_subdir = Path(output_depth_dir) / subdir
         target_depth_subdir.mkdir(parents=True, exist_ok=True)
         if save_normal_map:
-            target_normal_subdir = output_normal_dir / subdir
+            target_normal_subdir = Path(output_normal_dir) / subdir
             target_normal_subdir.mkdir(parents=True, exist_ok=True)
         if save_overlay:
-            target_overlay_subdir = overlay_dir / subdir
+            target_overlay_subdir = Path(overlay_dir) / subdir
             target_overlay_subdir.mkdir(parents=True, exist_ok=True)
 
         # Project lidar points on images and  save as 16 bit depth
