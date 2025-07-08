@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import numpy as np
+import open3d as o3d
 import yaml
 from huggingface_hub import snapshot_download
 from tqdm.auto import tqdm
@@ -10,7 +11,7 @@ from tqdm.auto import tqdm
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair, get_transforms, unzip_files
+from oxspires_tools.utils import get_image_pcd_sync_pair, unzip_files
 
 
 def project_lidar_to_fisheye(
@@ -21,12 +22,12 @@ def project_lidar_to_fisheye(
     camera_topics_labelled: dict,
     image_folder_path: str,
     image_folder_name: str,
-    depth_pose_path: str,
     depth_pose_format: str,
     slam_individual_clouds_new_path: str,
     is_euclidean: bool,
     accum_length: int,
     max_time_diff_camera_and_pose: float,
+    depth_pose_path: str = None,
     image_ext: str = ".jpg",  # image extension
     depth_factor: float = 256.0,  # depth encoding factor: (depth*depth_encode_factor).astype(np.uint16)",
     save_overlay: bool = True,
@@ -104,26 +105,26 @@ def project_lidar_to_fisheye(
         # Loop for one camera
         print(f"Fov: {fov_deg}")
         # load all lidar poses as T_WB, so assume vilens-processed lidar in base frame
-        T_WBs = get_transforms(
-            depth_pose_path,
-            depth_pose_format,
-            pose_scale_factor,
-            T_base_cam,
-            subdir,
-            image_folder_name,
-            frame="base",
-            visualise=False,
-        )
+        # T_WBs = get_transforms(
+        #     depth_pose_path,
+        #     depth_pose_format,
+        #     pose_scale_factor,
+        #     T_base_cam,
+        #     subdir,
+        #     image_folder_name,
+        #     frame="base",
+        #     visualise=False,
+        # )
         for image_path, pcd_path, diff in tqdm(image_pcd_pairs):
             # print(f"Processing {image_path} and {pcd_path} with diff={diff:.3f} sec")
             # Load pointclouds
-            # pcd = o3d.io.read_point_cloud(pcd_path.as_posix())
-            pcd = get_accumulated_pcd(
-                pcd_path,
-                T_WBs,
-                accumulation_length=accum_length,
-                max_time_diff_camera_and_pose=max_time_diff_camera_and_pose,
-            )
+            pcd = o3d.io.read_point_cloud(pcd_path.as_posix())
+            # pcd = get_accumulated_pcd(
+            #     pcd_path,
+            #     T_WBs,
+            #     accumulation_length=accum_length,
+            #     max_time_diff_camera_and_pose=max_time_diff_camera_and_pose,
+            # )
             if pcd is None:
                 if accum_length == 0:
                     print(f"{pcd_path} pose not found")
