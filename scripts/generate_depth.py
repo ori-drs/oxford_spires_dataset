@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair, get_transforms
+from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair, get_transforms, unzip_files
 
 
 def project_lidar_to_fisheye(
@@ -154,15 +154,24 @@ if __name__ == "__main__":
     sensor = Sensor(**yaml_data["sensor"])
 
     hf_repo_id = "ori-drs/oxford_spires_dataset"
-    example_pattern = "sequences/2024-03-18-christ-church-01/processed/*"  # download all files in a particular sequence
-    local_dir = "data/hf"
-    snapshot_download(
-        repo_id=hf_repo_id,
-        allow_patterns=example_pattern,
-        local_dir=local_dir,
-        repo_type="dataset",
-        use_auth_token=False,
-    )
+    download_patterns = [
+        "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds.zip",
+        "sequences/2024-03-18-christ-church-01/processed/colmap/images.zip",
+    ]
+    local_dir = Path(__file__).parent.parent / "data" / "hf"
+    for pattern in download_patterns:
+        snapshot_download(
+            repo_id=hf_repo_id,
+            allow_patterns=pattern,
+            local_dir=local_dir,
+            repo_type="dataset",
+            use_auth_token=False,
+        )
+    zip_files = list(Path(local_dir).rglob("*.zip"))
+    unzip_files(zip_files)
+    # remove the zip files after unzipping
+    for zip_file in zip_files:
+        zip_file.unlink()
 
     project_lidar_to_fisheye(
         sensor=sensor,
