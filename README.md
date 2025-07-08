@@ -13,7 +13,7 @@ python scripts/dataset_download.py
 ```
 You can also download the dataset from [Google Drive](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive).
 
-## Use oxspires_tools
+## Python Tools
 `oxspires_tools` provides python tools for using the dataset.   
 To use it, build the docker container:
 ```bash
