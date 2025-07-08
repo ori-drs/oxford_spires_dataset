@@ -50,8 +50,9 @@ python scripts/reconstruction_benchmark/nvs_benchmark.py
 ```
 the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
-## Just Use oxspires_tools  
-To just install `oxspires_tools`, build the docker container:
+## Use oxspires_tools
+`oxspires_tools` provides python tools for using the dataset.   
+To use it, build the docker container:
 ```bash
 docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
 ```
@@ -59,6 +60,14 @@ docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
 Installing `oxspires_tools` requires PCL and Octomap installation. If you just want to install the python package, run:
 ```bash
 BUILD_CPP=0 pip install .
+```
+
+### Depth Image Generation
+<img src="docs/overlay.png" height="300" />
+
+The following scripts download synchronised images and lidar from a sequence in HuggingFace, and generates depth image, lidar overlaid on camera and surface normal images.
+```
+python scripts/generate_depth.py
 ```
 
 ## Contributing
