@@ -13,6 +13,26 @@ python scripts/dataset_download.py
 ```
 You can also download the dataset from [Google Drive](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive).
 
+## Python Tools
+`oxspires_tools` provides python tools for using the dataset.   
+To use it, build the docker container:
+```bash
+docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
+```
+
+Installing `oxspires_tools` requires PCL and Octomap installation. If you just want to install the python package, run:
+```bash
+BUILD_CPP=0 pip install .
+```
+
+### Depth Image Generation
+<img src="docs/overlay.png" height="300" />
+
+The following scripts download synchronised images and lidar from a sequence in HuggingFace, and generates depth image, lidar overlaid on camera and surface normal images.
+```
+python scripts/generate_depth.py
+```
+
 ## Localisation Benchmark
 The localisation benchmark runs LiDAR SLAM methods ([Fast-LIO-SLAM](https://github.com/ori-drs/FAST_LIO_SLAM), [SC-LIO-SAM](https://github.com/ori-drs/SC-LIO-SAM), [ImMesh](https://github.com/ori-drs/ImMesh_hesai)), a LIVO method ([Fast-LIVO2](https://github.com/ori-drs/FAST-LIVO2)) and LiDAR Bundle Adjustment method ([HBA](https://github.com/ori-drs/HBA)). The resultant trajectory are evaluated against the ground truth trajectory using [evo](https://github.com/MichaelGrupp/evo).
 
@@ -50,16 +70,6 @@ python scripts/reconstruction_benchmark/nvs_benchmark.py
 ```
 the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
 
-## Just Use oxspires_tools  
-To just install `oxspires_tools`, build the docker container:
-```bash
-docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
-```
-
-Installing `oxspires_tools` requires PCL and Octomap installation. If you just want to install the python package, run:
-```bash
-BUILD_CPP=0 pip install .
-```
 
 ## Contributing
 Please refer to the [contributing](docs/contributing.md) page.

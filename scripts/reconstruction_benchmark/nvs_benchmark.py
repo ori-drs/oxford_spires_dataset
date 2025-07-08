@@ -1,8 +1,9 @@
-import zipfile
 from pathlib import Path
 
 from huggingface_hub import snapshot_download
 from nerf import generate_nerfstudio_config, run_nerfstudio
+
+from oxspires_tools.utils import unzip_files
 
 
 def run_ns(
@@ -18,14 +19,6 @@ def run_ns(
         method, ns_data_dir / json_filename, ns_model_dir, eval_mode=eval_mode
     )
     _ = run_nerfstudio(ns_config, ns_data_config, export_cloud=False)
-
-
-def unzip_files(zip_files):
-    for zip_file in zip_files:
-        with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(zip_file.parent)
-            print(f"Extracted {zip_file} to {zip_file.parent}")
-    return zip_files
 
 
 def run_nvs_benchmark(undistorted_ns_dir):

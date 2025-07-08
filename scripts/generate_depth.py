@@ -3,13 +3,15 @@ import shutil
 from pathlib import Path
 
 import numpy as np
+import open3d as o3d
 import yaml
+from huggingface_hub import snapshot_download
 from tqdm.auto import tqdm
 
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.utils import get_accumulated_pcd, get_image_pcd_sync_pair, get_transforms
+from oxspires_tools.utils import get_image_pcd_sync_pair, unzip_files
 
 
 def project_lidar_to_fisheye(
@@ -20,12 +22,12 @@ def project_lidar_to_fisheye(
     camera_topics_labelled: dict,
     image_folder_path: str,
     image_folder_name: str,
-    depth_pose_path: str,
     depth_pose_format: str,
     slam_individual_clouds_new_path: str,
     is_euclidean: bool,
     accum_length: int,
     max_time_diff_camera_and_pose: float,
+    depth_pose_path: str = None,
     image_ext: str = ".jpg",  # image extension
     depth_factor: float = 256.0,  # depth encoding factor: (depth*depth_encode_factor).astype(np.uint16)",
     save_overlay: bool = True,
@@ -78,14 +80,14 @@ def project_lidar_to_fisheye(
             T_cam_base = np.linalg.inv(T_base_cam)
 
         # Setup input dir
-        target_image_subdir = image_folder_path / subdir
-        target_depth_subdir = output_depth_dir / subdir
+        target_image_subdir = Path(image_folder_path) / subdir
+        target_depth_subdir = Path(output_depth_dir) / subdir
         target_depth_subdir.mkdir(parents=True, exist_ok=True)
         if save_normal_map:
-            target_normal_subdir = output_normal_dir / subdir
+            target_normal_subdir = Path(output_normal_dir) / subdir
             target_normal_subdir.mkdir(parents=True, exist_ok=True)
         if save_overlay:
-            target_overlay_subdir = overlay_dir / subdir
+            target_overlay_subdir = Path(overlay_dir) / subdir
             target_overlay_subdir.mkdir(parents=True, exist_ok=True)
 
         # Project lidar points on images and  save as 16 bit depth
@@ -103,26 +105,26 @@ def project_lidar_to_fisheye(
         # Loop for one camera
         print(f"Fov: {fov_deg}")
         # load all lidar poses as T_WB, so assume vilens-processed lidar in base frame
-        T_WBs = get_transforms(
-            depth_pose_path,
-            depth_pose_format,
-            pose_scale_factor,
-            T_base_cam,
-            subdir,
-            image_folder_name,
-            frame="base",
-            visualise=False,
-        )
+        # T_WBs = get_transforms(
+        #     depth_pose_path,
+        #     depth_pose_format,
+        #     pose_scale_factor,
+        #     T_base_cam,
+        #     subdir,
+        #     image_folder_name,
+        #     frame="base",
+        #     visualise=False,
+        # )
         for image_path, pcd_path, diff in tqdm(image_pcd_pairs):
             # print(f"Processing {image_path} and {pcd_path} with diff={diff:.3f} sec")
             # Load pointclouds
-            # pcd = o3d.io.read_point_cloud(pcd_path.as_posix())
-            pcd = get_accumulated_pcd(
-                pcd_path,
-                T_WBs,
-                accumulation_length=accum_length,
-                max_time_diff_camera_and_pose=max_time_diff_camera_and_pose,
-            )
+            pcd = o3d.io.read_point_cloud(pcd_path.as_posix())
+            # pcd = get_accumulated_pcd(
+            #     pcd_path,
+            #     T_WBs,
+            #     accumulation_length=accum_length,
+            #     max_time_diff_camera_and_pose=max_time_diff_camera_and_pose,
+            # )
             if pcd is None:
                 if accum_length == 0:
                     print(f"{pcd_path} pose not found")
@@ -152,17 +154,37 @@ if __name__ == "__main__":
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
 
+    hf_repo_id = "ori-drs/oxford_spires_dataset"
+    download_patterns = [
+        "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds.zip",
+        "sequences/2024-03-18-christ-church-01/processed/colmap/images.zip",
+    ]
+    local_dir = Path(__file__).parent.parent / "data" / "hf"
+    for pattern in download_patterns:
+        snapshot_download(
+            repo_id=hf_repo_id,
+            allow_patterns=pattern,
+            local_dir=local_dir,
+            repo_type="dataset",
+            use_auth_token=False,
+        )
+    zip_files = list(Path(local_dir).rglob("*.zip"))
+    unzip_files(zip_files)
+    # remove the zip files after unzipping
+    for zip_file in zip_files:
+        zip_file.unlink()
+
     project_lidar_to_fisheye(
         sensor=sensor,
-        project_dir="/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output",
-        depth_dir="processed/depths_euc_accum_0",
-        normal_dir="processed/normals_euc_accum_0",
+        project_dir=str(local_dir/ "sequences/2024-03-18-christ-church-01/processed/oxspires_tools_outputs"),
+        depth_dir="depths_euc_accum_0",
+        normal_dir="normals_euc_accum_0",
         camera_topics_labelled=sensor.camera_topics_labelled,
-        image_folder_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/raw/images"),
+        image_folder_path=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/colmap"),
         image_folder_name="images",
-        depth_pose_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/processed/output_colmap/transforms_colmap_scaled.json"),
-        depth_pose_format="nerf",
-        slam_individual_clouds_new_path=Path("/home/docker_dev/oxford_spires_dataset/data/raw/hf_test/sequences/2024-03-18-christ-church-01/ndp_output/raw/undist-clouds"),
+        # depth_pose_path=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/colmap/transforms_colmap_scaled.json"),
+        depth_pose_format="vilens_slam",
+        slam_individual_clouds_new_path=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds"),
         is_euclidean=True,
         accum_length=0,
         max_time_diff_camera_and_pose=0.025,
