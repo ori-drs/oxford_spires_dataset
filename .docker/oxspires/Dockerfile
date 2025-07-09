@@ -48,8 +48,6 @@ RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
 WORKDIR ${OXSPIRES_DIR}
 
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 COPY ./oxspires_tools/ ./oxspires_tools/
 COPY ./pyproject.toml .
 COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
