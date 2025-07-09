@@ -11,7 +11,7 @@ example_pattern = "sequences/2024-03-12-keble-college-02/*"  # download all file
 # example_pattern = "ground_truth_map/*" # download all ground truth maps
 
 
-local_dir = "download"
+local_dir = "data"
 
 snapshot_download(
     repo_id=hf_repo_id,
