@@ -15,14 +15,18 @@ You can also download the dataset from [Google Drive](https://dynamic.robots.ox.
 
 ## Python Tools
 `oxspires_tools` provides python tools for using the dataset.   
-To use it, build the docker container:
+Install it by running
+```bash
+pip install .
+```
+
+To use the cpp/python binding, you need to install PCL and Octomap. You can either build the docker container:
 ```bash
 docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
 ```
-
-Installing `oxspires_tools` requires PCL and Octomap installation. If you just want to install the python package, run:
+Or install the dependencies manually and then run
 ```bash
-BUILD_CPP=0 pip install .
+BUILD_CPP=1 pip install .
 ```
 
 ### Depth Image Generation

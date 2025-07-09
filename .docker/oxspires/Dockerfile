@@ -54,7 +54,7 @@ COPY ./oxspires_tools/ ./oxspires_tools/
 COPY ./pyproject.toml .
 COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
 COPY ./tests ${OXSPIRES_DIR}/tests
-RUN pip install -e .
+RUN BUILD_CPP=1 pip install -e .
 
 RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}
 USER ${USERNAME}
