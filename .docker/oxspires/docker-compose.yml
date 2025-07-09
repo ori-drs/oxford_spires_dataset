@@ -16,5 +16,4 @@ services:
     tty: true
     volumes:
       - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
-      - ~/.cache/huggingface/token:/home/docker_dev/.cache/huggingface/token
       - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
