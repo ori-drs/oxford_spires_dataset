@@ -7,7 +7,7 @@ This repository contains scripts that are used to evaluate localisation, 3D reco
 This is a pre-release of the software. The codebase will be refactored in the near future. Please feel free to ask questions about the dataset and report bugs in the Github Issues.
 
 ## Download
-You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. We have also defined a list of `core sequences` which you can find in the file.
+You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. We have also defined a list of [core sequences](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#core-sequences) which is can also be found in the file.
 ```bash
 python scripts/dataset_download.py
 ```
