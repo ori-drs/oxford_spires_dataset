@@ -9,8 +9,8 @@ FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}
 ARG GID
 ARG UID
 ARG USERNAME
-ARG HOME_DIR
-ARG OXSPIRES_DIR
+ARG DOCKER_HOME_DIR
+ARG DOCKER_WORKDIR
 # Install ROS
 ARG ROS_DISTRO=noetic
 # Prevent stop building ubuntu at time zone selection.
@@ -34,7 +34,7 @@ RUN apt-get update && \
     rosdep update
 
 # create catkin workspace
-ARG CATKIN_WS_DIR=${HOME_DIR}/${USERNAME}/catkin_ws
+ARG CATKIN_WS_DIR=${DOCKER_HOME_DIR}/catkin_ws
 RUN . /opt/ros/noetic/setup.sh && mkdir -p ${CATKIN_WS_DIR}/src && cd ${CATKIN_WS_DIR} && catkin build && \
     echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> ~/.bashrc
 
@@ -117,17 +117,17 @@ RUN pip install evo
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
-WORKDIR ${OXSPIRES_DIR}
+WORKDIR ${DOCKER_WORKDIR}
 
-COPY ./oxspires_tools/ ${OXSPIRES_DIR}/oxspires_tools/
-COPY ./pyproject.toml ${OXSPIRES_DIR}/pyproject.toml
+COPY ./oxspires_tools/ ${DOCKER_WORKDIR}/oxspires_tools/
+COPY ./pyproject.toml ${DOCKER_WORKDIR}/pyproject.toml
 # RUN pip install -e .
 
 # Make the outputs of the container match the host
-RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}
+RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
-RUN echo "alias recon_benchmark=\"python ${OXSPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
+RUN echo "alias recon_benchmark=\"python ${DOCKER_WORKDIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 
 CMD ["/bin/bash"]
