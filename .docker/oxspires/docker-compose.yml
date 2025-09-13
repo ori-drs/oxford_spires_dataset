@@ -10,10 +10,10 @@ services:
         - USERNAME=${USERNAME}
         - UID=${UID}
         - GID=${GID}
-        - HOME_DIR=${HOME_DIR}
-        - OXSPIRES_DIR=${OXSPIRES_DIR}
+        - DOCKER_HOME_DIR=${DOCKER_HOME_DIR}
+        - DOCKER_WORKDIR=${DOCKER_WORKDIR}
     runtime: nvidia
     tty: true
     volumes:
-      - ../../scripts:/home/docker_dev/oxford_spires_dataset/scripts
-      - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
+      - ../../scripts:${DOCKER_WORKDIR}/scripts
+      - ${HOST_DATA_DIR}:${DOCKER_DATA_DIR}

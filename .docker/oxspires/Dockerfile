@@ -4,8 +4,8 @@ ARG PYTHON_VERSION=3.10
 ARG GID
 ARG UID
 ARG USERNAME
-ARG HOME_DIR
-ARG OXSPIRES_DIR
+ARG DOCKER_HOME_DIR
+ARG DOCKER_WORKDIR
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -46,14 +46,13 @@ FROM cpp_build as final
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
-WORKDIR ${OXSPIRES_DIR}
-
+WORKDIR ${DOCKER_WORKDIR}
 COPY ./oxspires_tools/ ./oxspires_tools/
 COPY ./pyproject.toml .
-COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
-COPY ./tests ${OXSPIRES_DIR}/tests
+COPY ./CMakeLists.txt ${DOCKER_WORKDIR}/CMakeLists.txt
+COPY ./tests ${DOCKER_WORKDIR}/tests
 RUN BUILD_CPP=1 pip install -e .
 
-RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}
+RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc

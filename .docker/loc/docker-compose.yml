@@ -8,8 +8,8 @@ services:
         - USERNAME=${USERNAME}
         - UID=${UID}
         - GID=${GID}
-        - HOME_DIR=${HOME_DIR}
-        - OXSPIRES_DIR=${OXSPIRES_DIR}
+        - DOCKER_HOME_DIR=${DOCKER_HOME_DIR}
+        - DOCKER_WORKDIR=${DOCKER_WORKDIR}
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
@@ -18,7 +18,7 @@ services:
     network_mode: "host"
     tty: true
     volumes:
-      - ../scripts:${OXSPIRES_DIR}/scripts
-      - ../tests:${OXSPIRES_DIR}/tests
-      - ${HOST_OXSPIRES_DATA_DIR}:${OXSPIRES_DATA_DIR}
+      - ../scripts:${DOCKER_WORKDIR}/scripts
+      - ../tests:${DOCKER_WORKDIR}/tests
+      - ${HOST_DATA_DIR}:${DOCKER_DATA_DIR}
       - /tmp/.X11-unix:/tmp/.X11-uni # To display emerging windows, it is necessary to run 'xhost +' before composing the docker.

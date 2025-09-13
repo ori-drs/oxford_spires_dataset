@@ -12,8 +12,8 @@ ARG CUDA_ARCHITECTURES=native
 ARG GID
 ARG UID
 ARG USERNAME
-ARG HOME_DIR
-ARG OXSPIRES_DIR
+ARG DOCKER_HOME_DIR
+ARG DOCKER_WORKDIR
 
 SHELL ["/bin/bash", "-c"]
 
@@ -45,8 +45,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Octomap
-RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 ${HOME_DIR}/octomap &&\
-    cd ${HOME_DIR}/octomap &&\
+RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 ${DOCKER_HOME_DIR}/octomap &&\
+    cd ${DOCKER_HOME_DIR}/octomap &&\
     mkdir build &&\
     cd build &&\
     cmake .. &&\
@@ -68,12 +68,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 ARG OPENMVS_BUILD_ARG="-DOpenMVS_USE_CUDA=ON -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/ -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda/ -DCUDA_INCLUDE_DIRS=/usr/local/cuda/include/ -DCUDA_CUDART_LIBRARY=/usr/local/cuda/lib64 -DCUDA_NVCC_EXECUTABLE=/usr/local/cuda/bin/"
-RUN git clone https://github.com/cdcseacave/VCG.git  ${HOME_DIR}/vcglib &&\
-    git clone --recurse-submodules https://github.com/cdcseacave/openMVS.git --branch v2.3.0 ${HOME_DIR}/openMVS  &&\
-    cd ${HOME_DIR}/openMVS &&\
+RUN git clone https://github.com/cdcseacave/VCG.git  ${DOCKER_HOME_DIR}/vcglib &&\
+    git clone --recurse-submodules https://github.com/cdcseacave/openMVS.git --branch v2.3.0 ${DOCKER_HOME_DIR}/openMVS  &&\
+    cd ${DOCKER_HOME_DIR}/openMVS &&\
     mkdir make &&\
     cd make &&\
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT=${HOME_DIR}/vcglib $OPENMVS_BUILD_ARG &&\
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT=${DOCKER_HOME_DIR}/vcglib $OPENMVS_BUILD_ARG &&\
     make &&\
     make install
 
@@ -113,8 +113,8 @@ RUN export CC=/usr/bin/gcc-10 &&\
 
 # TODO: You might have to change this to your specific GPU architecture. Ideally should not need to specify CUDA_ARCHITECTURES. 
 ARG CUDA_ARCHITECTURES=89
-RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${HOME_DIR}/colmap &&\
-    cd ${HOME_DIR}/colmap &&\
+RUN git clone https://github.com/colmap/colmap.git --branch 3.8 ${DOCKER_HOME_DIR}/colmap &&\
+    cd ${DOCKER_HOME_DIR}/colmap &&\
     mkdir build &&\
     cd build &&\
     cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} &&\
@@ -130,8 +130,8 @@ ARG NERFSTUDIO_VERSION=v1.1.4
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir torch==2.1.2+cu118 torchvision==0.16.2+cu118 'numpy<2.0.0' --extra-index-url https://download.pytorch.org/whl/cu118
 RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
-RUN git clone https://github.com/nerfstudio-project/nerfstudio.git --branch ${NERFSTUDIO_VERSION} ${HOME_DIR}/nerfstudio &&\
-    cd ${HOME_DIR}/nerfstudio &&\
+RUN git clone https://github.com/nerfstudio-project/nerfstudio.git --branch ${NERFSTUDIO_VERSION} ${DOCKER_HOME_DIR}/nerfstudio &&\
+    cd ${DOCKER_HOME_DIR}/nerfstudio &&\
     pip install -e .
 
 FROM colmap as sdfstudio
@@ -139,8 +139,8 @@ ARG SDFSTUDIO_COMMIT=370902a
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html
 RUN TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch"
-RUN git clone https://github.com/autonomousvision/sdfstudio.git ${HOME_DIR}/sdfstudio &&\
-    cd ${HOME_DIR}/sdfstudio &&\
+RUN git clone https://github.com/autonomousvision/sdfstudio.git ${DOCKER_HOME_DIR}/sdfstudio &&\
+    cd ${DOCKER_HOME_DIR}/sdfstudio &&\
     git checkout ${SDFSTUDIO_COMMIT} &&\
     pip install -e .
 
@@ -152,19 +152,19 @@ FROM nerfstudio as deploy
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 
-WORKDIR ${OXSPIRES_DIR}
+WORKDIR ${DOCKER_WORKDIR}
 
-COPY ./oxspires_tools/ ${OXSPIRES_DIR}/oxspires_tools/
-COPY ./pyproject.toml ${OXSPIRES_DIR}/pyproject.toml
-COPY ./CMakeLists.txt ${OXSPIRES_DIR}/CMakeLists.txt
+COPY ./oxspires_tools/ ${DOCKER_WORKDIR}/oxspires_tools/
+COPY ./pyproject.toml ${DOCKER_WORKDIR}/pyproject.toml
+COPY ./CMakeLists.txt ${DOCKER_WORKDIR}/CMakeLists.txt
 RUN pip install -e .
 RUN mkdir /home/${USERNAME}/.cache
 
 # Make the outputs of the container match the host
 
-RUN chown -R ${UID}:${GID} ${HOME_DIR}/${USERNAME}
+RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
-RUN echo "alias recon_benchmark=\"python ${OXSPIRES_DIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
+RUN echo "alias recon_benchmark=\"python ${DOCKER_WORKDIR}/scripts/reconstruction_benchmark/main.py\"" >> ~/.bashrc
 
 CMD ["/bin/bash"]
