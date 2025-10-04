@@ -101,6 +101,12 @@ class Sensor:
         ax.view_init(elev=30, azim=30)
 
         plt.savefig(save_path)
+        ax.view_init(elev=0, azim=0)
+        plt.savefig(save_path.replace(".png", "_front.png"))
+        ax.view_init(elev=90, azim=0)
+        plt.savefig(save_path.replace(".png", "_top.png"))
+        ax.view_init(elev=0, azim=90)
+        plt.savefig(save_path.replace(".png", "_right.png"))
 
     def __post_init__(self):
         self.cameras = [Camera(**camera) for camera in self.cameras]
