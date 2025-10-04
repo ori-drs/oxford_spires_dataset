@@ -32,10 +32,8 @@ class Camera:
     image_width: int
     intrinsics: List[float]  # fx, fy, cx, cy
     extra_params: List[float]
-    T_cam_lidar_t_xyz_q_xyzw_overwrite: List[float] = field(
-        default_factory=list
-    )  # overwrite that computed from T_cam_imu and T_base_lidar
-    T_cam_imu_t_xyz_q_xyzw: List[float] = field(default_factory=list)
+    T_cam_lidar_t_xyz_q_xyzw: List[float] = field(default_factory=list)
+    T_cam_imu_t_xyz_q_xyzw: List[float] = field(default_factory=list)  # only one camera should have this
     camera_model: str = "OPENCV_FISHEYE"  # https://colmap.github.io/cameras.html
 
     def __post_init__(self):
@@ -44,12 +42,11 @@ class Camera:
         assert len(self.extra_params) == expected_num_extra_param[self.camera_model], (
             f"Expected {expected_num_extra_param[self.camera_model]} extra params, got {len(self.extra_params)}"
         )
-        self.T_cam_lidar_overwrite = (
-            get_transformation_matrix(self.T_cam_lidar_t_xyz_q_xyzw_overwrite)
-            if len(self.T_cam_lidar_t_xyz_q_xyzw_overwrite) > 0
-            else None
+        self.T_cam_lidar = get_transformation_matrix(self.T_cam_lidar_t_xyz_q_xyzw)
+
+        self.T_cam_imu = (
+            get_transformation_matrix(self.T_cam_imu_t_xyz_q_xyzw) if len(self.T_cam_imu_t_xyz_q_xyzw) > 0 else None
         )
-        self.T_cam_imu = get_transformation_matrix(self.T_cam_imu_t_xyz_q_xyzw)
 
     def get_K(self):
         fx, fy, cx, cy = self.intrinsics
@@ -80,12 +77,20 @@ class Sensor:
             camera_topic = camera_topic[1:]
         return camera_topic
 
+    def get_cam_with_imu(self):
+        # assert only one camera has T_cam_imu
+        cams_with_imu = [cam for cam in self.cameras if cam.T_cam_imu is not None]
+        assert len(cams_with_imu) == 1, f"Expected only one camera with T_cam_imu, got {len(cams_with_imu)}"
+        return cams_with_imu[0]
+
     def set_sensor_frames(self):
         self.tf = TransformManager()
-        self.tf.add_transform("imu", "base", self.T_base_imu)
         self.tf.add_transform("lidar", "base", self.T_base_lidar)
         for camera in self.cameras:
-            self.tf.add_transform("imu", camera.label, camera.T_cam_imu)
+            self.tf.add_transform("lidar", camera.label, camera.T_cam_lidar)
+
+        cam_with_imu = self.get_cam_with_imu()
+        self.tf.add_transform("imu", cam_with_imu.label, cam_with_imu.T_cam_imu)
 
     def viz_sensor_frames(self, save_path="sensor_frames.png"):
         ax = self.tf.plot_frames_in("base", s=0.03)
@@ -96,6 +101,12 @@ class Sensor:
         ax.view_init(elev=30, azim=30)
 
         plt.savefig(save_path)
+        ax.view_init(elev=0, azim=0)
+        plt.savefig(save_path.replace(".png", "_front.png"))
+        ax.view_init(elev=90, azim=0)
+        plt.savefig(save_path.replace(".png", "_top.png"))
+        ax.view_init(elev=0, azim=90)
+        plt.savefig(save_path.replace(".png", "_right.png"))
 
     def __post_init__(self):
         self.cameras = [Camera(**camera) for camera in self.cameras]
@@ -113,15 +124,8 @@ class Sensor:
         for cam_name in self.camera_topics_labelled.keys():
             # self.cam_ids[self.camera_topics_labelled[cam_name]] = self.cam_ids[cam_name]
             self.cam_idx_new[self.camera_topics_labelled[cam_name]] = self.cam_idx_new[cam_name]
-        self.T_base_imu = get_transformation_matrix(self.T_base_imu_t_xyz_q_xyzw)
         self.T_base_lidar = get_transformation_matrix(self.T_base_lidar_t_xyz_q_xyzw)
         self.set_sensor_frames()
-
-        self.T_cam_base_overwrite = {
-            camera.label: camera.T_cam_lidar_overwrite @ np.linalg.inv(self.T_base_lidar)
-            for camera in self.cameras
-            if camera.T_cam_lidar_overwrite is not None
-        }
 
     def get_colmap_cam_id(self, camera_name=None, camera_topic=None):
         # colmap cam id starts from 1, not 0

@@ -2,7 +2,6 @@
 import shutil
 from pathlib import Path
 
-import numpy as np
 import open3d as o3d
 import yaml
 from huggingface_hub import snapshot_download
@@ -34,7 +33,6 @@ def project_lidar_to_fisheye(
     save_normal_map: bool = True,
     pose_scale_factor: float = 1.0,  # not 1 if colmap pose
     camera_model: str = "OPENCV_FISHEYE",
-    T_cam_base_overwrite: np.ndarray = {},
 ):
     # args = get_args()
     # Project dir
@@ -71,13 +69,7 @@ def project_lidar_to_fisheye(
         # Transformation from base to camera (clouds in individual_clouds are base coordinates)
         # T_cam_lidar = np.linalg.inv(Ts[f"base_{cam_name}"]) @ Ts[f"base_{lidar_name}"]
         K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
-        T_base_cam = sensor.tf.get_transform(cam_name, "base")
-        if cam_name in T_cam_base_overwrite.keys():
-            # use the overwriten T_cam_base using T_cam_lidar_overwrite
-            T_cam_base = T_cam_base_overwrite[cam_name]
-        else:
-            # just use the default T_cam_base
-            T_cam_base = np.linalg.inv(T_base_cam)
+        T_cam_base = sensor.tf.get_transform("base", cam_name)
 
         # Setup input dir
         target_image_subdir = Path(image_folder_path) / subdir
@@ -194,5 +186,4 @@ if __name__ == "__main__":
         save_normal_map=True,
         pose_scale_factor=1.0,  # not 1 if colmap pose
         camera_model="OPENCV_FISHEYE",
-        T_cam_base_overwrite=sensor.T_cam_base_overwrite
     )  # fmt: skip
