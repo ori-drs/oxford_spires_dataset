@@ -87,3 +87,7 @@ journal={International Journal of Robotics Research},
 year={2025},
 }
 ```
+
+## License
+
+This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0) and is intended for non-commercial academic use. If you are interested in using the dataset for commercial purposes please contact us via [email](mailto:oxfordspiresdataset@robots.ox.ac.uk).
