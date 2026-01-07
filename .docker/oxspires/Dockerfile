@@ -56,6 +56,8 @@ RUN apt-get update && apt-get install -y \
     vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+RUN pip install go-task-bin
+
 RUN addgroup --gid $GID $USERNAME
 RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
