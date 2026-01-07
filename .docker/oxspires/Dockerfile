@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     python${PYTHON_VERSION}-dev \
     python3-pip \
     python-is-python3 \
-    vim \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -42,9 +41,7 @@ RUN git clone https://github.com/OctoMap/octomap.git --branch v1.10.0 /home/${US
     ldconfig
 
 
-FROM cpp_build as final
-RUN addgroup --gid $GID $USERNAME
-RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
+FROM cpp_build as full_build
 
 WORKDIR ${DOCKER_WORKDIR}
 COPY ./oxspires_tools/ ./oxspires_tools/
@@ -53,6 +50,15 @@ COPY ./CMakeLists.txt ${DOCKER_WORKDIR}/CMakeLists.txt
 COPY ./tests ${DOCKER_WORKDIR}/tests
 RUN BUILD_CPP=1 pip install -e .
 
+FROM full_build as dev
+
+RUN apt-get update && apt-get install -y \
+    vim \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+RUN addgroup --gid $GID $USERNAME
+RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
+
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
