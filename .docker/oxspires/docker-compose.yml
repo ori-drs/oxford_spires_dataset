@@ -16,3 +16,5 @@ services:
     tty: true
     volumes:
       - ../../scripts:${DOCKER_WORKDIR}/scripts
+      - ../../configs:${DOCKER_WORKDIR}/configs
+      - ../../data:${DOCKER_WORKDIR}/data
