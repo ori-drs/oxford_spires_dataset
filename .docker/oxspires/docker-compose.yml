@@ -5,7 +5,7 @@ services:
     build:
       context: ../..
       dockerfile: .docker/oxspires/Dockerfile
-      target: final
+      target: dev
       args:
         - USERNAME=${USERNAME}
         - UID=${UID}
@@ -16,4 +16,5 @@ services:
     tty: true
     volumes:
       - ../../scripts:${DOCKER_WORKDIR}/scripts
-      - ${HOST_DATA_DIR}:${DOCKER_DATA_DIR}
+      - ../../configs:${DOCKER_WORKDIR}/configs
+      - ../../data:${DOCKER_WORKDIR}/data
