@@ -19,16 +19,18 @@ from oxspires_tools.trajectory.pose_convention import PoseConvention
 
 def setup_logging():
     time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    Path("logs").mkdir(exist_ok=True)
+    project_root = Path(__file__).parent.parent
+    logs_dir = project_root / "logs"
+    logs_dir.mkdir(exist_ok=True)
     logging.basicConfig(
-        filename=f"logs/recon_benchmark_{time}.log",  # Log file
-        level=logging.DEBUG,  # Set the logging level
-        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",  # Log format
+        filename=logs_dir / f"{time}.log",
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",
     )
-    console_handler = logging.StreamHandler()  # Create a console handler
-    console_handler.setLevel(logging.INFO)  # Set the logging level
-    root_logger = logging.getLogger()  # Get the root logger
-    root_logger.addHandler(console_handler)  # Add the console handler to the logger
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(console_handler)
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
