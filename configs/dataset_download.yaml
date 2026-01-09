@@ -5,6 +5,7 @@ repo_type: "dataset"
 
 # Local directory to download data to
 local_dir: "data"
+download: true
 unpack: true  # Unpack archives (zip, tar, etc.)
 
 # Patterns to download (list)

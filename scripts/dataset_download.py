@@ -55,22 +55,6 @@ def get_args():
         default="configs/dataset_download.yaml",
         help="Path to configuration file (default: config/dataset_download.yaml)",
     )
-    parser.add_argument(
-        "--pattern",
-        type=str,
-        nargs="+",
-        help="Pattern(s) to download (overrides config patterns)",
-    )
-    parser.add_argument(
-        "--local-dir",
-        type=str,
-        help="Local directory to download to (overrides config)",
-    )
-    parser.add_argument(
-        "--repo-id",
-        type=str,
-        help="HuggingFace repository ID (overrides config)",
-    )
     args = parser.parse_args()
     return args
 
@@ -79,17 +63,17 @@ def main():
     args = get_args()
 
     config = load_config(args.config)
+    Path(config["local_dir"]).mkdir(parents=True, exist_ok=True)
 
-    repo_id = args.repo_id or config["repo_id"]
-    local_dir = args.local_dir or config["local_dir"]
-    repo_type = config["repo_type"]
-    patterns = args.pattern or config["patterns"]
-
-    Path(local_dir).mkdir(parents=True, exist_ok=True)
-
-    download_patterns(repo_id, patterns, local_dir, repo_type)
+    if config.get("download", True):
+        download_patterns(
+            repo_id=config["repo_id"],
+            patterns=config["patterns"],
+            local_dir=config["local_dir"],
+            repo_type=config["repo_type"],
+        )
     if config.get("unpack", True):
-        unpack_zip_files(local_dir)
+        unpack_zip_files(config["local_dir"])
 
 
 if __name__ == "__main__":
