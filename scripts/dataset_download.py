@@ -1,4 +1,5 @@
 import argparse
+import shutil
 from pathlib import Path
 
 import yaml
@@ -11,10 +12,17 @@ def load_config(config_path: str) -> dict:
         return yaml.safe_load(f)
 
 
-def download_patterns(repo_id: str, patterns: list, local_dir: str, repo_type: str = "dataset") -> None:
+def download_patterns(
+    repo_id: str,
+    patterns: list,
+    local_dir: str,
+    repo_type: str = "dataset",
+    unpack: bool = False,
+) -> list:
     """Download patterns from the HuggingFace repository."""
     print(f"Repository: {repo_id}")
     print(f"Local directory: {local_dir}")
+    print(f"Unpack archives: {unpack}")
     print(f"Downloading {len(patterns)} pattern(s)...\n")
 
     for i, pattern in enumerate(patterns, 1):
@@ -29,6 +37,14 @@ def download_patterns(repo_id: str, patterns: list, local_dir: str, repo_type: s
         print(f"✅ Downloaded: {pattern}\n")
 
     print("🏁 All downloads complete!")
+
+
+def unpack_zip_files(local_dir: str):
+    zip_files = list(Path(local_dir).rglob("*.zip"))
+    for zip_file in zip_files:
+        print(f"Unzipping {zip_file}")
+        shutil.unpack_archive(zip_file, extract_dir=zip_file.parent)
+        zip_file.unlink()
 
 
 def get_args():
@@ -72,6 +88,8 @@ def main():
     Path(local_dir).mkdir(parents=True, exist_ok=True)
 
     download_patterns(repo_id, patterns, local_dir, repo_type)
+    if config.get("unpack", True):
+        unpack_zip_files(local_dir)
 
 
 if __name__ == "__main__":
