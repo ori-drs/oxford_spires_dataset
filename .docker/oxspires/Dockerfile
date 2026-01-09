@@ -63,4 +63,7 @@ RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
 RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
 
+# Coloured bash prompt
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@docker-\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> ~/.bashrc
+# Enable colored `ls` output
+RUN echo "alias ls='ls --color=auto'" >> ~/.bashrc
