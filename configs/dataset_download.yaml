@@ -7,6 +7,7 @@ repo_type: "dataset"
 local_dir: "data"
 download: true
 unpack: true  # Unpack archives (zip, tar, etc.)
+check: true # validate data 
 
 # Patterns to download (list)
 # Common patterns:

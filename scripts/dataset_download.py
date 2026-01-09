@@ -5,6 +5,8 @@ from pathlib import Path
 import yaml
 from huggingface_hub import snapshot_download
 
+from oxspires_tools.dataset import check_image_lidar_sync
+
 
 def load_config(config_path: str) -> dict:
     """Load configuration from YAML file."""
@@ -35,7 +37,6 @@ def download_patterns(
             use_auth_token=False,
         )
         print(f"✅ Downloaded: {pattern}\n")
-
     print("🏁 All downloads complete!")
 
 
@@ -74,6 +75,17 @@ def main():
         )
     if config.get("unpack", True):
         unpack_zip_files(config["local_dir"])
+    if config.get("check", True):
+        sequences = Path(config["local_dir"]) / "sequences"
+        for seq_dir in sequences.iterdir():
+            if not seq_dir.is_dir():
+                continue
+            print(f"\nChecking sequence: {seq_dir.name}")
+            check_image_lidar_sync(
+                image_dir=Path(seq_dir) / "raw" / "cam0",
+                lidar_dir=Path(seq_dir) / "processed" / "vilens-slam" / "undist-clouds",
+                tolerance_sec=0.0,
+            )
 
 
 if __name__ == "__main__":
