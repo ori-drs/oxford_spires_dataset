@@ -1,0 +1,39 @@
+version: '3'
+
+vars:
+  PYTHON: python3
+  CONFIG_DIR: config
+  SCRIPTS_DIR: scripts
+  DATA_DIR: data
+
+tasks:
+  docker:
+    desc: Build and run development Docker container
+    cmds:
+      - docker compose -f .docker/oxspires/docker-compose.yml run --build --rm oxspires_utils bash
+
+  download:
+    desc: Download dataset using patterns from config
+    cmds:
+      - "{{.PYTHON}} {{.SCRIPTS_DIR}}/dataset_download.py"
+
+  install:
+    desc: Install the package in development mode
+    cmds:
+      - pip install -e .
+
+  install_with_cpp:
+    desc: Install the package with C++ bindings
+    cmds:
+      - BUILD_CPP=1 pip install -e .
+
+  format:
+    desc: Format code using ruff
+    cmds:
+      - ruff check --fix --config pyproject.toml
+      - ruff format --config pyproject.toml
+
+  test:
+    desc: Run all tests
+    cmds:
+      - pytest

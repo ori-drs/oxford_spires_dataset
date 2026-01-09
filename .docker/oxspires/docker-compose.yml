@@ -13,8 +13,10 @@ services:
         - DOCKER_HOME_DIR=${DOCKER_HOME_DIR}
         - DOCKER_WORKDIR=${DOCKER_WORKDIR}
     runtime: nvidia
+    stdin_open: true
     tty: true
     volumes:
       - ../../scripts:${DOCKER_WORKDIR}/scripts
       - ../../configs:${DOCKER_WORKDIR}/configs
       - ../../data:${DOCKER_WORKDIR}/data
+      - ../../Taskfile.yml:${DOCKER_WORKDIR}/Taskfile.yml
