@@ -3,7 +3,6 @@ import csv
 import logging
 import shutil
 from copy import deepcopy
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -22,23 +21,9 @@ from oxspires_tools.sensor import Sensor
 from oxspires_tools.trajectory.align import align
 from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxspires_tools.trajectory.utils import pose_to_ply
-from oxspires_tools.utils import convert_e57_folder_to_pcd_folder, transform_pcd_folder
+from oxspires_tools.utils import convert_e57_folder_to_pcd_folder, setup_logging, transform_pcd_folder
 
 logger = logging.getLogger(__name__)
-
-
-def setup_logging():
-    time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    Path("logs").mkdir(exist_ok=True)
-    logging.basicConfig(
-        filename=f"logs/recon_benchmark_{time}.log",  # Log file
-        level=logging.DEBUG,  # Set the logging level
-        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",  # Log format
-    )
-    console_handler = logging.StreamHandler()  # Create a console handler
-    console_handler.setLevel(logging.INFO)  # Set the logging level
-    root_logger = logging.getLogger()  # Get the root logger
-    root_logger.addHandler(console_handler)  # Add the console handler to the logger
 
 
 class ReconstructionBenchmark:

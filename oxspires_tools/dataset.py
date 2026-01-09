@@ -1,8 +1,11 @@
+import logging
 from bisect import bisect_left
 from pathlib import Path
 from typing import List
 
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
+
+logger = logging.getLogger(__name__)
 
 
 def parse_lidar_timestamp(filename: str) -> str:
@@ -49,7 +52,7 @@ def check_image_lidar_sync(
         image_timestamps.append(ts)
 
     if not image_timestamps:
-        print(f"No images found in {image_dir}")
+        logger.error(f"No images found in {image_dir}")
         return False
 
     # Parse LiDAR timestamps
@@ -60,10 +63,10 @@ def check_image_lidar_sync(
         lidar_timestamps.append(ts)
 
     if not lidar_timestamps:
-        print(f"No LiDAR point clouds found in {lidar_dir}")
+        logger.error(f"No LiDAR point clouds found in {lidar_dir}")
         return False
 
-    print(f"Found {len(image_timestamps)} images, {len(lidar_timestamps)} LiDAR clouds")
+    logger.info(f"Found {len(image_timestamps)} images, {len(lidar_timestamps)} LiDAR clouds")
 
     # Check synchronization
     unmatched: List[TimeStamp] = []
@@ -91,15 +94,15 @@ def check_image_lidar_sync(
 
     # Report results
     matched_count = len(lidar_timestamps) - len(unmatched)
-    print(f"Matched: {matched_count}/{len(lidar_timestamps)} LiDAR timestamps")
+    logger.info(f"Matched: {matched_count}/{len(lidar_timestamps)} LiDAR timestamps")
 
     if unmatched:
-        print(f"Unmatched LiDAR timestamps ({len(unmatched)}):")
+        logger.error(f"Unmatched LiDAR timestamps ({len(unmatched)}):")
         for ts in unmatched[:10]:  # Show first 10
-            print(f"  {ts.t_string}")
+            logger.error(f"  {ts.t_string}")
         if len(unmatched) > 10:
-            print(f"  ... and {len(unmatched) - 10} more")
+            logger.error(f"  ... and {len(unmatched) - 10} more")
         return False
 
-    print("All LiDAR timestamps are synchronized with images")
+    logger.info("All LiDAR timestamps are synchronized with images")
     return True

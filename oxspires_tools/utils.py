@@ -1,6 +1,8 @@
+import logging
 import re
 import zipfile
 from bisect import bisect_left
+from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
 
@@ -13,6 +15,20 @@ from oxspires_tools.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxspires_tools.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
 from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
+
+
+def setup_logging():
+    time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    Path("logs").mkdir(exist_ok=True)
+    logging.basicConfig(
+        filename=f"logs/recon_benchmark_{time}.log",  # Log file
+        level=logging.DEBUG,  # Set the logging level
+        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",  # Log format
+    )
+    console_handler = logging.StreamHandler()  # Create a console handler
+    console_handler.setLevel(logging.INFO)  # Set the logging level
+    root_logger = logging.getLogger()  # Get the root logger
+    root_logger.addHandler(console_handler)  # Add the console handler to the logger
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
