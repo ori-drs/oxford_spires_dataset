@@ -32,7 +32,7 @@ def download_patterns(
     logger.info(f"Downloading {len(patterns)} pattern(s)...\n")
 
     for i, pattern in enumerate(patterns, 1):
-        logger.info(f"[{i}/{len(patterns)}] {pattern}")
+        logger.info(f"🚀 [{i}/{len(patterns)}] {pattern}")
         snapshot_download(
             repo_id=repo_id,
             allow_patterns=pattern,
@@ -50,6 +50,7 @@ def unpack_zip_files(local_dir: str):
         logger.info(f"Unzipping {zip_file}")
         shutil.unpack_archive(zip_file, extract_dir=zip_file.parent)
         zip_file.unlink()
+    logger.info("🏁 All zip files unpacked!")
 
 
 def get_args():
@@ -81,14 +82,16 @@ def main():
     if config.get("unpack", True):
         unpack_zip_files(config["local_dir"])
     if config.get("check", True):
-        sequences = Path(config["local_dir"]) / "sequences"
-        for seq_dir in sequences.iterdir():
+        sequences_dir = Path(config["local_dir"]) / "sequences"
+        sequences_list = sorted([d.name for d in sequences_dir.iterdir() if d.is_dir()])
+        for i, seq_name in enumerate(sequences_list):
+            seq_dir = sequences_dir / seq_name
             if not seq_dir.is_dir():
                 continue
-            logger.info(f"\nChecking sequence: {seq_dir.name}")
+            logger.info(f"\n🚀 [{i}/{len(sequences_list)}] Checking sequence: {seq_dir.name}")
             check_image_lidar_sync(
-                image_dir=Path(seq_dir) / "raw" / "cam0",
-                lidar_dir=Path(seq_dir) / "processed" / "vilens-slam" / "undist-clouds",
+                image_dir=seq_dir / "raw" / "cam0",
+                lidar_dir=seq_dir / "processed" / "vilens-slam" / "undist-clouds",
                 tolerance_sec=0.0,
             )
 
