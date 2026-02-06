@@ -141,7 +141,7 @@ def project_lidar_to_fisheye(
 
 
 if __name__ == "__main__":
-    config_yaml_path = Path("/home/docker_dev/oxford_spires_dataset/config/sensor.yaml")
+    config_yaml_path = Path(__file__).parent.parent / "config" / "sensor.yaml"
     with open(config_yaml_path, "r") as f:
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
