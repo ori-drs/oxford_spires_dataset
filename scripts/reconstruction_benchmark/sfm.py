@@ -164,8 +164,8 @@ def export_json(input_bin_dir, json_file_name="transforms.json", output_dir=None
     input_bin_dir = Path(input_bin_dir)
     cameras_path = input_bin_dir / "cameras.bin"
     images_path = input_bin_dir / "images.bin"
-    database_path = output_dir / "database.db" if db_file is None else Path(db_file)
     output_dir = input_bin_dir if output_dir is None else Path(output_dir)
+    database_path = output_dir / "database.db" if db_file is None else Path(db_file)
 
     cameras = read_cameras_binary(cameras_path)
     images = read_images_binary(images_path)
