@@ -94,7 +94,9 @@ def check_image_lidar_sync(
 
     # Report results
     matched_count = len(lidar_timestamps) - len(unmatched)
-    logger.info(f"Matched: {matched_count}/{len(lidar_timestamps)} LiDAR timestamps")
+    logger.info(
+        f"Matched: {matched_count / len(lidar_timestamps) * 100:.2f}% ({matched_count}/{len(lidar_timestamps)}) LiDAR timestamps"
+    )
 
     if unmatched:
         logger.error(f"Unmatched LiDAR timestamps ({len(unmatched)}):")
