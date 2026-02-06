@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+from json_handler_submap_utils import get_xyz
+
 
 class NeRFJsonHandler:
     # remember to create a copy of the json when removing,
