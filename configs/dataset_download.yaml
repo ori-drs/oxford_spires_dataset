@@ -2,6 +2,7 @@
 # https://huggingface.co/datasets/ori-drs/oxford_spires_dataset
 repo_id: "ori-drs/oxford_spires_dataset"
 repo_type: "dataset"
+branch: "main"
 
 # Local directory to download data to
 local_dir: "data"

@@ -23,6 +23,7 @@ def download_patterns(
     patterns: list,
     local_dir: str,
     repo_type: str = "dataset",
+    branch: str = "main",
     unpack: bool = False,
 ) -> list:
     """Download patterns from the HuggingFace repository."""
@@ -39,6 +40,7 @@ def download_patterns(
             local_dir=local_dir,
             repo_type=repo_type,
             use_auth_token=False,
+            revision=branch,
         )
         logger.info(f"✅ Downloaded: {pattern}\n")
     logger.info("🏁 All downloads complete!")
@@ -78,6 +80,7 @@ def main():
             patterns=config["patterns"],
             local_dir=config["local_dir"],
             repo_type=config["repo_type"],
+            branch=config["branch"],
         )
     if config.get("unpack", True):
         unpack_zip_files(config["local_dir"])
