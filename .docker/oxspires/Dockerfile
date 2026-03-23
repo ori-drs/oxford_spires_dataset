@@ -62,11 +62,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     vim \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install go-task-bin
 
 RUN addgroup --gid $GID $USERNAME \
  && adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME \
  && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
+
+RUN pip install --ignore-installed -e .[dev]
 
 RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
