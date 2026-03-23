@@ -27,21 +27,7 @@ def check_image_lidar_sync(
     lidar_dir: Path,
     tolerance_sec: float = 0.0,
 ) -> bool:
-    """
-    Check if LiDAR timestamps are synchronized with image timestamps.
-
-    LiDAR has lower frequency than images, so we check if each LiDAR timestamp
-    has a corresponding image timestamp (within tolerance).
-
-    Args:
-        image_dir: Directory containing image files (*.jpg)
-        lidar_dir: Directory containing LiDAR point cloud files (*.pcd)
-        tolerance_sec: Maximum allowed time difference in seconds.
-            0.0 means exact match required.
-
-    Returns:
-        True if all LiDAR timestamps have matching image timestamps, False otherwise.
-    """
+    """Check if LiDAR timestamps are synchronized with image timestamps."""
     image_dir = Path(image_dir)
     lidar_dir = Path(lidar_dir)
 

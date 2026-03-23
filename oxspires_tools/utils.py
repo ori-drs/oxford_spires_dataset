@@ -18,7 +18,7 @@ from oxspires_tools.trajectory.pose_convention import PoseConvention
 
 
 def setup_logging(logging_dir: Path = None) -> Path:
-    """Set up logging to file and console, returns the logging directory."""
+    """Set up logging to file and console."""
     time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if logging_dir is None:
         logging_dir = Path(__file__).parent.parent / "runs" / time
@@ -151,9 +151,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
 
 
 def find_closest_in_sorted(array: List, value: float):
-    """
-    Find and return closest value and difference
-    """
+    """Find and return closest value and difference."""
     # Over or under any value in the array
     assert isinstance(value, (float, np.float128))
     if array[-1] < value:
@@ -174,20 +172,7 @@ def find_closest_in_sorted(array: List, value: float):
 def get_image_pcd_sync_pair(
     image_dir: Path, pcd_dir: Path, image_ext: str, timestamp_threshold: float = 0.05
 ) -> List[Tuple[Path, Path, float]]:
-    """
-    Find image and point cloud pairs that are synchronized based on their timestamps.
-
-    Args:
-        image_dir (Path): Directory containing the image files.
-        pcd_dir (Path): Directory containing the point cloud files.
-        image_ext (str): File extension of the image files (e.g. ".jpg").
-        timestamp_threshold (float): Maximum time difference allowed between an image and a point cloud, in seconds.
-            Defaults to 0.05.
-
-    Returns:
-        List[Tuple[Path, Path, float]]: A list of tuples, where each tuple represents an image and a point cloud that are
-            synchronized, along with their time difference in seconds.
-    """
+    """Find synchronized image and point cloud pairs based on timestamps."""
     # Load images and timestamps
     image_timestamps = []
     image_paths = {}
