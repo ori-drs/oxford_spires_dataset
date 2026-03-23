@@ -63,6 +63,13 @@ def get_args():
         default="configs/dataset_download.yaml",
         help="Path to configuration file (default: config/dataset_download.yaml)",
     )
+    parser.add_argument(
+        "--patterns",
+        type=str,
+        nargs="+",
+        default=None,
+        help="Override patterns to download (e.g. 'sequences/foo/*')",
+    )
     args = parser.parse_args()
     return args
 
@@ -74,10 +81,11 @@ def main():
     config = load_config(args.config)
     Path(config["local_dir"]).mkdir(parents=True, exist_ok=True)
 
+    patterns = args.patterns if args.patterns is not None else config["patterns"]
     if config.get("download", True):
         download_patterns(
             repo_id=config["repo_id"],
-            patterns=config["patterns"],
+            patterns=patterns,
             local_dir=config["local_dir"],
             repo_type=config["repo_type"],
             branch=config["branch"],
