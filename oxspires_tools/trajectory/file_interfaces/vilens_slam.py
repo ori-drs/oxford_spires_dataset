@@ -9,18 +9,13 @@ from .timestamp import TimeStamp
 
 
 class VilensSlamTrajReader(BasicTrajReader):
-    """
-    Read VILENS SLAM trajectory file
-    """
+    """Read VILENS SLAM trajectory file."""
 
     def __init__(self, file_path, **kwargs):
         super().__init__(file_path)
 
     def read_file(self):
-        """
-        Read VILENS SLAM trajectory file
-        @return: PosePath3D from evo
-        """
+        """Read VILENS SLAM trajectory file."""
         raw_mat = csv_read_matrix(self.file_path, delim=",", comment_str="#")
         if not raw_mat:
             raise ValueError()
@@ -33,19 +28,13 @@ class VilensSlamTrajReader(BasicTrajReader):
 
 
 class VilensSlamTrajWriter(BasicTrajWriter):
-    """
-    write VILENS SLAM trajectory format file (poses.csv)
-    """
+    """Write VILENS SLAM trajectory format file (poses.csv)."""
 
     def __init__(self, file_path, **kwargs):
         super().__init__(file_path)
 
     def write_file(self, pose):
-        """
-        this is used for CSV style trajectory file
-        @param self.file_path: path to save the file
-        @param pose: PoseTrajectory3D from evo
-        """
+        """Write trajectory in CSV style VILENS SLAM format."""
 
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
             raise ValueError("pose should be PoseTrajectory3D from evo")

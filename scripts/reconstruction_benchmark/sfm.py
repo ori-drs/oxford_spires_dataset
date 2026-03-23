@@ -26,11 +26,7 @@ class COLMAPDatabase(sqlite3.Connection):
 
 
 def get_vocab_tree(image_num) -> Path:
-    """Return path to vocab tree. Downloads vocab tree if it doesn't exist.
-
-    Returns:
-        The path to the vocab tree.
-    """
+    """Return path to vocab tree, downloading it if it doesn't exist."""
     if image_num < 1000:
         vocab_tree_filename = Path(__file__).parent / "vocab_tree_flickr100K_words32K.bin"
         url = "https://demuc.de/colmap/vocab_tree_flickr100K_words32K.bin"

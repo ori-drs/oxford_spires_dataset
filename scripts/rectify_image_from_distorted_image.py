@@ -99,13 +99,6 @@ def convert_to_intrinsic_matrix(intrinsics):
 
 
 if __name__ == "__main__":
-    """
-    Args:
-    - calib_file_path: base calibration file 
-    - distorted_image_input_path: distorted images folder directory 
-    - rectified_image_output_path: output folder name to save undistorted rectified images
-    """
-
     calib_file_path = "./config/sensor.yaml"
     distorted_image_input_path = "/data/2024-03-12-keble-college-01/images"
     rectified_image_output_path = "/data/2024-03-12-keble-college-01/test/images_rectified"

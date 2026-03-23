@@ -13,9 +13,7 @@ from .timestamp import TimeStamp
 
 
 class TUMTrajReader(BasicTrajReader):
-    """
-    Read TUM trajectory file
-    """
+    """Read TUM trajectory file."""
 
     def __init__(
         self, file_path, tum_reader_type="custom", tum_custom_reader_prefix="", tum_custom_reader_suffix="", **kwargs
@@ -27,10 +25,7 @@ class TUMTrajReader(BasicTrajReader):
         self.custom_reader_suffix = tum_custom_reader_suffix
 
     def read_file(self):
-        """
-        Read TUM trajectory file
-        @return: PosePath3D from evo
-        """
+        """Read TUM trajectory file."""
         if self.reader_type == "evo":
             print("Try to load TUM pose using evo; Assuming file name is timestamp")
             tum_pose = evo.tools.file_interface.read_tum_trajectory_file(self.file_path)
@@ -93,9 +88,7 @@ class TUMTrajReader(BasicTrajReader):
 
 
 class TUMTrajWriter(BasicTrajWriter):
-    """
-    Write trajectory file in TUM format
-    """
+    """Write trajectory file in TUM format."""
 
     def __init__(self, file_path, **kwargs):
         super().__init__(file_path)
@@ -104,13 +97,7 @@ class TUMTrajWriter(BasicTrajWriter):
         self.write_tum_pose_custom(self.file_path, pose, prefix="", suffix="")
 
     def write_tum_pose_custom(self, file_path, pose, prefix="", suffix=""):
-        """
-        this is used for custum TUM style trajectory file but timestamp has custom prefix and suffix
-        @param file_path: path to save the file
-        @param pose: PoseTrajectory3D from evo
-        @param prefix: prefix of filename to be added before timestamp
-        @param suffix: suffix of filename to be added after timestamp
-        """
+        """Write custom TUM trajectory file with optional timestamp prefix/suffix."""
         if prefix != "" or suffix != "":
             print(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
