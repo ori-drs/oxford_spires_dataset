@@ -1,5 +1,6 @@
 services:
   oxspires_loc:
+    image: oxspires_loc:latest
     container_name: spires_container
     build:
       context: ../..

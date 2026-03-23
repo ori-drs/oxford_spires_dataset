@@ -22,7 +22,7 @@ pip install .
 
 To use the cpp/python binding, you need to install PCL and Octomap. You can either build the docker container:
 ```bash
-docker compose -f .docker/oxspires/docker-compose.yml run --build oxspires_utils
+docker compose -f .docker/oxspires/docker-compose.yml run --build --rm oxspires_utils bash
 ```
 Or install the dependencies manually and then run
 ```bash
