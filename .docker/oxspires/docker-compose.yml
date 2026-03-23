@@ -7,16 +7,16 @@ services:
       dockerfile: .docker/oxspires/Dockerfile
       target: dev
       args:
-        - USERNAME=${USERNAME}
-        - UID=${UID}
-        - GID=${GID}
+        - DOCKER_USERNAME=${DOCKER_USERNAME}
+        - DOCKER_UID=${DOCKER_UID}
+        - DOCKER_GID=${DOCKER_GID}
         - DOCKER_HOME_DIR=${DOCKER_HOME_DIR}
-        - DOCKER_WORKDIR=${DOCKER_WORKDIR}
     runtime: nvidia
     stdin_open: true
     tty: true
     volumes:
-      - ../../scripts:${DOCKER_WORKDIR}/scripts
-      - ../../configs:${DOCKER_WORKDIR}/configs
-      - ../../data:${DOCKER_WORKDIR}/data
-      - ../../Taskfile.yml:${DOCKER_WORKDIR}/Taskfile.yml
+      - ../../scripts:${DOCKER_HOME_DIR}/oxford_spires_dataset/scripts
+      - ../../configs:${DOCKER_HOME_DIR}/oxford_spires_dataset/configs
+      - ../../data:${DOCKER_HOME_DIR}/oxford_spires_dataset/data
+      - ../../Taskfile.yml:${DOCKER_HOME_DIR}/oxford_spires_dataset/Taskfile.yml
+      - ../../outputs:${DOCKER_HOME_DIR}/oxford_spires_dataset/outputs

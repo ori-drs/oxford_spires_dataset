@@ -10,13 +10,13 @@ tasks:
     desc: Build and run development Docker container -- e.g. task docker_build_run -- task test
     cmds:
       - mkdir -p data outputs
-      - UID=$(id -u) GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --build --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
+      - DOCKER_USERNAME=$(id -un) DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --build --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
 
   docker_run:
     desc: Run a command in Docker without rebuilding -- e.g. task docker_run -- python3 script.py
     cmds:
       - mkdir -p data outputs
-      - UID=$(id -u) GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
+      - DOCKER_USERNAME=$(id -un) DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
 
   # ── Scripts ──────────────────────────────────────────────────────────────
 
