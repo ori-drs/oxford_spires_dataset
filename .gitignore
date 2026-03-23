@@ -56,8 +56,10 @@ cover/
 *.mo
 *.pot
 
+# Runs / logs
+runs/
+
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -166,3 +168,4 @@ cython_debug/
 
 vocab_tree*.bin
 .claude
+data/

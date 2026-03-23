@@ -1,6 +1,8 @@
+import logging
 import re
 import zipfile
 from bisect import bisect_left
+from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
 
@@ -13,6 +15,25 @@ from oxspires_tools.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxspires_tools.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
 from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
+
+
+def setup_logging(logging_dir: Path = None) -> Path:
+    """Set up logging to file and console."""
+    time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    if logging_dir is None:
+        logging_dir = Path(__file__).parent.parent / "runs" / time
+    logging_dir = Path(logging_dir)
+    logging_dir.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        filename=logging_dir / f"{time}.log",
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",
+    )
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(console_handler)
+    return logging_dir
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
@@ -130,9 +151,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
 
 
 def find_closest_in_sorted(array: List, value: float):
-    """
-    Find and return closest value and difference
-    """
+    """Find and return closest value and difference."""
     # Over or under any value in the array
     assert isinstance(value, (float, np.float128))
     if array[-1] < value:
@@ -153,20 +172,7 @@ def find_closest_in_sorted(array: List, value: float):
 def get_image_pcd_sync_pair(
     image_dir: Path, pcd_dir: Path, image_ext: str, timestamp_threshold: float = 0.05
 ) -> List[Tuple[Path, Path, float]]:
-    """
-    Find image and point cloud pairs that are synchronized based on their timestamps.
-
-    Args:
-        image_dir (Path): Directory containing the image files.
-        pcd_dir (Path): Directory containing the point cloud files.
-        image_ext (str): File extension of the image files (e.g. ".jpg").
-        timestamp_threshold (float): Maximum time difference allowed between an image and a point cloud, in seconds.
-            Defaults to 0.05.
-
-    Returns:
-        List[Tuple[Path, Path, float]]: A list of tuples, where each tuple represents an image and a point cloud that are
-            synchronized, along with their time difference in seconds.
-    """
+    """Find synchronized image and point cloud pairs based on timestamps."""
     # Load images and timestamps
     image_timestamps = []
     image_paths = {}

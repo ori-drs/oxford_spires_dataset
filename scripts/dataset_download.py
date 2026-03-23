@@ -1,52 +1,103 @@
+import argparse
+import logging
+import shutil
+from pathlib import Path
+
+import yaml
 from huggingface_hub import snapshot_download
 
-hf_repo_id = "ori-drs/oxford_spires_dataset"
+from oxspires_tools.dataset import check_image_lidar_sync
+from oxspires_tools.utils import setup_logging
 
-############## 1. Download a specific sequence or benchmark ##############
-
-# example_pattern = "sequences/*" # download all sequences
-example_pattern = "sequences/2024-03-12-keble-college-02/*"  # download all files in a particular sequence
-# example_pattern = "reconstruction_benchmark/* # download the whole reconstruction benchmark
-# example_pattern = "novel_view_synthesis_benchmark" # download the whole novel view synthesis benchmark
-# example_pattern = "ground_truth_map/*" # download all ground truth maps
+logger = logging.getLogger(__name__)
 
 
-local_dir = "data"
-
-snapshot_download(
-    repo_id=hf_repo_id,
-    allow_patterns=example_pattern,
-    local_dir=local_dir,
-    repo_type="dataset",
-    use_auth_token=False,
-)
-
-############## 2. Download the core sequences ##############
-core_sequences = [
-    "sequences/2024-03-12-keble-college-02/*",
-    "sequences/2024-03-12-keble-college-03/*",
-    "sequences/2024-03-12-keble-college-04/*",
-    "sequences/2024-03-12-keble-college-05/*",
-    "sequences/2024-03-13-observatory-quarter-01/*",
-    "sequences/2024-03-13-observatory-quarter-02/*",
-    "sequences/2024-03-14-blenheim-palace-01/*",
-    "sequences/2024-03-14-blenheim-palace-02/*",
-    "sequences/2024-03-14-blenheim-palace-05/*",
-    "sequences/2024-03-18-christ-church-01/*",
-    "sequences/2024-03-18-christ-church-02/*",
-    "sequences/2024-03-18-christ-church-03/*",
-    "sequences/2024-03-18-christ-church-05/*",
-    "sequences/2024-05-20-bodleian-library-02/*",
-]
+def load_config(config_path: str) -> dict:
+    """Load configuration from YAML file."""
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
 
-for sequence in core_sequences:
-    example_pattern = sequence
-    print(f"Downloading sequence: {example_pattern}")
-    snapshot_download(
-        repo_id=hf_repo_id,
-        allow_patterns=example_pattern,
-        local_dir=local_dir,
-        repo_type="dataset",
-        use_auth_token=False,
+def download_patterns(
+    repo_id: str,
+    patterns: list,
+    local_dir: str,
+    repo_type: str = "dataset",
+    branch: str = "main",
+    unpack: bool = False,
+) -> list:
+    """Download patterns from the HuggingFace repository."""
+    logger.info(f"Repository: {repo_id}")
+    logger.info(f"Local directory: {local_dir}")
+    logger.info(f"Unpack archives: {unpack}")
+    logger.info(f"Downloading {len(patterns)} pattern(s)...\n")
+
+    for i, pattern in enumerate(patterns, 1):
+        logger.info(f"🚀 [{i}/{len(patterns)}] {pattern}")
+        snapshot_download(
+            repo_id=repo_id,
+            allow_patterns=pattern,
+            local_dir=local_dir,
+            repo_type=repo_type,
+            use_auth_token=False,
+            revision=branch,
+        )
+        logger.info(f"✅ Downloaded: {pattern}\n")
+    logger.info("🏁 All downloads complete!")
+
+
+def unpack_zip_files(local_dir: str):
+    zip_files = list(Path(local_dir).rglob("*.zip"))
+    for zip_file in zip_files:
+        logger.info(f"Unzipping {zip_file}")
+        shutil.unpack_archive(zip_file, extract_dir=zip_file.parent)
+        zip_file.unlink()
+    logger.info("🏁 All zip files unpacked!")
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/dataset_download.yaml",
+        help="Path to configuration file (default: config/dataset_download.yaml)",
     )
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    _ = setup_logging()
+    args = get_args()
+
+    config = load_config(args.config)
+    Path(config["local_dir"]).mkdir(parents=True, exist_ok=True)
+
+    if config.get("download", True):
+        download_patterns(
+            repo_id=config["repo_id"],
+            patterns=config["patterns"],
+            local_dir=config["local_dir"],
+            repo_type=config["repo_type"],
+            branch=config["branch"],
+        )
+    if config.get("unpack", True):
+        unpack_zip_files(config["local_dir"])
+    if config.get("check", True):
+        sequences_dir = Path(config["local_dir"]) / "sequences"
+        sequences_list = sorted([d.name for d in sequences_dir.iterdir() if d.is_dir()])
+        for i, seq_name in enumerate(sequences_list):
+            seq_dir = sequences_dir / seq_name
+            if not seq_dir.is_dir():
+                continue
+            logger.info(f"\n🚀 [{i}/{len(sequences_list)}] Checking sequence: {seq_dir.name}")
+            check_image_lidar_sync(
+                image_dir=seq_dir / "raw" / "cam0",
+                lidar_dir=seq_dir / "processed" / "vilens-slam" / "undist-clouds",
+                tolerance_sec=0.0,
+            )
+
+
+if __name__ == "__main__":
+    main()

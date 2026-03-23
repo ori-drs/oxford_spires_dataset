@@ -21,3 +21,4 @@ services:
       - ../../data:${DOCKER_HOME_DIR}/oxford_spires_dataset/data
       - ../../Taskfile.yml:${DOCKER_HOME_DIR}/oxford_spires_dataset/Taskfile.yml
       - ../../outputs:${DOCKER_HOME_DIR}/oxford_spires_dataset/outputs
+      - ../../runs:${DOCKER_HOME_DIR}/oxford_spires_dataset/runs
