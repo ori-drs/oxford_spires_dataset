@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8.0", "pytest-datadir"]
+test = ["pytest>=8.0", "pytest-datadir>=1.8.0"]
 dev = [
     "pytest>=8.0",
     "pytest-datadir>=1.8.0",
