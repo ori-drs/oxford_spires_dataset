@@ -21,9 +21,9 @@ tasks:
   # ── Scripts ──────────────────────────────────────────────────────────────
 
   download:
-    desc: Download dataset using patterns from config
+    desc: Download dataset using patterns from config -- e.g. task download -- --patterns sequences/foo1/* sequences/foo2/*
     cmds:
-      - "python scripts/dataset_download.py"
+      - "python scripts/dataset_download.py {{.CLI_ARGS}}"
 
   # ── Dev ───────────────────────────────────────────────────────────────────
 
