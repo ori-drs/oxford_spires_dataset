@@ -1,21 +1,31 @@
 version: '3'
 
 vars:
-  PYTHON: python3
-  CONFIG_DIR: config
-  SCRIPTS_DIR: scripts
-  DATA_DIR: data
+  DOCKER_COMPOSE_PATH: .docker/oxspires/docker-compose.yml
 
 tasks:
-  docker:
-    desc: Build and run development Docker container
+  # ── Docker ────────────────────────────────────────────────────────────────
+
+  docker_build_run:
+    desc: Build and run development Docker container -- e.g. task docker_build_run -- task test
     cmds:
-      - docker compose -f .docker/oxspires/docker-compose.yml run --build --rm oxspires_utils bash
+      - mkdir -p data outputs
+      - UID=$(id -u) GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --build --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
+
+  docker_run:
+    desc: Run a command in Docker without rebuilding -- e.g. task docker_run -- python3 script.py
+    cmds:
+      - mkdir -p data outputs
+      - UID=$(id -u) GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
+
+  # ── Scripts ──────────────────────────────────────────────────────────────
 
   download:
     desc: Download dataset using patterns from config
     cmds:
-      - "{{.PYTHON}} {{.SCRIPTS_DIR}}/dataset_download.py"
+      - "python scripts/dataset_download.py"
+
+  # ── Dev ───────────────────────────────────────────────────────────────────
 
   install:
     desc: Install the package in development mode
@@ -27,8 +37,8 @@ tasks:
     cmds:
       - BUILD_CPP=1 pip install -e .
 
-  format:
-    desc: Format code using ruff
+  ruff:
+    desc: Run Ruff linter and formatter
     cmds:
       - ruff check --fix --config pyproject.toml
       - ruff format --config pyproject.toml
