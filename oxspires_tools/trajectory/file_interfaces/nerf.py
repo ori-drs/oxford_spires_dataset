@@ -21,9 +21,7 @@ class NeRFTrajUtils:
 
 
 class NeRFTrajReader(BasicTrajReader):
-    """
-    Read trajectory file in NeRF format
-    """
+    """Read trajectory file in NeRF format."""
 
     def __init__(self, file_path, nerf_reader_valid_folder_path="", nerf_reader_sort_timestamp=True, **kwargs):
         super().__init__(file_path)
@@ -31,10 +29,7 @@ class NeRFTrajReader(BasicTrajReader):
         self.sort_timestamp = nerf_reader_sort_timestamp
 
     def read_file(self, has_timestamp=True):
-        """
-        Read NeRF trajectory file (transforms.json)
-        @return: PosePath3D from evo
-        """
+        """Read NeRF trajectory file (transforms.json)."""
         with open(self.file_path, "r", encoding="utf-8") as f:
             out = json.load(f)
 
@@ -65,9 +60,7 @@ class NeRFTrajReader(BasicTrajReader):
 
 
 class NeRFTrajWriter(BasicTrajWriter):
-    """
-    write trajectory file in NeRF format (transforms.json)
-    """
+    """Write trajectory file in NeRF format (transforms.json)."""
 
     def __init__(
         self,
@@ -118,11 +111,7 @@ class NeRFTrajWriter(BasicTrajWriter):
             json.dump(meta, f, indent=4)
 
     def get_new_dict(self, pose: PosePath3D):
-        """
-        Create a new dict for NeRF trajectory file (transforms.json)
-        @params pose: (new) trajectory
-        @return: dict
-        """
+        """Create a new dict for NeRF trajectory file (transforms.json)."""
         if self.is_fisheye:
             camera_dict = {"camera_model": "OPENCV_FISHEYE"}
         else:
@@ -157,11 +146,7 @@ class NeRFTrajWriter(BasicTrajWriter):
         return camera_dict
 
     def replace_transform_matrix(self, pose: PosePath3D, template_meta: dict):
-        """
-        Replace the transform matrix in template json with the poses in pose
-        @params pose: (new) trajectory
-        @params template_meta: template json file
-        """
+        """Replace the transform matrix in template json with the poses in pose."""
         meta = deepcopy(template_meta)
         assert len(meta["frames"]) == pose.num_poses, (
             "Number of frames in template file does not match the number of poses"

@@ -73,9 +73,7 @@ def read_pcd_with_viewpoint(file_path: str):
 
 
 def modify_pcd_viewpoint(file_path: str, new_file_path: str, new_viewpoint_xyz_wxyz: np.ndarray):
-    """
-    open3d does not support writing viewpoint to pcd file, so we need to modify the pcd file manually.
-    """
+    """Modify pcd viewpoint manually since open3d does not support writing viewpoint to pcd file."""
     assert file_path.endswith(".pcd")
     assert new_viewpoint_xyz_wxyz.shape == (7,), f"{new_viewpoint_xyz_wxyz} should be t_xyz_quat_wxyz"
     new_viewpoint = new_viewpoint_xyz_wxyz

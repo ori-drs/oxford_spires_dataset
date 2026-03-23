@@ -7,9 +7,7 @@ NSECONDS_DIGITS = 9
 
 
 class TimeStamp:
-    """
-    Similar structure to ROS TimeStamp
-    """
+    """Similar structure to ROS TimeStamp."""
 
     def __init__(self, sec=None, nsec=None, t_float128=None, t_string=None):
         """
@@ -36,9 +34,7 @@ class TimeStamp:
 
     @property
     def sec(self):
-        """
-        seconds: int (< 10^10)
-        """
+        """Seconds as int (< 10^10)."""
         return self._sec
 
     @sec.setter
@@ -51,9 +47,7 @@ class TimeStamp:
 
     @property
     def nsec(self):
-        """
-        nanoseconds: int (< 10^9)
-        """
+        """Nanoseconds as int (< 10^9)."""
         return self._nsec
 
     @nsec.setter
@@ -67,10 +61,7 @@ class TimeStamp:
 
     @property
     def t_float128(self):
-        """
-        only string input can ensure precision
-        @return: timestamp of type np.float128
-        """
+        """Timestamp as np.float128 (string input ensures precision)."""
 
         t_float128 = np.float128(self.t_string)
         # check
@@ -82,19 +73,14 @@ class TimeStamp:
 
     @property
     def t_string(self):
-        """
-        @return: str of timestamp with 9 digits of nsec (e.g. "123.000000456")
-        """
+        """Timestamp as string with 9 digits of nsec (e.g. "123.000000456")."""
         sec_string = str(self.sec)
         nsec_string = str(self.nsec).zfill(NSECONDS_DIGITS)
         return f"{sec_string}.{nsec_string}"
 
     @staticmethod
     def get_sec_nsec_from_string(t_string):
-        """
-        @param t_string: str of timestamp
-        @return: sec (string), nsec (string, 9 digits)
-        """
+        """Parse sec and nsec strings from a timestamp string."""
         t = t_string.split(".")
         assert len(t) == 2, f"t_string {t_string} should have 2 parts separated by '.'"
         sec = t[0]
@@ -105,10 +91,7 @@ class TimeStamp:
 
     @staticmethod
     def get_sec_nsec_from_float128(t_float128):
-        """
-        @param f: np.float128
-        @return: (sec, nsec), both str, nsec is 9 digits
-        """
+        """Parse sec and nsec strings from a np.float128 timestamp."""
         assert isinstance(t_float128, np.float128), (
             f"t_float128 should be of type np.float128, but is {type(t_float128)}"
         )
@@ -123,20 +106,13 @@ class TimeStamp:
 
     @staticmethod
     def check_nsec_str(nsec):
-        """
-        @param nsec: str of 9 digits
-        @return: bool
-        """
+        """Assert nsec string is valid (9 digits)."""
         assert isinstance(nsec, str)
         assert len(nsec) == NSECONDS_DIGITS, f"nsec {nsec} should be {NSECONDS_DIGITS} digits"
 
     @staticmethod
     def get_string_from_t_float128(t_float_128: np.float128):
-        """
-        convert time from float128 to string (sec.nsec with 9 digits nsec)
-        @param t_float_128: timestamp of type np.float128
-        @param t_string: timestamp of format "sec.nsec", 9 digits nsec
-        """
+        """Convert np.float128 timestamp to string with 9-digit nsec."""
         assert isinstance(t_float_128, np.float128)
         t_decimal = Decimal(str(t_float_128))
         return f"{t_decimal:.{NSECONDS_DIGITS}f}"

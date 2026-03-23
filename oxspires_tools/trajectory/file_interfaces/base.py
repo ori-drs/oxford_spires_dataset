@@ -3,9 +3,7 @@ from abc import ABC
 
 
 class BasicTrajReader(ABC):
-    """
-    Base class for trajectory reader
-    """
+    """Base class for trajectory reader."""
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -15,9 +13,7 @@ class BasicTrajReader(ABC):
 
 
 class BasicTrajWriter(ABC):
-    """
-    Base class for trajectory writer
-    """
+    """Base class for trajectory writer."""
 
     def __init__(self, file_path):
         self.file_path = file_path
