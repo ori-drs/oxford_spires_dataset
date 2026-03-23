@@ -2,6 +2,7 @@ version: '3'
 
 services:
   oxspires_utils:
+    image: oxspires_utils:latest
     build:
       context: ../..
       dockerfile: .docker/oxspires/Dockerfile
