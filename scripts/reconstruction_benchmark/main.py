@@ -248,7 +248,7 @@ def get_args():
 
 
 if __name__ == "__main__":
-    setup_logging()
+    _ = setup_logging()
     recon_config_file = get_args().config_file
     logger.info("Starting Reconstruction Benchmark")
     with open(recon_config_file, "r") as f:

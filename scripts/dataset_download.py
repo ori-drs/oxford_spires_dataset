@@ -68,7 +68,7 @@ def get_args():
 
 
 def main():
-    setup_logging()
+    _ = setup_logging()
     args = get_args()
 
     config = load_config(args.config)

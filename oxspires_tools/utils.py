@@ -17,13 +17,15 @@ from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlam
 from oxspires_tools.trajectory.pose_convention import PoseConvention
 
 
-def setup_logging():
+def setup_logging(logging_dir: Path = None) -> Path:
+    """Set up logging to file and console, returns the logging directory."""
     time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    project_root = Path(__file__).parent.parent
-    logs_dir = project_root / "logs"
-    logs_dir.mkdir(exist_ok=True)
+    if logging_dir is None:
+        logging_dir = Path(__file__).parent.parent / "runs" / time
+    logging_dir = Path(logging_dir)
+    logging_dir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
-        filename=logs_dir / f"{time}.log",
+        filename=logging_dir / f"{time}.log",
         level=logging.DEBUG,
         format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",
     )
@@ -31,6 +33,7 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     root_logger = logging.getLogger()
     root_logger.addHandler(console_handler)
+    return logging_dir
 
 
 def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
