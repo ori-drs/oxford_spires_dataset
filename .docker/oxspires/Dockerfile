@@ -59,14 +59,14 @@ FROM full_build as dev
 ENV DEBIAN_FRONTEND=dialog
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-RUN apt-get update && apt-get install -y \
+    sudo \
     vim \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install go-task-bin
 
-RUN addgroup --gid $GID $USERNAME
-RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME
+RUN addgroup --gid $GID $USERNAME \
+ && adduser --disabled-password --gecos '' --uid $UID --gid $GID $USERNAME \
+ && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
 
 RUN chown -R ${UID}:${GID} ${DOCKER_HOME_DIR}
 USER ${USERNAME}
