@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 from huggingface_hub import snapshot_download
 
-from oxspires_tools.dataset import check_image_lidar_sync
+from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -100,11 +100,8 @@ def main():
             if not seq_dir.is_dir():
                 continue
             logger.info(f"\n🚀 [{i}/{len(sequences_list)}] Checking sequence: {seq_dir.name}")
-            check_image_lidar_sync(
-                image_dir=seq_dir / "raw" / "cam0",
-                lidar_dir=seq_dir / "processed" / "vilens-slam" / "undist-clouds",
-                tolerance_sec=0.0,
-            )
+            dataset = OxfordSpiresDataset(seq_dir)
+            dataset.check_image_lidar_sync(cam_id=0, tolerance_sec=0.0)
 
 
 if __name__ == "__main__":
