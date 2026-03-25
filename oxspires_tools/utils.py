@@ -1,5 +1,7 @@
 import logging
 import re
+import shlex
+import sys
 import zipfile
 from bisect import bisect_left
 from datetime import datetime
@@ -54,6 +56,8 @@ def setup_logging(logging_dir: Path = None) -> Path:
     root_logger.handlers.clear()
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
+    root_logger.info(f"Command: {shlex.join(sys.argv)}")
+    root_logger.info(f"CWD: {Path.cwd()}")
     return logging_dir
 
 
