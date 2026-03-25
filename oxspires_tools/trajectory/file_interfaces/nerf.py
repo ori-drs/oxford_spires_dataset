@@ -1,5 +1,6 @@
 import glob
 import json
+import logging
 from copy import deepcopy
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from evo.core.trajectory import PosePath3D
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
+
+logger = logging.getLogger(__name__)
 
 
 class NeRFTrajUtils:
@@ -128,7 +131,7 @@ class NeRFTrajWriter(BasicTrajWriter):
             "k3": self.distortion_coeffs[2],
             "k4": self.distortion_coeffs[3],
         }
-        print("WARNING: camera intrinsics is hard coded: ", camera_intrinsics_dict)
+        logger.warning(f"camera intrinsics is hard coded: {camera_intrinsics_dict}")
         frames = []
         for i in range(pose.num_poses):
             t_string = TimeStamp(t_float128=pose.timestamps[i]).t_string
@@ -179,7 +182,7 @@ class NeRFTrajWriter(BasicTrajWriter):
         for frame in meta["frames"]:
             if Path(frame["file_path"]).name not in image_files:
                 new_meta["frames"].remove(frame)
-        print(
+        logger.info(
             f"Filter {len(meta['frames']) - len(new_meta['frames'])} poses without image. {len(new_meta['frames'])} poses left."
         )
         return new_meta

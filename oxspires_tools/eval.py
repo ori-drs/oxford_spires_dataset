@@ -24,12 +24,12 @@ def get_recon_metrics(
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
-    logger.info(f"Computing Accuracy and Precision ({precision_threshold}) ...")
+    logger.debug(f"Computing Accuracy and Precision ({precision_threshold}) ...")
     distances = compute_p2p_distance(input_cloud, gt_cloud)
     accuracy = np.mean(distances)
     precision = np.sum(distances < precision_threshold) / len(distances)
 
-    logger.info(f"Computing Completeness and Recall ({recall_threshold}) ...")
+    logger.debug(f"Computing Completeness and Recall ({recall_threshold}) ...")
     distances = compute_p2p_distance(gt_cloud, input_cloud)
     completeness = np.mean(distances)
     recall = np.sum(distances < recall_threshold) / len(distances)
@@ -52,12 +52,12 @@ def get_recon_metrics_multi_thresholds(
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
     results = []
 
-    logger.info("Computing Accuracy and Precision ...")
+    logger.debug("Computing Accuracy and Precision ...")
     input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
     input_to_gt_dist = input_to_gt_dist[input_to_gt_dist <= max_distance]
     accuracy = np.mean(input_to_gt_dist)
 
-    logger.info("Computing Completeness and Recall ...")
+    logger.debug("Computing Completeness and Recall ...")
     gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
     gt_to_input_dist = gt_to_input_dist[gt_to_input_dist <= max_distance]
     completeness = np.mean(gt_to_input_dist)
@@ -127,5 +127,5 @@ if __name__ == "__main__":
         save_error_cloud_path = str(Path(input_cloud_path).parent / (Path(input_cloud_path).stem + "_error.ply"))
         input_cloud_np = np.array(input_cloud.points)
         gt_cloud_np = np.array(gt_cloud.points)
-        print(get_recon_metrics(input_cloud_np, gt_cloud_np))
+        logger.info(get_recon_metrics(input_cloud_np, gt_cloud_np))
         save_error_cloud(input_cloud_np, gt_cloud_np, save_error_cloud_path)

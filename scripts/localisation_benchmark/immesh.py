@@ -10,6 +10,8 @@ sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_da
 
 from oxspires_tools.bash_command import run_command
 
+logger = logging.getLogger(__name__)
+
 
 def run_immesh(path_to_rosbag, path_to_output):
     server = libtmux.Server()
@@ -25,15 +27,15 @@ def run_immesh(path_to_rosbag, path_to_output):
     pane_1.send_keys("cd ~/oxford-lab/lidar_slam_ws/")
     pane_1.send_keys("source devel/setup.bash")
     pane_1.send_keys("roslaunch ImMesh mapping_spire.launch")
-    print("ImMesh launched!! - roslaunch ImMesh mapping_spire.launch")
+    logger.info("ImMesh launched!! - roslaunch ImMesh mapping_spire.launch")
 
     pane_2.send_keys("cd {}".format(path_to_rosbag))
     pane_2.send_keys("rosbag play *.bag --clock")
-    print("Starting rosbag files in {}".format(path_to_rosbag))
+    logger.info("Starting rosbag files in {}".format(path_to_rosbag))
 
     pane_3.send_keys("cd {}".format(path_to_output))
     pane_3.send_keys("rosbag record -O immesh_path.bag /path __name:=immesh_path")
-    print("Rosbag record in {}".format(path_to_output))
+    logger.info("Rosbag record in {}".format(path_to_output))
 
     # Check if the rosbag is "Done."
     t = time.time()
@@ -45,18 +47,18 @@ def run_immesh(path_to_rosbag, path_to_output):
         for line in cap_curr:
             if "[RUNNING]" in line:
                 t = time.time()
-                print(line)
+                logger.info(line)
                 sys.stdout.write("\033[F")
             if "Done." in line:
                 t = time.time()
                 flag_end = True
                 sys.stdout.write("\033[K")
-                print("Done.")
+                logger.info("Done.")
                 break
         if flag_end:
             break
         if (time.time() - t) > 60.0:  # To avoid infinite
-            print("Timeout!!")
+            logger.warning("Timeout!!")
             break
 
     run_command("rosnode kill /immesh_path", print_output=True)
@@ -71,15 +73,15 @@ def run_immesh(path_to_rosbag, path_to_output):
         os.rename(old_file, new_file)
         os.remove("{}/immesh_path.bag.orig.active".format(path_to_output))
 
-    print("PROCESS FINISHED!!")
-    print("Output in: {}/immesh_path.bag".format(path_to_output))
-    print("*********************************************************")
+    logger.info("PROCESS FINISHED!!")
+    logger.info("Output in: {}/immesh_path.bag".format(path_to_output))
+    logger.info("*********************************************************")
 
     server.kill()
 
 
 def convert_to_tum(path_to_output):
-    print("Convert from ROS /path format to TUM!!")
+    logger.info("Convert from ROS /path format to TUM!!")
 
     server = libtmux.Server()
     server.cmd("new-session", "-d", "-P", "-F#{session_id}")
@@ -94,11 +96,11 @@ def convert_to_tum(path_to_output):
     pane_1.send_keys(
         "roslaunch bag_to_traj bag_to_traj.launch arg_outfile_path:={}/immesh_tum.txt".format(path_to_output)
     )
-    print("bag_to_traj launched!! - roslaunch bag_to_traj bag_to_traj.launch")
+    logger.info("bag_to_traj launched!! - roslaunch bag_to_traj bag_to_traj.launch")
 
     pane_2.send_keys("cd {}".format(path_to_output))
     pane_2.send_keys("rosbag play *.bag --clock")
-    print("Starting rosbag files in {}".format(path_to_output))
+    logger.info("Starting rosbag files in {}".format(path_to_output))
 
     # Check if the rosbag is "Done."
     t = time.time()
@@ -110,27 +112,27 @@ def convert_to_tum(path_to_output):
         for line in cap_curr:
             if "[RUNNING]" in line:
                 t = time.time()
-                print(line)
+                logger.info(line)
                 sys.stdout.write("\033[F")
             if "Done." in line:
                 t = time.time()
                 flag_end = True
                 sys.stdout.write("\033[K")
-                print("Done.")
+                logger.info("Done.")
                 break
         if flag_end:
             break
         if (time.time() - t) > 60.0:  # To avoid infinite
-            print("Timeout!!")
+            logger.warning("Timeout!!")
             break
 
     old_file = os.path.join(path_to_output, "immesh_tum.txt")
     path_traj = os.path.join(path_to_sec + "/output_slam", "immesh_tum.txt")
     os.rename(old_file, path_traj)
 
-    print("PROCESS FINISHED!!")
-    print("Output in: {}/output_slam/immesh_tum.txt".format(path_to_sec))
-    print("*********************************************************")
+    logger.info("PROCESS FINISHED!!")
+    logger.info("Output in: {}/output_slam/immesh_tum.txt".format(path_to_sec))
+    logger.info("*********************************************************")
 
     server.kill()
 
@@ -150,7 +152,7 @@ def eval_immesh(path_to_gt, path_to_output, package_dir, path_to_sec, dataset_di
 
     rmse = -1
     for line in output.stdout:
-        print(line, end="")
+        logger.info(line.rstrip())
         if "rmse" in line:
             numbers = re.findall("\d+\.\d+|\d+", line)
             rmse = numbers[0]
@@ -158,7 +160,7 @@ def eval_immesh(path_to_gt, path_to_output, package_dir, path_to_sec, dataset_di
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
     logging.info("APE - RMSE result (ImMesh): {}".format(rmse))
-    print("RMSE added to log: {}".format(rmse))
+    logger.info("RMSE added to log: {}".format(rmse))
 
 
 def get_sec_list(dataset_dir, flag_is_all=True):
@@ -197,7 +199,7 @@ if __name__ == "__main__":
 
     list_sec = get_sec_list(dataset_dir, flag_is_all)
 
-    print("Total sequence folders: " + str(len(list_sec)))
+    logger.info("Total sequence folders: " + str(len(list_sec)))
 
     # Print list of sequences
     for sec in list_sec:

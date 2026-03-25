@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from nerf import create_nerfstudio_dir
 from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
 from oxspires_tools.trajectory.nerf_json_handler import NeRFJsonHandler
 from oxspires_tools.trajectory.utils import pose_to_ply
+
+logger = logging.getLogger(__name__)
 
 
 def select_json_with_time_range(json_file, start_time, end_time, save_path):
@@ -99,5 +102,5 @@ merge_json_files(json_train_file, json_eval_file, image_dir, new_image_dir, merg
 # create json with the new train/eval prefix
 
 ns_dir = dataset_folder / "outputs" / "nerfstudio" / (dataset_folder.stem + "_undistorted")
-print(f"Creating NeRF Studio directory at {ns_dir}")
+logger.info(f"Creating NeRF Studio directory at {ns_dir}")
 create_nerfstudio_dir(colmap_folder, ns_dir, new_image_dir)

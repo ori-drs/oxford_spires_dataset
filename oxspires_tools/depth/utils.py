@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
+
+logger = logging.getLogger(__name__)
 
 
 def get_overlay(camera_image, depth_image, cmap="hsv", circle_radius=2, circle_thickness=2):
@@ -12,7 +15,7 @@ def get_overlay(camera_image, depth_image, cmap="hsv", circle_radius=2, circle_t
 
     cmap = plt.cm.get_cmap(cmap)
     if depth_image.max() == 0:
-        print("WARNING: Depth image is all zeros")
+        logger.warning("Depth image is all zeros")
         return camera_image
     depth_norm = depth_image / np.max(depth_image)
     depth_image_cmap = cmap(depth_norm)[:, :, :3]

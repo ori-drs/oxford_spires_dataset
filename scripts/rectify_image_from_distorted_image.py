@@ -1,9 +1,12 @@
+import logging
 import os
 from pathlib import Path
 
 import cv2
 import numpy as np
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 class ImageRectifier:
@@ -36,8 +39,8 @@ class ImageRectifier:
                 balance=balance,
                 new_size=new_size,
             )
-            print(f"{cam_label} has:")
-            print(new_K)
+            logger.info(f"{cam_label} has:")
+            logger.info(new_K)
 
             self.sensor_dict["cameras"][cam_label]["map1"], self.sensor_dict["cameras"][cam_label]["map2"] = (
                 cv2.fisheye.initUndistortRectifyMap(
@@ -52,10 +55,9 @@ class ImageRectifier:
             self.sensor_dict["cameras"][cam_label]["rectified_width"] = new_width
             self.sensor_dict["cameras"][cam_label]["rectified_height"] = new_height
 
-            print(
-                f"Camera {cam_label} rectified image size: Width={new_width}, Height={new_height}, please copy this value \n"
+            logger.info(
+                f"Camera {cam_label} rectified image size: Width={new_width}, Height={new_height}, please copy this value"
             )
-            print("")
 
     def process_image(self, image, output_path, cam_label):
         # Remap the image
@@ -82,7 +84,7 @@ class ImageRectifier:
                 if img_path.parent == img_subfolder:
                     image = cv2.imread(str(img_path))
                     if image is None:
-                        print(f"Failed to read image: {img_path}")
+                        logger.error(f"Failed to read image: {img_path}")
                         continue
                     rel_path = img_path.relative_to(input_path)
                     output_file = output_path / rel_path
@@ -106,4 +108,4 @@ if __name__ == "__main__":
     # Initialize rectifier
     rectifier = ImageRectifier(calib_file_path)
     rectifier.process_directory(distorted_image_input_path, rectified_image_output_path)
-    print("Please copy and paste output rectified intrinsics")
+    logger.info("Please copy and paste output rectified intrinsics")
