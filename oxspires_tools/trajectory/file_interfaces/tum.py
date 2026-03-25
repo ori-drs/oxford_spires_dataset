@@ -40,7 +40,8 @@ class TUMTrajReader(BasicTrajReader):
             )
             assert tum_pose.check()[0] is True, tum_pose.check()[1]
         else:
-            raise ValueError("reader_type should be either 'evo' or 'custom'")
+            logger.error(f"reader_type should be either 'evo' or 'custom', got: {self.reader_type}")
+            raise ValueError()
         return tum_pose
 
     def read_tum_pose_custom(self, file_path, prefix="", suffix=""):
@@ -104,7 +105,8 @@ class TUMTrajWriter(BasicTrajWriter):
         if prefix != "" or suffix != "":
             logger.info(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
-            raise ValueError("pose should be PoseTrajectory3D from evo")
+            logger.error(f"pose should be PoseTrajectory3D from evo, got: {type(pose)}")
+            raise ValueError()
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
 

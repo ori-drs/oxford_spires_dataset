@@ -128,7 +128,7 @@ class TestProjectPointsOnImage:
         points_3d = sample_3d_points
         w, h = 640, 480
 
-        with pytest.raises(ValueError, match="Unknown camera model: UNKNOWN"):
+        with pytest.raises(ValueError):
             project_points_on_image(points_3d, K, D, w, h, "UNKNOWN")
 
     def test_single_point_projection(self, monkeypatch, sample_camera_params):
@@ -309,7 +309,7 @@ class TestDecodePointsFromDepthmap:
         K, D = sample_camera_params
         depth = sample_depth_map
 
-        with pytest.raises(ValueError, match="Unknown camera model: UNKNOWN"):
+        with pytest.raises(ValueError):
             decode_points_from_depthmap(
                 depth, K, D, is_euclidean=False, depth_encode_factor=1000.0, camera_model="UNKNOWN"
             )

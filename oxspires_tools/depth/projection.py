@@ -42,7 +42,8 @@ def project_points_on_image(
     elif camera_model == "OPENCV":
         points_on_img, _ = cv2.projectPoints(points_in_3d[np.newaxis], rvec, tvec, K, D)
     else:
-        raise ValueError(f"Unknown camera model: {camera_model}")
+        logger.error(f"Unknown camera model: {camera_model}")
+        raise ValueError()
     if points_on_img is None:
         return np.zeros((0, 2)), np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(points_in_3d.shape[0], dtype=bool)
     points_on_img = points_on_img.squeeze()
@@ -132,7 +133,8 @@ def decode_points_from_depthmap(
     elif camera_model == "OPENCV":
         points_in_3d = cv2.undistortPoints(points_on_img, K, D, P=np.eye(3))
     else:
-        raise ValueError(f"Unknown camera model: {camera_model}")
+        logger.error(f"Unknown camera model: {camera_model}")
+        raise ValueError()
     if points_in_3d is None:
         return o3d.geometry.PointCloud()
     points_in_3d = points_in_3d.squeeze()

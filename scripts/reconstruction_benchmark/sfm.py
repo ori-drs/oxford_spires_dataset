@@ -85,9 +85,10 @@ def run_colmap(
         colmap_matcher_cmd.append(f"--SequentialMatching.vocab_tree_path {get_vocab_tree(image_num)}")
         colmap_matcher_cmd.append(f"--SequentialMatching.loop_detection_period {loop_detection_period}")
     else:
-        raise ValueError(
+        logger.error(
             f"matcher {matcher} not supported. Supported matchers: ['vocab_tree_matcher', 'sequential_matcher']"
         )
+        raise ValueError()
     colmap_matcher_cmd = " ".join(colmap_matcher_cmd)
     logger.info(f"Running {colmap_matcher_cmd}")
     run_command(colmap_matcher_cmd, print_command=False)

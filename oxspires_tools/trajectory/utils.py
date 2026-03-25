@@ -1,6 +1,10 @@
+import logging
+
 import open3d as o3d
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from matplotlib import cm
+
+logger = logging.getLogger(__name__)
 
 
 def pose_to_ply(traj: PoseTrajectory3D, output_file: str, colour=[1.0, 0.0, 0.0]):
@@ -70,7 +74,8 @@ class PosePlotter:
             elif self.pose_viz_format == "point":
                 pose_viz = o3d.geometry.TriangleMesh.create_sphere(radius=self.axis_viz_size)
             else:
-                raise ValueError("Invalid pose_viz_format")
+                logger.error(f"Invalid pose_viz_format: {self.pose_viz_format}")
+                raise ValueError()
             T = traj.poses_se3[i]
             pose_viz.transform(T)
             if self.colour is not None:
