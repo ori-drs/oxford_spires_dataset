@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 
 from huggingface_hub import snapshot_download
 from nerf import generate_nerfstudio_config, run_nerfstudio
 
 from oxspires_tools.utils import unzip_files
+
+logger = logging.getLogger(__name__)
 
 
 def run_ns(
@@ -53,5 +56,5 @@ if __name__ == "__main__":
 
     for zip_file in zip_files:
         undistorted_ns_dir = zip_file.parent / zip_file.stem
-        print(f"Running NVS benchmark for {undistorted_ns_dir}...")
+        logger.info(f"Running NVS benchmark for {undistorted_ns_dir}...")
         run_nvs_benchmark(undistorted_ns_dir)

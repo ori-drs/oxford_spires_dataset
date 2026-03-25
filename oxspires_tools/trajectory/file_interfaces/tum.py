@@ -3,6 +3,7 @@ TUM format: https://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats
 'timestamp tx ty tz qx qy qz qw'
 """
 
+import logging
 import os
 
 import evo
@@ -10,6 +11,8 @@ import numpy as np
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
+
+logger = logging.getLogger(__name__)
 
 
 class TUMTrajReader(BasicTrajReader):
@@ -27,11 +30,11 @@ class TUMTrajReader(BasicTrajReader):
     def read_file(self):
         """Read TUM trajectory file."""
         if self.reader_type == "evo":
-            print("Try to load TUM pose using evo; Assuming file name is timestamp")
+            logger.info("Try to load TUM pose using evo; Assuming file name is timestamp")
             tum_pose = evo.tools.file_interface.read_tum_trajectory_file(self.file_path)
             assert tum_pose.check()[0] is True, tum_pose.check()[1]
         elif self.reader_type == "custom":
-            print("Try to load TUM pose using custom reader; Assuming file name is not timestamp")
+            logger.info("Try to load TUM pose using custom reader; Assuming file name is not timestamp")
             tum_pose = self.read_tum_pose_custom(
                 self.file_path, prefix=self.custom_reader_prefix, suffix=self.custom_reader_suffix
             )
@@ -47,9 +50,9 @@ class TUMTrajReader(BasicTrajReader):
         """
 
         if prefix != "" or suffix != "":
-            print(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
+            logger.info(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
         else:
-            print(
+            logger.info(
                 "If no prefix/suffix provide, assuming fname is timestamp"  # ,\
                 # and you could use evo.tools.file_interface.read_tum_trajectory_file() instead"
             )
@@ -66,7 +69,7 @@ class TUMTrajReader(BasicTrajReader):
 
             fname = splited[0]
             if fname[: len(prefix)] != prefix or fname[len(fname) - len(suffix) :] != suffix:
-                print("skipping lines with wrong prefix or suffix")
+                logger.warning("skipping lines with wrong prefix or suffix")
                 continue
             t_float128 = TimeStamp(t_string=fname[len(prefix) : len(fname) - len(suffix)]).t_float128
             assert TimeStamp.get_string_from_t_float128(t_float128) == fname[len(prefix) : len(fname) - len(suffix)], (
@@ -99,7 +102,7 @@ class TUMTrajWriter(BasicTrajWriter):
     def write_tum_pose_custom(self, file_path, pose, prefix="", suffix=""):
         """Write custom TUM trajectory file with optional timestamp prefix/suffix."""
         if prefix != "" or suffix != "":
-            print(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
+            logger.info(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
             raise ValueError("pose should be PoseTrajectory3D from evo")
         if not os.path.exists(os.path.dirname(file_path)):
@@ -107,7 +110,7 @@ class TUMTrajWriter(BasicTrajWriter):
 
         assert pose.check()[0] is True, pose.check()[1]
 
-        print("Writing pose message in TUM format to: ", file_path)
+        logger.info(f"Writing pose message in TUM format to: {file_path}")
         with open(file_path, "w") as f:
             f.writelines("# timestamp tx ty tz qx qy qz qw\n")
             for i in range(pose.num_poses):

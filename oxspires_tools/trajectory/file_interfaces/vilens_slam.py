@@ -1,3 +1,4 @@
+import logging
 import os
 
 import evo
@@ -6,6 +7,8 @@ from evo.tools.file_interface import csv_read_matrix
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
+
+logger = logging.getLogger(__name__)
 
 
 class VilensSlamTrajReader(BasicTrajReader):
@@ -43,7 +46,7 @@ class VilensSlamTrajWriter(BasicTrajWriter):
 
         assert pose.check()[0] is True, pose.check()[1]
 
-        print("Writing pose message in CSV format to: ", self.file_path)
+        logger.info(f"Writing pose message in CSV format to: {self.file_path}")
         with open(self.file_path, "w") as f:
             f.writelines("# counter, sec, nsec, x, y, z, qx, qy, qz, qw\n")
             for i in range(pose.num_poses):

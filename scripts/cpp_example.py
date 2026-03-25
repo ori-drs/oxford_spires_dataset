@@ -1,6 +1,9 @@
+import logging
 from pathlib import Path
 
 from oxspires_tools.cpp import OcTree, convertOctreeToPointCloud, processPCDFolder, removeUnknownPoints
+
+logger = logging.getLogger(__name__)
 
 save_dir = "/home/docker_dev/oxford_spires_dataset/test_octree"
 save_dir = Path(save_dir)
@@ -14,9 +17,9 @@ resolution = 0.1
 processPCDFolder(pcd_folder, resolution, lidar_bt_path)
 
 octree = OcTree(lidar_bt_path)
-print("Resolution:", octree.getResolution())
-print("Size:", octree.size())
-print("Tree Depth:", octree.getTreeDepth())
+logger.info(f"Resolution: {octree.getResolution()}")
+logger.info(f"Size: {octree.size()}")
+logger.info(f"Tree Depth: {octree.getTreeDepth()}")
 
 occ_cloud_path = str(save_dir / "occ_cloud.pcd")
 free_cloud_path = str(save_dir / "free_cloud.pcd")

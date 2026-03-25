@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+import logging
 import shutil
 from pathlib import Path
 
@@ -11,6 +11,8 @@ from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
 from oxspires_tools.utils import get_image_pcd_sync_pair, unzip_files
+
+logger = logging.getLogger(__name__)
 
 
 def project_lidar_to_fisheye(
@@ -39,9 +41,9 @@ def project_lidar_to_fisheye(
     proj_dir = Path(project_dir).expanduser()
 
     if is_euclidean:
-        print("Depth is euclidean: L2 distance between points and camera")
+        logger.info("Depth is euclidean: L2 distance between points and camera")
     else:
-        print("Depth is not euclidean: z_value")
+        logger.info("Depth is not euclidean: z_value")
     # Path settings
     # pcd_dir = proj_dir / "individual_clouds"
     # image_dir = proj_dir / "images"
@@ -65,7 +67,7 @@ def project_lidar_to_fisheye(
 
     # Loop over each camera
     for subdir, cam_name in zip(cam_subdirs, target_cam_names):
-        print(f"Processing {cam_name} in {subdir} ...")
+        logger.info(f"Processing {cam_name} in {subdir} ...")
         # Transformation from base to camera (clouds in individual_clouds are base coordinates)
         # T_cam_lidar = np.linalg.inv(Ts[f"base_{cam_name}"]) @ Ts[f"base_{lidar_name}"]
         K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
@@ -83,8 +85,8 @@ def project_lidar_to_fisheye(
             target_overlay_subdir.mkdir(parents=True, exist_ok=True)
 
         # Project lidar points on images and  save as 16 bit depth
-        print(f"Target image directory: {target_image_subdir}")
-        print(f"Target depth directory: {target_depth_subdir}")
+        logger.info(f"Target image directory: {target_image_subdir}")
+        logger.info(f"Target depth directory: {target_depth_subdir}")
 
         # Get image and pcd sync pairs
         image_pcd_pairs = get_image_pcd_sync_pair(
@@ -95,7 +97,7 @@ def project_lidar_to_fisheye(
         )
 
         # Loop for one camera
-        print(f"Fov: {fov_deg}")
+        logger.info(f"Fov: {fov_deg}")
         # load all lidar poses as T_WB, so assume vilens-processed lidar in base frame
         # T_WBs = get_transforms(
         #     depth_pose_path,
@@ -119,13 +121,13 @@ def project_lidar_to_fisheye(
             # )
             if pcd is None:
                 if accum_length == 0:
-                    print(f"{pcd_path} pose not found")
+                    logger.warning(f"{pcd_path} pose not found")
                     continue
                 else:
                     raise RuntimeError(f"{pcd_path} pose not found")
             # check if point cloud is empty
             if len(pcd.points) == 0:
-                print(f"{pcd_path} is empty")
+                logger.warning(f"{pcd_path} is empty")
                 continue
             # Transform points into camera coordinates
             pcd.transform(T_cam_base)  # transform lidar points from base to camera frame

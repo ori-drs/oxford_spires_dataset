@@ -6,6 +6,8 @@ sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_da
 
 from oxspires_tools.bash_command import run_command
 
+logger = logging.getLogger(__name__)
+
 
 def get_sec_list(dataset_dir, flag_is_all=True):
     if flag_is_all:
@@ -40,7 +42,7 @@ def evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, method):
 
     rmse = -1
     for line in output.stdout:
-        print(line, end="")
+        logger.info(line.rstrip())
         if "rmse" in line:
             numbers = re.findall("\d+\.\d+|\d+", line)
             rmse = numbers[0]
@@ -48,7 +50,7 @@ def evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, method):
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
     logging.info("APE - RMSE result ({}): {}".format(method, rmse))
-    print("RMSE added to log: {}".format(rmse))
+    logger.info("RMSE added to log: {}".format(rmse))
 
     return rmse
 
@@ -63,18 +65,18 @@ if __name__ == "__main__":
 
     list_sec = get_sec_list(dataset_dir, flag_is_all)
 
-    print("Total sequence folders: " + str(len(list_sec)))
+    logger.info("Total sequence folders: " + str(len(list_sec)))
 
     # Print list of sequences
     for sec in list_sec:
         path_to_sec = dataset_dir + sec
         path_to_gt = path_to_sec + "/ground_truth_traj/gt_lidar.txt"
 
-        print("RUNNING VILENS EVALUATION ...")
+        logger.info("RUNNING VILENS EVALUATION ...")
         path_traj = path_to_sec + "/output_slam" + "/vilens_poses_tum.txt"
         rmse = evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, "VILENS")
 
         file_name = "hba_poses_tum.txt"
         path_traj = path_to_sec + "/output_slam" + "/hba_poses_tum.txt"
-        print("RUNNING HBA EVALUATION ...")
+        logger.info("RUNNING HBA EVALUATION ...")
         rmse = evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, "HBA")

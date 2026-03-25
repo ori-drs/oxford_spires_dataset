@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+import logging
 from typing import Optional, Tuple
 
 import cv2
@@ -6,6 +6,8 @@ import numpy as np
 import open3d as o3d
 
 from oxspires_tools.utils import get_pcd
+
+logger = logging.getLogger(__name__)
 
 
 def filter_points_outside_fov(points_in_3d: np.ndarray, fov_deg: float) -> np.ndarray:
@@ -73,7 +75,7 @@ def encode_points_as_depthmap(
     z_mask = (depth * depth_encode_factor) < np.iinfo(np.uint16).max
 
     if not z_mask.all():
-        print("[warn] Depth values are too large to be encoded as 16-bit unsigned integers.")
+        logger.warning("Depth values are too large to be encoded as 16-bit unsigned integers.")
 
     # Extract only valid value
     valid_points_on_img = points_on_img[z_mask]

@@ -1,3 +1,4 @@
+import logging
 import sys
 import time
 
@@ -5,6 +6,8 @@ import libtmux
 import numpy as np
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface
+
+logger = logging.getLogger(__name__)
 
 
 def run_fast_lio_slam(path_to_rosbag, path_to_output):
@@ -21,20 +24,20 @@ def run_fast_lio_slam(path_to_rosbag, path_to_output):
     pane_2.send_keys("cd ~/oxford-lab/lidar_slam_ws/")
     pane_2.send_keys("source devel/setup.bash")
     pane_2.send_keys("roslaunch aloam_velodyne aloam_hesai.launch arg_save_directory:={}".format(path_to_output))
-    print("SC-PGO launched!! - mapping_hesai.launch")
+    logger.info("SC-PGO launched!! - mapping_hesai.launch")
 
     time.sleep(5)
 
     pane_1.send_keys("cd ~/oxford-lab/lidar_slam_ws/")
     pane_1.send_keys("source devel/setup.bash")
     pane_1.send_keys("roslaunch fast_lio mapping_hesai.launch")
-    print("Fast-LIO-SLAM launched!! - mapping_hesai.launch")
+    logger.info("Fast-LIO-SLAM launched!! - mapping_hesai.launch")
 
     time.sleep(5)
 
     pane_3.send_keys("cd {}".format(path_to_rosbag))
     pane_3.send_keys("rosbag play *.bag --clock")
-    print("Starting rosbag files in {}".format(path_to_rosbag))
+    logger.info("Starting rosbag files in {}".format(path_to_rosbag))
 
     # Check if the rosbag is "Done."
     t = time.time()
@@ -46,29 +49,29 @@ def run_fast_lio_slam(path_to_rosbag, path_to_output):
         for line in cap_curr:
             if "[RUNNING]" in line:
                 t = time.time()
-                print(line)
+                logger.info(line)
                 sys.stdout.write("\033[F")
             if "Done." in line:
                 t = time.time()
                 flag_end = True
                 sys.stdout.write("\033[K")
-                print("Done.")
+                logger.info("Done.")
                 break
         if flag_end:
             break
         if (time.time() - t) > 60.0:  # To avoid infinite
-            print("Timeout!!")
+            logger.warning("Timeout!!")
             break
 
-    print("PROCESS FINISHED!!")
-    print("Output in: {}optimized_poses.txt".format(path_to_output))
-    print("*********************************************************")
+    logger.info("PROCESS FINISHED!!")
+    logger.info("Output in: {}optimized_poses.txt".format(path_to_output))
+    logger.info("*********************************************************")
 
     server.kill()
 
 
 def convert_to_tum(path_to_output, path_to_sec):
-    print("Convert from KITTI format to TUM!!")
+    logger.info("Convert from KITTI format to TUM!!")
 
     pose_path = file_interface.read_kitti_poses_file(path_to_output + "optimized_poses.txt")
     raw_timestamps_mat = file_interface.csv_read_matrix(path_to_output + "times.txt")
@@ -87,8 +90,8 @@ def convert_to_tum(path_to_output, path_to_sec):
 
     file_interface.write_tum_trajectory_file(path_to_sec + "/output_slam" + "/fast_lio_tum.txt", tum_traj)
 
-    print("PROCESS FINISHED!!")
-    print("Output in: {}/output_slam/fast_lio_tum.txt".format(path_to_sec))
+    logger.info("PROCESS FINISHED!!")
+    logger.info("Output in: {}/output_slam/fast_lio_tum.txt".format(path_to_sec))
 
 
 def eval_fast_lio_slam(path_to_gt, path_to_output, package_dir, path_to_sec, dataset_dir):
@@ -99,7 +102,7 @@ def eval_fast_lio_slam(path_to_gt, path_to_output, package_dir, path_to_sec, dat
 
     rmse = -1
     for line in output.stdout:
-        print(line, end="")
+        logger.info(line.rstrip())
         if "rmse" in line:
             numbers = re.findall("\d+\.\d+|\d+", line)
             rmse = numbers[0]
@@ -107,7 +110,7 @@ def eval_fast_lio_slam(path_to_gt, path_to_output, package_dir, path_to_sec, dat
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
     logging.info("APE - RMSE result (Fast_LIO-SLAM): {}".format(rmse))
-    print("RMSE added to log: {}".format(rmse))
+    logger.info("RMSE added to log: {}".format(rmse))
 
 
 def create_output_folder(path_to_sec):
@@ -153,7 +156,7 @@ if __name__ == "__main__":
 
     list_sec = get_sec_list(dataset_dir, flag_is_all)
 
-    print("Total sequence folders: " + str(len(list_sec)))
+    logger.info("Total sequence folders: " + str(len(list_sec)))
 
     # Print list of sequences
     for sec in list_sec:
