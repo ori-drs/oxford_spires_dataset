@@ -6,7 +6,8 @@ import sys
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
 from oxspires_tools.bash_command import run_command
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, TUMTrajWriter
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 from oxspires_tools.trajectory.json_handler import JsonHandler
 
 logger = logging.getLogger(__name__)

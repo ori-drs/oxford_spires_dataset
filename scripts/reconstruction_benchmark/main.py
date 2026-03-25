@@ -19,7 +19,8 @@ from oxspires_tools.point_cloud import merge_downsample_vilens_slam_clouds, tran
 from oxspires_tools.se3 import is_se3_matrix
 from oxspires_tools.sensor import Sensor
 from oxspires_tools.trajectory.align import align
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.file_interfaces.vilens_slam import VilensSlamTrajReader
 from oxspires_tools.trajectory.utils import pose_to_ply
 from oxspires_tools.utils import convert_e57_folder_to_pcd_folder, setup_logging, transform_pcd_folder
 
