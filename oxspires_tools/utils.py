@@ -13,7 +13,8 @@ from tqdm import tqdm
 
 from oxspires_tools.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxspires_tools.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.file_interfaces.vilens_slam import VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
 
 logger = logging.getLogger(__name__)
