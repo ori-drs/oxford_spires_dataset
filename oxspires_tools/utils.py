@@ -20,6 +20,18 @@ from oxspires_tools.trajectory.pose_convention import PoseConvention
 logger = logging.getLogger(__name__)
 
 
+class ConsoleFormatter(logging.Formatter):
+    def format(self, record):
+        msg = record.getMessage()
+        if record.levelno == logging.WARNING:
+            return f"⚠️  {msg}"
+        if record.levelno == logging.ERROR:
+            return f"❌ {msg}"
+        if record.levelno == logging.CRITICAL:
+            return f"❌ {msg}"
+        return msg
+
+
 def setup_logging(logging_dir: Path = None) -> Path:
     """Set up logging to file and console."""
     time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -27,14 +39,20 @@ def setup_logging(logging_dir: Path = None) -> Path:
         logging_dir = Path(__file__).parent.parent / "runs" / time
     logging_dir = Path(logging_dir)
     logging_dir.mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(
-        filename=logging_dir / f"{time}.log",
-        level=logging.DEBUG,
-        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",
-    )
+
+    file_formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s")
+    file_handler = logging.FileHandler(logging_dir / f"{time}.log")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(file_formatter)
+
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(ConsoleFormatter())
+
     root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.handlers.clear()
+    root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
     return logging_dir
 
