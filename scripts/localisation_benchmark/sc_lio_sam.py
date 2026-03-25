@@ -78,10 +78,12 @@ def convert_to_tum(path_to_output, path_to_sec):
         and len(raw_timestamps_mat[0]) != 1
         or len(raw_timestamps_mat) != pose_path.num_poses
     ):
+        logger.error(error_msg)
         raise file_interface.FileInterfaceException(error_msg)
     try:
         timestamps_mat = np.array(raw_timestamps_mat).astype(float)
     except ValueError:
+        logger.error(error_msg)
         raise file_interface.FileInterfaceException(error_msg)
     tum_traj = PoseTrajectory3D(poses_se3=pose_path.poses_se3, timestamps=timestamps_mat)
 

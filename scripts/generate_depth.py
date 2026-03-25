@@ -124,7 +124,8 @@ def project_lidar_to_fisheye(
                     logger.warning(f"{pcd_path} pose not found")
                     continue
                 else:
-                    raise RuntimeError(f"{pcd_path} pose not found")
+                    logger.error(f"{pcd_path} pose not found")
+                    raise RuntimeError()
             # check if point cloud is empty
             if len(pcd.points) == 0:
                 logger.warning(f"{pcd_path} is empty")

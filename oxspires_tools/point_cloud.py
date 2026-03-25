@@ -38,7 +38,8 @@ def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel
         elif cloud_path.endswith(".ply"):
             cloud = o3d.io.read_point_cloud(cloud_path)
         else:
-            raise ValueError(f"Unsupported file format: {cloud_path}")
+            logger.error(f"Unsupported file format: {cloud_path}")
+            raise ValueError()
         final_cloud += cloud
 
     logger.debug(f"Downsampling to {downsample_voxel_size}m ...")
@@ -166,7 +167,8 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         pcd.metadata.viewpoint = tuple(viewpoint)
         pcd.save(pcd_file_path)
     else:
-        raise ValueError(f"Unsupported pcd library: {pcd_lib}")
+        logger.error(f"Unsupported pcd library: {pcd_lib}")
+        raise ValueError()
 
     if check_output:
         saved_cloud = read_pcd_with_viewpoint(pcd_file_path)

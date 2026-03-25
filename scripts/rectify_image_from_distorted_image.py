@@ -94,7 +94,8 @@ class ImageRectifier:
 
 def convert_to_intrinsic_matrix(intrinsics):
     if len(intrinsics) != 4:
-        raise ValueError("Intrinsics must be a list or array with exactly 4 elements: [fx, fy, cx, cy].")
+        logger.error(f"Intrinsics must have exactly 4 elements [fx, fy, cx, cy], got {len(intrinsics)}")
+        raise ValueError()
     fx, fy, cx, cy = intrinsics
     intrinsic_matrix = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]], dtype=np.float64)
     return intrinsic_matrix

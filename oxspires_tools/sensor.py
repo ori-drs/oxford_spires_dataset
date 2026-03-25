@@ -137,7 +137,8 @@ class Sensor:
         elif camera_name is None and camera_topic is not None:
             return self.cam_idx_new[self.camera_topics_labelled_reverse[camera_topic]] + 1
         else:
-            raise ValueError("Only one of camera_name or camera_topic should be specified")
+            logger.error("Only one of camera_name or camera_topic should be specified")
+            raise ValueError()
 
     def get_camera(self, camera_name):
         return self.cameras[self.cam_idx_new[camera_name]]
@@ -179,9 +180,11 @@ class Sensor:
                 assert colmap_traj["camera_model"] == self.camera_model
                 K, D, h, w = self.get_K_D_h_w_from_colmap_frame(colmap_traj)
             else:
-                raise RuntimeError("Invalid camera_topics_labelled")
+                logger.error(f"Invalid camera_topics_labelled: {self.camera_topics_labelled}")
+                raise RuntimeError()
             logger.info(f"{cam_name} {self.camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
         else:
-            raise ValueError(f"Unsupported depth pose format: {depth_pose_format}")
+            logger.error(f"Unsupported depth pose format: {depth_pose_format}")
+            raise ValueError()
 
         return K, D, h, w, self.camera_fov, self.camera_model

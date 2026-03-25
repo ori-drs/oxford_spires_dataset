@@ -21,6 +21,7 @@ class VilensSlamTrajReader(BasicTrajReader):
         """Read VILENS SLAM trajectory file."""
         raw_mat = csv_read_matrix(self.file_path, delim=",", comment_str="#")
         if not raw_mat:
+            logger.error(f"Empty or unreadable VILENS SLAM file: {self.file_path}")
             raise ValueError()
         timestamps = [TimeStamp(sec=row[1], nsec=row[2]).t_float128 for row in raw_mat]
         mat = np.array(raw_mat).astype(float)
@@ -40,7 +41,8 @@ class VilensSlamTrajWriter(BasicTrajWriter):
         """Write trajectory in CSV style VILENS SLAM format."""
 
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
-            raise ValueError("pose should be PoseTrajectory3D from evo")
+            logger.error(f"pose should be PoseTrajectory3D from evo, got: {type(pose)}")
+            raise ValueError()
         if not os.path.exists(os.path.dirname(self.file_path)):
             os.makedirs(os.path.dirname(self.file_path))
 
