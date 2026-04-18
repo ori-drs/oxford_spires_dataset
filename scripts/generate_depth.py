@@ -20,6 +20,7 @@ def setup_output_dirs(
     depth_dir: str,
     normal_dir: str,
     camera_subdirs: list,
+    image_folder_path: str,
     save_overlay: bool,
     save_normal_map: bool,
 ):
@@ -35,63 +36,21 @@ def setup_output_dirs(
         output_normal_dir = proj_dir / normal_dir
         shutil.rmtree(output_normal_dir, ignore_errors=True)
 
+    target_subdirs = {}
     for subdir in camera_subdirs:
         (output_depth_dir / subdir).mkdir(parents=True, exist_ok=True)
         if save_normal_map:
             (output_normal_dir / subdir).mkdir(parents=True, exist_ok=True)
         if save_overlay:
             (overlay_dir / subdir).mkdir(parents=True, exist_ok=True)
+        target_subdirs[subdir] = (
+            Path(image_folder_path) / subdir,
+            output_depth_dir / subdir,
+            output_normal_dir / subdir if save_normal_map else None,
+            overlay_dir / subdir if save_overlay else None,
+        )
 
-    return output_depth_dir, output_normal_dir, overlay_dir
-
-
-def preprocess_camera(
-    sensor,
-    cam_name: str,
-    subdir: str,
-    image_folder_path: str,
-    slam_individual_clouds_new_path: str,
-    output_depth_dir: Path,
-    output_normal_dir: Path,
-    overlay_dir: Path,
-    depth_pose_format: str,
-    depth_pose_path: str,
-    image_ext: str,
-    max_time_diff_camera_and_pose: float,
-    save_overlay: bool,
-    save_normal_map: bool,
-):
-    """Return camera params, transform, output subdirs, and synced image-pcd pairs."""
-    K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
-    T_cam_base = sensor.tf.get_transform("base", cam_name)
-
-    target_image_subdir = Path(image_folder_path) / subdir
-    target_depth_subdir = output_depth_dir / subdir
-    target_normal_subdir = output_normal_dir / subdir if save_normal_map else None
-    target_overlay_subdir = overlay_dir / subdir if save_overlay else None
-
-    logger.info(f"Target image directory: {target_image_subdir}")
-    logger.info(f"Target depth directory: {target_depth_subdir}")
-
-    image_pcd_pairs = get_image_pcd_sync_pair(
-        target_image_subdir,
-        slam_individual_clouds_new_path,
-        image_ext,
-        max_time_diff_camera_and_pose,
-    )
-
-    return (
-        K,
-        D,
-        h,
-        w,
-        fov_deg,
-        T_cam_base,
-        image_pcd_pairs,
-        target_depth_subdir,
-        target_normal_subdir,
-        target_overlay_subdir,
-    )
+    return output_depth_dir, output_normal_dir, overlay_dir, target_subdirs
 
 
 def project_lidar_to_fisheye(
@@ -112,30 +71,27 @@ def project_lidar_to_fisheye(
     save_normal_map: bool = True,
     camera_model: str = "OPENCV_FISHEYE",
 ):
-    proj_dir = Path(project_dir).expanduser()
+    logger.info("Depth is euclidean: L2 distance between points and camera" if is_euclidean else "Depth is not euclidean: z_value")  # fmt: skip
+    image_ext = f".{image_ext}" if not image_ext.startswith(".") else image_ext
 
-    if is_euclidean:
-        logger.info("Depth is euclidean: L2 distance between points and camera")
-    else:
-        logger.info("Depth is not euclidean: z_value")
-
-    if not image_ext.startswith("."):
-        image_ext = f".{image_ext}"
-
-    output_depth_dir, output_normal_dir, overlay_dir = setup_output_dirs(
-        proj_dir, depth_dir, normal_dir, list(camera_topics_labelled.values()), save_overlay, save_normal_map
+    _, _, _, target_subdirs = setup_output_dirs(
+        Path(project_dir),
+        depth_dir,
+        normal_dir,
+        list(camera_topics_labelled.values()),
+        image_folder_path,
+        save_overlay,
+        save_normal_map,
     )
 
     for cam_name, subdir in camera_topics_labelled.items():
         logger.info(f"Processing {cam_name} in {subdir} ...")
-        K, D, h, w, fov_deg, T_cam_base, image_pcd_pairs, target_depth_subdir, target_normal_subdir, target_overlay_subdir = preprocess_camera(
-            sensor, cam_name, subdir, image_folder_path, slam_individual_clouds_new_path,
-            output_depth_dir, output_normal_dir, overlay_dir,
-            depth_pose_format, depth_pose_path, image_ext, max_time_diff_camera_and_pose,
-            save_overlay, save_normal_map,
-        )  # fmt: skip
-
+        target_image_subdir, target_depth_subdir, target_normal_subdir, target_overlay_subdir = target_subdirs[subdir]
+        K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
         logger.info(f"Fov: {fov_deg}")
+        T_cam_base = sensor.tf.get_transform("base", cam_name)
+        image_pcd_pairs = get_image_pcd_sync_pair(target_image_subdir, slam_individual_clouds_new_path, image_ext, max_time_diff_camera_and_pose)  # fmt: skip
+
         for image_path, pcd_path, _ in tqdm(image_pcd_pairs):
             pcd = o3d.io.read_point_cloud(str(pcd_path))
             if pcd is None:
@@ -176,17 +132,17 @@ if __name__ == "__main__":
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
 
-    seq_dir = Path(args.sequence_dir) / "processed"
+    seq_dir = Path(args.sequence_dir)
 
     project_lidar_to_fisheye(
         sensor=sensor,
-        project_dir=str(seq_dir / "oxspires_tools_outputs"),
+        project_dir=str(seq_dir / "processed" / "oxspires_tools_outputs"),
         depth_dir="depths_euc_accum_0",
         normal_dir="normals_euc_accum_0",
         camera_topics_labelled=sensor.camera_topics_labelled,
-        image_folder_path=str(seq_dir / "colmap"),
+        image_folder_path=str(seq_dir / "processed" / "colmap"),
         depth_pose_format="vilens_slam",
-        slam_individual_clouds_new_path=str(seq_dir / "vilens-slam" / "undist-clouds"),
+        slam_individual_clouds_new_path=str(seq_dir / "processed" / "vilens-slam" / "undist-clouds"),
         is_euclidean=True,
         max_time_diff_camera_and_pose=0.025,
         image_ext=".jpg",
@@ -194,4 +150,4 @@ if __name__ == "__main__":
         save_overlay=True,
         save_normal_map=True,
         camera_model="OPENCV_FISHEYE",
-    )  # fmt: skip
+    )
