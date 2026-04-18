@@ -58,7 +58,6 @@ def project_lidar_to_fisheye(
     project_dir: str,
     depth_dir: str,
     normal_dir: str,
-    camera_topics_labelled: dict,
     image_folder_path: str,
     depth_pose_format: str,
     slam_individual_clouds_new_path: str,
@@ -78,13 +77,13 @@ def project_lidar_to_fisheye(
         Path(project_dir),
         depth_dir,
         normal_dir,
-        list(camera_topics_labelled.values()),
+        list(sensor.camera_topics_labelled.values()),
         image_folder_path,
         save_overlay,
         save_normal_map,
     )
 
-    for cam_name, subdir in camera_topics_labelled.items():
+    for cam_name, subdir in sensor.camera_topics_labelled.items():
         logger.info(f"Processing {cam_name} in {subdir} ...")
         target_image_subdir, target_depth_subdir, target_normal_subdir, target_overlay_subdir = target_subdirs[subdir]
         K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, depth_pose_format, depth_pose_path)
@@ -94,11 +93,8 @@ def project_lidar_to_fisheye(
 
         for image_path, pcd_path, _ in tqdm(image_pcd_pairs):
             pcd = o3d.io.read_point_cloud(str(pcd_path))
-            if pcd is None:
-                logger.warning(f"Failed to read {pcd_path}")
-                continue
-            if len(pcd.points) == 0:
-                logger.warning(f"{pcd_path} is empty")
+            if pcd is None or len(pcd.points) == 0:
+                logger.warning(f"Skipping {pcd_path}: {'failed to read' if pcd is None else 'empty'}")
                 continue
             pcd.transform(T_cam_base)
             depth, normal = get_depth_from_cloud(pcd, K, D, w, h, fov_deg, camera_model, depth_factor, is_euclidean)
@@ -140,7 +136,6 @@ if __name__ == "__main__":
         project_dir=str(seq_dir / "processed" / "oxspires_tools_outputs"),
         depth_dir="depths_euc_accum_0",
         normal_dir="normals_euc_accum_0",
-        camera_topics_labelled=sensor.camera_topics_labelled,
         image_folder_path=str(seq_dir / "processed" / "colmap"),
         depth_pose_format="vilens_slam",
         slam_individual_clouds_new_path=str(seq_dir / "processed" / "vilens-slam" / "undist-clouds"),
