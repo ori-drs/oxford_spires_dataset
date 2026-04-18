@@ -1,16 +1,16 @@
+import argparse
 import logging
 import shutil
 from pathlib import Path
 
 import open3d as o3d
 import yaml
-from huggingface_hub import snapshot_download
 from tqdm.auto import tqdm
 
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.utils import get_image_pcd_sync_pair, unzip_files
+from oxspires_tools.utils import get_image_pcd_sync_pair
 
 logger = logging.getLogger(__name__)
 
@@ -156,40 +156,37 @@ def project_lidar_to_fisheye(
             )
 
 
+def get_args():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Generate depth maps from LiDAR point clouds")
+    parser.add_argument(
+        "--sequence_dir",
+        type=str,
+        default="data/sequences/2024-03-18-christ-church-01",
+        help="Path to the sequence directory",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = get_args()
+
     config_yaml_path = Path(__file__).parent.parent / "configs" / "sensor.yaml"
     with open(config_yaml_path, "r") as f:
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
 
-    hf_repo_id = "ori-drs/oxford_spires_dataset"
-    download_patterns = [
-        "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds.zip",
-        "sequences/2024-03-18-christ-church-01/processed/colmap/images.zip",
-    ]
-    local_dir = Path(__file__).parent.parent / "data" / "hf"
-    for pattern in download_patterns:
-        snapshot_download(
-            repo_id=hf_repo_id,
-            allow_patterns=pattern,
-            local_dir=local_dir,
-            repo_type="dataset",
-            use_auth_token=False,
-        )
-    zip_files = list(Path(local_dir).rglob("*.zip"))
-    unzip_files(zip_files)
-    for zip_file in zip_files:
-        zip_file.unlink()
+    seq_dir = Path(args.sequence_dir) / "processed"
 
     project_lidar_to_fisheye(
         sensor=sensor,
-        project_dir=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/oxspires_tools_outputs"),
+        project_dir=str(seq_dir / "oxspires_tools_outputs"),
         depth_dir="depths_euc_accum_0",
         normal_dir="normals_euc_accum_0",
         camera_topics_labelled=sensor.camera_topics_labelled,
-        image_folder_path=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/colmap"),
+        image_folder_path=str(seq_dir / "colmap"),
         depth_pose_format="vilens_slam",
-        slam_individual_clouds_new_path=str(local_dir / "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds"),
+        slam_individual_clouds_new_path=str(seq_dir / "vilens-slam" / "undist-clouds"),
         is_euclidean=True,
         max_time_diff_camera_and_pose=0.025,
         image_ext=".jpg",

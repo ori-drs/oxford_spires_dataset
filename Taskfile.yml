@@ -4,7 +4,7 @@ vars:
   DOCKER_COMPOSE_PATH: .docker/oxspires/docker-compose.yml
 
 tasks:
-  # ── Docker ────────────────────────────────────────────────────────────────
+  ##### Docker ####################################
 
   docker_build_run:
     desc: Build and run development Docker container -- e.g. task docker_build_run -- task test
@@ -18,14 +18,24 @@ tasks:
       - mkdir -p data outputs runs
       - DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f {{.DOCKER_COMPOSE_PATH}} run --rm oxspires_utils bash -c "source ~/.bashrc && {{.CLI_ARGS | default "bash"}}"
 
-  # ── Scripts ──────────────────────────────────────────────────────────────
+  ##### Scripts ####################################
 
   download:
     desc: Download dataset using patterns from config -- e.g. task download -- --patterns sequences/foo1/* sequences/foo2/*
     cmds:
       - "python scripts/dataset_download.py {{.CLI_ARGS}}"
 
-  # ── Dev ───────────────────────────────────────────────────────────────────
+  generate_depth:
+    desc: Download required data and generate depth maps -- e.g. task generate_depth SEQUENCE=2024-03-18-christ-church-01
+    vars:
+      SEQUENCE: '{{.SEQUENCE | default "2024-03-18-christ-church-01"}}'
+    cmds:
+      - task: download
+        vars:
+          CLI_ARGS: "--patterns sequences/{{.SEQUENCE}}/processed/vilens-slam/undist-clouds.zip sequences/{{.SEQUENCE}}/processed/colmap/images.zip"
+      - "python scripts/generate_depth.py --sequence {{.SEQUENCE}}"
+
+  ##### Dev ####################################
 
   install:
     desc: Install the package in development mode
