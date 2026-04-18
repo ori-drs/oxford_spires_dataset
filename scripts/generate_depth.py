@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from oxspires_tools.depth.main import get_depth_from_cloud
 from oxspires_tools.depth.utils import save_projection_outputs
 from oxspires_tools.sensor import Sensor
-from oxspires_tools.utils import get_image_pcd_sync_pair
+from oxspires_tools.utils import get_image_pcd_sync_pair, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +125,7 @@ def get_args():
 
 
 if __name__ == "__main__":
+    setup_logging()
     args = get_args()
 
     config_yaml_path = Path(__file__).parent.parent / "configs" / "sensor.yaml"
