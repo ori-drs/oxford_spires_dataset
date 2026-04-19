@@ -215,8 +215,7 @@ def get_image_pcd_sync_pair(
         ret = re.findall(r"\d+", it.name)
         timestamp = float(".".join(ret))
         image_timestamp, diff, _ = find_closest_in_sorted(image_timestamps, timestamp)
-        # print(diff)
-        if diff < timestamp_threshold:
+        if diff <= timestamp_threshold:
             image_pcd_pairs.append((image_paths[image_timestamp], it, diff))
 
     logger.info(f"Found {len(image_pcd_pairs)} image-pcd pairs")
