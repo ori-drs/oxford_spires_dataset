@@ -169,3 +169,4 @@ cython_debug/
 vocab_tree*.bin
 .claude
 data/
+outputs/
