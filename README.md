@@ -52,7 +52,8 @@ BUILD_CPP=1 pip install .
 
 The following scripts download synchronised images and lidar from a sequence in HuggingFace, and generates depth image, lidar overlaid on camera and surface normal images.
 ```
-python scripts/generate_depth.py
+python scripts/dataset_download.py --patterns "sequences/2024-03-12-keble-college-02/processed/colmap/images.zip" "sequences/2024-03-12-keble-college-02/processed/vilens-slam/undist-clouds.zip"
+python scripts/generate_depth.py --sequence_dir data/sequences/2024-03-12-keble-college-02
 ```
 
 ## Localisation Benchmark
