@@ -26,14 +26,9 @@ tasks:
       - "python scripts/dataset_download.py {{.CLI_ARGS}}"
 
   generate_depth:
-    desc: Download required data and generate depth maps -- e.g. task generate_depth SEQUENCE=2024-03-18-christ-church-01
-    vars:
-      SEQUENCE: '{{.SEQUENCE | default "2024-03-18-christ-church-01"}}'
+    desc: Generate depth maps -- e.g. task generate_depth -- --sequence_dir data/sequences/2024-03-18-christ-church-01
     cmds:
-      - task: download
-        vars:
-          CLI_ARGS: "--patterns sequences/{{.SEQUENCE}}/processed/vilens-slam/undist-clouds.zip sequences/{{.SEQUENCE}}/processed/colmap/images.zip"
-      - "python scripts/generate_depth.py --sequence {{.SEQUENCE}}"
+      - "python scripts/generate_depth.py {{.CLI_ARGS}}"
 
   ##### Dev ####################################
 
