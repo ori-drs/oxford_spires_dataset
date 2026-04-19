@@ -38,6 +38,7 @@ def get_depth_from_cloud(
     depthmap, z_mask, u, v, sorted_indices = encode_points_as_depthmap(
         points_on_img, points_in_3d, h, w, is_euclidean, depth_factor
     )
+    normalmap = None
     if normals_np.size > 0:
         valid_normals_np = normals_np[mask_fov][in_image_mask][z_mask]
         valid_normals_np = valid_normals_np[sorted_indices]
