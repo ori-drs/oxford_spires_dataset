@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 
 def get_args():
-    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Generate depth maps from LiDAR point clouds")
     parser.add_argument("--image_folder_path", type=str, required=True)
     parser.add_argument("--clouds_path", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--max_time_diff", type=float, default=None)
     parser.add_argument("--euclidean", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--depth_factor", type=float, default=256.0)
     parser.add_argument("--accum_number", type=int, default=0)
@@ -36,8 +36,7 @@ if __name__ == "__main__":
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
 
-    max_time_diff = sensor.max_time_diff_camera_and_pose
-
+    max_time_diff = args.max_time_diff if args.max_time_diff is not None else sensor.max_time_diff_camera_and_pose
     depth_tag = "euc" if args.euclidean else "z"
     proj_dir = Path(args.output_dir)
     output_depth_dir = proj_dir / f"depths_{depth_tag}_accum_{args.accum_number}"
