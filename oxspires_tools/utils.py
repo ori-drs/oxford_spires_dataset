@@ -206,7 +206,7 @@ def get_image_pcd_sync_pair(
         timestamp = float(".".join(ret))
         image_timestamps.append(timestamp)
         image_paths[timestamp] = it
-    assert len(image_paths) > 0, "No images are found"
+    assert len(image_paths) > 0, f"No images are found in {image_dir}"
     logger.info(f"Loaded {len(image_paths)} images")
 
     # Collect all image and lidar pair which have timestamp close enough
