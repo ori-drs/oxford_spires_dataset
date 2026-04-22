@@ -22,6 +22,38 @@
 
 This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR). 
 
+## Sequences
+
+The dataset covers 6 locations across Oxford. **Core sequences** (bold) are used for the localisation benchmark.
+
+| Sequence | Location | Preview |
+|---|---|---|
+| `2024-03-12-keble-college-01` | Keble College | [▶](https://youtu.be/2C9SmYyR9D8?si=yjeOBthm2YbHe4rm) |
+| **`2024-03-12-keble-college-02`** | Keble College | [▶](https://youtu.be/TtLuIWEjG5E?si=cWQtCjlwgdZbq6wO) |
+| **`2024-03-12-keble-college-03`** | Keble College | [▶](https://youtu.be/iukD2bM5_kE?si=mYeQm6PpoHV44pBn) |
+| **`2024-03-12-keble-college-04`** | Keble College | [▶](https://youtu.be/zf15hZFvYBM?si=15MN6umozlLVNwNx) |
+| **`2024-03-12-keble-college-05`** | Keble College | [▶](https://youtu.be/INh7riu8GiY?si=1J1-U5v8Sl8xHkQx) |
+| **`2024-03-13-observatory-quarter-01`** | Radcliffe Observatory Quarter | [▶](https://youtu.be/-umimE-9EOc?si=BBUzDU9DVkIyWYh8) |
+| **`2024-03-13-observatory-quarter-02`** | Radcliffe Observatory Quarter | [▶](URL) |
+| **`2024-03-14-blenheim-palace-01`** | Blenheim Palace | [▶](URL) |
+| **`2024-03-14-blenheim-palace-02`** | Blenheim Palace | [▶](URL) |
+| `2024-03-14-blenheim-palace-03` | Blenheim Palace | [▶](URL) |
+| `2024-03-14-blenheim-palace-04` | Blenheim Palace | [▶](URL) |
+| **`2024-03-14-blenheim-palace-05`** | Blenheim Palace | [▶](URL) |
+| `2024-03-15-bodleian-library-01` | Bodleian Library | [▶](URL) |
+| **`2024-03-18-christ-church-01`** | Christ Church College | [▶](URL) |
+| **`2024-03-18-christ-church-02`** | Christ Church College | [▶](URL) |
+| **`2024-03-18-christ-church-03`** | Christ Church College | [▶](URL) |
+| `2024-03-18-christ-church-04` | Christ Church College | [▶](URL) |
+| **`2024-03-18-christ-church-05`** | Christ Church College | [▶](URL) |
+| **`2024-03-18-christ-church-06`** | Christ Church College | [▶](URL) |
+| **`2024-05-20-bodleian-library-02`** | Bodleian Library | [▶](URL) |
+| `2024-07-09-new-college-01` | New College | [▶](URL) |
+| `2024-07-09-new-college-02` | New College | [▶](URL) |
+| `2024-07-09-new-college-03` | New College | [▶](URL) |
+| `2024-07-09-new-college-04` | New College | [▶](URL) |
+
+
 ## Download
 You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. We have also defined a list of [core sequences](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#core-sequences) which is can also be found in the file.
 ```bash
