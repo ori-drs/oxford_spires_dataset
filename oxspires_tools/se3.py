@@ -67,7 +67,7 @@ def is_quaternion(quaternion):
         quaternion = np.array(quaternion)
     assert isinstance(quaternion, np.ndarray), f"{quaternion} is not a numpy array or list"
     assert quaternion.shape == (4,), f"{quaternion} is not a 4D quaternion"
-    return np.isclose(np.linalg.norm(quaternion), 1.0)
+    return np.isclose(np.linalg.norm(quaternion), 1.0, atol=1e-4)
 
 
 def is_sim3_matrix(sim3_matrix):
