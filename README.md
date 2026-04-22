@@ -23,7 +23,7 @@
 This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR). 
 
 ## Download
-You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. We have also defined a list of [core sequences](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#core-sequences) which is can also be found in the file.
+You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. The full list of sequences is available on the [website](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#sequences).
 ```bash
 python scripts/dataset_download.py
 ```
@@ -90,7 +90,7 @@ python scripts/reconstruction_benchmark/main.py --config-file config/recon_bench
 # This will download data from Hugging Face first
 python scripts/reconstruction_benchmark/nvs_benchmark.py
 ```
-the NVS benchmakr is also included in the reconstruction benchmark script, since it builds upon output from COLMAP. 
+the NVS benchmark is also included in the reconstruction benchmark script, since it builds upon output from COLMAP.
 
 
 ## Contributing
