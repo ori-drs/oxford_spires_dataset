@@ -1,10 +1,26 @@
-# Oxford Spires Dataset
-This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR).
-- [Website](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires)
-- [Arxiv](https://arxiv.org/abs/2411.10546)
-- [Video](https://www.youtube.com/watch?v=AKZ-YrOob_4)
+<div align="center">
 
-This is a pre-release of the software. The codebase will be refactored in the near future. Please feel free to ask questions about the dataset and report bugs in the Github Issues.
+<h1>Oxford Spires Dataset</h1>
+
+<p align="center">
+  <a href="https://dynamic.robots.ox.ac.uk/datasets/oxford-spires"><img src="https://img.shields.io/badge/Website--blue?style=social&logo=googlechrome"/></a>
+  &nbsp;
+  <a href="https://arxiv.org/abs/2411.10546"><img src="https://img.shields.io/badge/arXiv--b31b1b?style=social&logo=arxiv"/></a>
+  &nbsp;
+  <a href="https://journals.sagepub.com/doi/10.1177/02783649251369905"><img src="https://img.shields.io/badge/Paper--00629B?style=social&logo=bookstack&logoColor=blue"/></a>
+  &nbsp;
+  <a href="https://www.youtube.com/watch?v=AKZ-YrOob_4"><img src="https://img.shields.io/badge/YouTube--red?style=social&logo=youtube"/></a>
+  &nbsp;
+  <a href="https://github.com/ori-drs/oxford_spires_dataset/wiki"><img src="https://img.shields.io/badge/Documentation--blue?style=social&logo=readthedocs"/></a>
+  &nbsp;
+  <a href="https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main"><img src="https://img.shields.io/badge/HuggingFace--FFD21E?style=social&logo=huggingface&logoColor=yellow"/></a>
+  &nbsp;
+  <a href="https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#googledrive"><img src="https://img.shields.io/badge/Google%20Drive--4285F4?style=social&logo=data:image/svg+xml;base64,PHN2ZyByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBmaWxsPSIjNDI4NUY0IiBkPSJNMTIuMDEgMS40ODVjLTIuMDgyIDAtMy43NTQuMDItMy43NDMuMDQ3LjAxLjAyIDEuNzA4IDMuMDAxIDMuNzc0IDYuNjJsMy43NiA2LjU3NGgzLjc2YzIuMDgxIDAgMy43NTMtLjAyIDMuNzQyLS4wNDctLjAwNS0uMDItMS43MDgtMy4wMDEtMy43NzUtNi42MmwtMy43Ni02LjU3NHoiLz4KICA8cGF0aCBmaWxsPSIjMzRBODUzIiBkPSJNNy4yNSAzLjIxNWE3ODkuODI4IDc4OS44NjEgMCAwIDAtMy42MyA2LjMxOUwwIDE1Ljg2OGwxLjg5IDMuMjk4IDEuODg1IDMuMjk3IDMuNjItNi4zMzUgMy42MTgtNi4zMy0xLjg4LTMuMjg3QzguMSA0LjcwNCA3LjI1NSAzLjIyIDcuMjUgMy4yMTR6Ii8+CiAgPHBhdGggZmlsbD0iI0ZCQkMwNCIgZD0iTTkuNTA5IDE1Ljg2OGwtLjIwMy4zNDhjLS4xMTQuMTk4LS45NiAxLjY3Mi0xLjg4IDMuMjg3YTQyMy45MyA0MjMuOTQ4IDAgMCAxLTEuNjk4IDIuOTdjLS4wMS4wMjYgMy4yNC4wNDIgNy4yMjIuMDQyaDcuMjQ0bDEuNzk2LTMuMTU3Yy45OTItMS43MzQgMS44NS0zLjIzIDEuOTA2LTMuMzIzbC4xMDQtLjE2N2gtNy4yNDl6Ii8+Cjwvc3ZnPgo="/></a>
+</p>
+
+</div>
+
+This repository contains scripts that are used to evaluate localisation, 3D reconstruction and radiance field methods using the [Oxford Spires Dataset](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/), accepted in the International Journal of Robotics Research (IJRR). 
 
 ## Download
 You can download the dataset from [HuggingFace](https://huggingface.co/datasets/ori-drs/oxford_spires_dataset/tree/main) with this script. Define which folder to download by changing the `example_pattern`. We have also defined a list of [core sequences](https://dynamic.robots.ox.ac.uk/datasets/oxford-spires/#core-sequences) which is can also be found in the file.
