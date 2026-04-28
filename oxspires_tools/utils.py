@@ -1,5 +1,7 @@
 import logging
 import re
+import shlex
+import sys
 import zipfile
 from bisect import bisect_left
 from datetime import datetime
@@ -13,8 +15,23 @@ from tqdm import tqdm
 
 from oxspires_tools.point_cloud import convert_e57_to_pcd, transform_3d_cloud
 from oxspires_tools.se3 import se3_matrix_to_xyz_quat_wxyz, xyz_quat_wxyz_to_se3_matrix
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, VilensSlamTrajReader
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.file_interfaces.vilens_slam import VilensSlamTrajReader
 from oxspires_tools.trajectory.pose_convention import PoseConvention
+
+logger = logging.getLogger(__name__)
+
+
+class ConsoleFormatter(logging.Formatter):
+    def format(self, record):
+        msg = record.getMessage()
+        if record.levelno == logging.WARNING:
+            return f"⚠️  {msg}"
+        if record.levelno == logging.ERROR:
+            return f"❌ {msg}"
+        if record.levelno == logging.CRITICAL:
+            return f"❌ {msg}"
+        return msg
 
 
 def setup_logging(logging_dir: Path = None) -> Path:
@@ -24,15 +41,23 @@ def setup_logging(logging_dir: Path = None) -> Path:
         logging_dir = Path(__file__).parent.parent / "runs" / time
     logging_dir = Path(logging_dir)
     logging_dir.mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(
-        filename=logging_dir / f"{time}.log",
-        level=logging.DEBUG,
-        format="%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s",
-    )
+
+    file_formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(lineno)s: %(message)s")
+    file_handler = logging.FileHandler(logging_dir / f"{time}.log")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(file_formatter)
+
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(ConsoleFormatter())
+
     root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.handlers.clear()
+    root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
+    root_logger.info(f"Command: {shlex.join(sys.argv)}")
+    root_logger.info(f"CWD: {Path.cwd()}")
     return logging_dir
 
 
@@ -40,7 +65,7 @@ def convert_e57_folder_to_pcd_folder(e57_folder, pcd_folder):
     Path(pcd_folder).mkdir(parents=True, exist_ok=True)
     e57_files = list(Path(e57_folder).glob("*.e57"))
     pbar = tqdm(e57_files)
-    print(f"Converting {len(e57_files)} E57 files in {e57_folder} to PCD files in {pcd_folder}")
+    logger.info(f"Converting {len(e57_files)} E57 files in {e57_folder} to PCD files in {pcd_folder}")
     for e57_file in pbar:
         pcd_file = Path(pcd_folder) / (e57_file.stem + ".pcd")
         pbar.set_description(f"Processing {e57_file.name}")
@@ -105,7 +130,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
             # print(f"WARNING: {timestamp}'S diff from transforms is {diff} > {max_time_diff_camera_and_pose} ")
             return None
         if max_time_diff_camera_and_pose == 0 and timestamp != closest_timestamp:
-            print(f"Warning: closest timestamp is {closest_timestamp} but current timestamp is {timestamp}")
+            logger.warning(f"closest timestamp is {closest_timestamp} but current timestamp is {timestamp}")
             input("Press Enter to continue...")
         timestamp = closest_timestamp
         return transforms[timestamp]
@@ -128,7 +153,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
     current_timestamp = re.sub(r"0+$", "", current_timestamp)
     T_WB = get_T_WB_from_timestamp(current_timestamp, transforms, max_time_diff_camera_and_pose)
     if T_WB is None:
-        print(f"current_timestamp: {current_timestamp} not found")
+        logger.warning(f"current_timestamp: {current_timestamp} not found")
         return None
     # print(f"Current timestamp: {current_timestamp}")
     for pcd_path in accumulated_pcd_paths:
@@ -182,7 +207,7 @@ def get_image_pcd_sync_pair(
         image_timestamps.append(timestamp)
         image_paths[timestamp] = it
     assert len(image_paths) > 0, "No images are found"
-    print(f"Loaded {len(image_paths)} images")
+    logger.info(f"Loaded {len(image_paths)} images")
 
     # Collect all image and lidar pair which have timestamp close enough
     image_pcd_pairs = []
@@ -194,7 +219,7 @@ def get_image_pcd_sync_pair(
         if diff < timestamp_threshold:
             image_pcd_pairs.append((image_paths[image_timestamp], it, diff))
 
-    print(f"Found {len(image_pcd_pairs)} image-pcd pairs")
+    logger.info(f"Found {len(image_pcd_pairs)} image-pcd pairs")
     return image_pcd_pairs
 
 
@@ -236,8 +261,8 @@ def get_transforms(
         pcds.append(axis)
         scaled_Ts[str(key)] = T
     if visualise:
-        print("Visualize loaded pose.")
-        print("Press ECS to exit.")
+        logger.info("Visualize loaded pose.")
+        logger.info("Press ECS to exit.")
         o3d.visualization.draw_geometries(pcds)
     return scaled_Ts
 
@@ -246,5 +271,5 @@ def unzip_files(zip_files):
     for zip_file in zip_files:
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
             zip_ref.extractall(zip_file.parent)
-            print(f"Extracted {zip_file} to {zip_file.parent}")
+            logger.info(f"Extracted {zip_file} to {zip_file.parent}")
     return zip_files

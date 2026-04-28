@@ -1,10 +1,13 @@
 import json
+import logging
 import shutil
 from pathlib import Path
 
 import numpy as np
 
 from oxspires_tools.trajectory.json_handler_submap_utils import get_xyz, save_submap_cluster, viz_submap_cluster
+
+logger = logging.getLogger(__name__)
 
 
 class JsonHandler:
@@ -27,7 +30,7 @@ class JsonHandler:
     def sync_with_folder(self, folder_path, valid_ext=".jpg"):
         # get all files in subfolder
         ref_files = list(Path(folder_path).glob("**/*" + valid_ext))
-        print(f"{len(self.traj['frames'])} files in json")
+        logger.info(f"{len(self.traj['frames'])} files in json")
 
         count = 0
         frames_copy = self.traj["frames"].copy()
@@ -38,8 +41,8 @@ class JsonHandler:
                 # print(f"file {file_path} not exist, remove it from json")
                 frames_copy.remove(frame)
                 count += 1
-        print(f"{len(ref_files)} files in reference folder")
-        print(f"removed {count} files, {len(frames_copy)} left")
+        logger.info(f"{len(ref_files)} files in reference folder")
+        logger.info(f"removed {count} files, {len(frames_copy)} left")
         self.traj["frames"] = frames_copy
 
     def filter_folder(self, folder_path):
@@ -48,8 +51,8 @@ class JsonHandler:
             file_path = Path(frame["file_path"])
             if file_path.parent != Path(folder_path):
                 self.traj["frames"].remove(frame)
-                print(f"removed {file_path} from json")
-        print(f"filter_folder {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
+                logger.info(f"removed {file_path} from json")
+        logger.info(f"filter_folder {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
 
     def keep_timestamp_only(self, start_time, end_time):
         frames_copy = self.traj["frames"].copy()
@@ -58,8 +61,8 @@ class JsonHandler:
             timestamp = float(file_path.stem)
             if timestamp < start_time or timestamp > end_time:
                 self.traj["frames"].remove(frame)
-                print(f"removed {file_path} from json")
-        print(f"keep_timestamp_only {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
+                logger.info(f"removed {file_path} from json")
+        logger.info(f"keep_timestamp_only {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
 
     def remove_timestamp(self, start_time, end_time):
         frames_copy = self.traj["frames"].copy()
@@ -68,8 +71,8 @@ class JsonHandler:
             timestamp = float(file_path.stem)
             if timestamp >= start_time and timestamp <= end_time:
                 self.traj["frames"].remove(frame)
-                print(f"removed {file_path} from json")
-        print(f"remove_timestamp {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
+                logger.info(f"removed {file_path} from json")
+        logger.info(f"remove_timestamp {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
 
     def skip_frames(self, skip):
         frames_copy = self.traj["frames"].copy()
@@ -77,7 +80,7 @@ class JsonHandler:
         # frames_copy.sort(key=lambda x: float(Path(x["file_path"]).stem))
 
         self.traj["frames"] = frames_copy[::skip]
-        print(f"Skipping: {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
+        logger.info(f"Skipping: {len(frames_copy)} files in json, {len(self.traj['frames'])} left")
 
     def remove_intrinsics(self):
         # frames_copy = self.traj["frames"].copy()
@@ -108,7 +111,7 @@ class JsonHandler:
                 if depth_file_path_full.exists():
                     frame["depth_file_path"] = depth_file_path.__str__()
                 else:
-                    print(f"{depth_file_path_full} not exist")
+                    logger.warning(f"{depth_file_path_full} not exist")
                     self.traj["frames"].remove(frame)
 
     def add_normal(self, normal_folder=None):
@@ -126,7 +129,7 @@ class JsonHandler:
                 if normal_file_path_full.exists():
                     frame["normal_file_path"] = normal_file_path.__str__()
                 else:
-                    print(f"{normal_file_path_full} not exist")
+                    logger.warning(f"{normal_file_path_full} not exist")
                     self.traj["frames"].remove(frame)
 
     def add_mask(self):
@@ -196,7 +199,7 @@ class JsonHandler:
                 if test_path.exists():
                     shutil.copy(test_path, output_dir / cloud_path.parent.name / test_path.name)
                 else:
-                    print(f"{cloud_path} not exist")
+                    logger.warning(f"{cloud_path} not exist")
 
     def get_images_in_json(self, image_dir, output_dir):
         image_dir = Path(image_dir)
@@ -214,7 +217,7 @@ class JsonHandler:
             if img_path.exists():
                 shutil.copy(img_path, output_dir / img_path.parent.name / img_path.name)
             else:
-                print(f"{img_path} not exist")
+                logger.warning(f"{img_path} not exist")
 
     def update_hw(self):
         for frame in self.traj["frames"]:

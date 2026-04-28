@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+import logging
 from typing import Optional, Tuple
 
 import cv2
@@ -6,6 +6,8 @@ import numpy as np
 import open3d as o3d
 
 from oxspires_tools.utils import get_pcd
+
+logger = logging.getLogger(__name__)
 
 
 def filter_points_outside_fov(points_in_3d: np.ndarray, fov_deg: float) -> np.ndarray:
@@ -40,7 +42,8 @@ def project_points_on_image(
     elif camera_model == "OPENCV":
         points_on_img, _ = cv2.projectPoints(points_in_3d[np.newaxis], rvec, tvec, K, D)
     else:
-        raise ValueError(f"Unknown camera model: {camera_model}")
+        logger.error(f"Unknown camera model: {camera_model}")
+        raise ValueError()
     if points_on_img is None:
         return np.zeros((0, 2)), np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(points_in_3d.shape[0], dtype=bool)
     points_on_img = points_on_img.squeeze()
@@ -73,7 +76,7 @@ def encode_points_as_depthmap(
     z_mask = (depth * depth_encode_factor) < np.iinfo(np.uint16).max
 
     if not z_mask.all():
-        print("[warn] Depth values are too large to be encoded as 16-bit unsigned integers.")
+        logger.warning("Depth values are too large to be encoded as 16-bit unsigned integers.")
 
     # Extract only valid value
     valid_points_on_img = points_on_img[z_mask]
@@ -130,7 +133,8 @@ def decode_points_from_depthmap(
     elif camera_model == "OPENCV":
         points_in_3d = cv2.undistortPoints(points_on_img, K, D, P=np.eye(3))
     else:
-        raise ValueError(f"Unknown camera model: {camera_model}")
+        logger.error(f"Unknown camera model: {camera_model}")
+        raise ValueError()
     if points_in_3d is None:
         return o3d.geometry.PointCloud()
     points_in_3d = points_in_3d.squeeze()

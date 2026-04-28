@@ -1,5 +1,8 @@
+import logging
 import subprocess
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class TerminalColors:
@@ -15,7 +18,7 @@ class TerminalColors:
 
 
 def print_with_colour(text, colour=TerminalColors.CYAN):
-    print(f"{colour}{text}{TerminalColors.ENDC}")
+    logger.info(f"{colour}{text}{TerminalColors.ENDC}")
 
 
 def run_command(cmd, log_path=None, print_command=True, print_output=True):
@@ -24,7 +27,7 @@ def run_command(cmd, log_path=None, print_command=True, print_output=True):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, universal_newlines=True)
     if print_output:
         for line in process.stdout:
-            print(line, end="")
+            logger.info(line.rstrip())
             if log_path is not None:
                 assert isinstance(log_path, (Path, str))
                 with open(log_path, "a") as f:

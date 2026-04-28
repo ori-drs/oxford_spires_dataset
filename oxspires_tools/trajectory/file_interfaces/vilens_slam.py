@@ -1,3 +1,4 @@
+import logging
 import os
 
 import evo
@@ -6,6 +7,8 @@ from evo.tools.file_interface import csv_read_matrix
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
+
+logger = logging.getLogger(__name__)
 
 
 class VilensSlamTrajReader(BasicTrajReader):
@@ -18,6 +21,7 @@ class VilensSlamTrajReader(BasicTrajReader):
         """Read VILENS SLAM trajectory file."""
         raw_mat = csv_read_matrix(self.file_path, delim=",", comment_str="#")
         if not raw_mat:
+            logger.error(f"Empty or unreadable VILENS SLAM file: {self.file_path}")
             raise ValueError()
         timestamps = [TimeStamp(sec=row[1], nsec=row[2]).t_float128 for row in raw_mat]
         mat = np.array(raw_mat).astype(float)
@@ -37,13 +41,14 @@ class VilensSlamTrajWriter(BasicTrajWriter):
         """Write trajectory in CSV style VILENS SLAM format."""
 
         if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
-            raise ValueError("pose should be PoseTrajectory3D from evo")
+            logger.error(f"pose should be PoseTrajectory3D from evo, got: {type(pose)}")
+            raise ValueError()
         if not os.path.exists(os.path.dirname(self.file_path)):
             os.makedirs(os.path.dirname(self.file_path))
 
         assert pose.check()[0] is True, pose.check()[1]
 
-        print("Writing pose message in CSV format to: ", self.file_path)
+        logger.info(f"Writing pose message in CSV format to: {self.file_path}")
         with open(self.file_path, "w") as f:
             f.writelines("# counter, sec, nsec, x, y, z, qx, qy, qz, qw\n")
             for i in range(pose.num_poses):

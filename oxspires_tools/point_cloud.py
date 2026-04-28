@@ -29,7 +29,7 @@ def transform_3d_cloud(cloud_np, transform_matrix):
 
 
 def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel_size=0.05):
-    print("Merging clouds ...")
+    logger.debug("Merging clouds ...")
     final_cloud = o3d.geometry.PointCloud()
     for cloud_path in tqdm(cloud_path_list):
         cloud_path = str(cloud_path)
@@ -38,12 +38,13 @@ def merge_downsample_clouds(cloud_path_list, output_cloud_path, downsample_voxel
         elif cloud_path.endswith(".ply"):
             cloud = o3d.io.read_point_cloud(cloud_path)
         else:
-            raise ValueError(f"Unsupported file format: {cloud_path}")
+            logger.error(f"Unsupported file format: {cloud_path}")
+            raise ValueError()
         final_cloud += cloud
 
-    print(f"Downsampling to {downsample_voxel_size}m ...")
+    logger.debug(f"Downsampling to {downsample_voxel_size}m ...")
     final_cloud = final_cloud.voxel_down_sample(voxel_size=downsample_voxel_size)
-    print(f"Saving merged cloud to {output_cloud_path} ...")
+    logger.info(f"Saving merged cloud to {output_cloud_path} ...")
     o3d.io.write_point_cloud(str(output_cloud_path), final_cloud)
     return final_cloud
 
@@ -138,7 +139,7 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         if has_colour:
             pcd.colors = o3d.utility.Vector3dVector(colours / 255)
         o3d.io.write_point_cloud(pcd_file_path, pcd)
-        print(f"PCD file saved to {pcd_file_path}")
+        logger.info(f"PCD file saved to {pcd_file_path}")
         modify_pcd_viewpoint(pcd_file_path, pcd_file_path, viewpoint)
     elif pcd_lib == "pypcd4":
         # supported fields: x, y, z, rgb, intensity
@@ -166,7 +167,8 @@ def convert_e57_to_pcd(e57_file_path, pcd_file_path, check_output=True, pcd_lib=
         pcd.metadata.viewpoint = tuple(viewpoint)
         pcd.save(pcd_file_path)
     else:
-        raise ValueError(f"Unsupported pcd library: {pcd_lib}")
+        logger.error(f"Unsupported pcd library: {pcd_lib}")
+        raise ValueError()
 
     if check_output:
         saved_cloud = read_pcd_with_viewpoint(pcd_file_path)

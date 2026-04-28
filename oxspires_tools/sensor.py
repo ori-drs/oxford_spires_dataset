@@ -1,4 +1,5 @@
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
@@ -7,6 +8,8 @@ import numpy as np
 from evo.core.trajectory import xyz_quat_wxyz_to_se3_poses
 from matplotlib import pyplot as plt
 from pytransform3d.transform_manager import TransformManager
+
+logger = logging.getLogger(__name__)
 
 supported_camera_models = ["OPENCV", "OPENCV_FISHEYE", "PINHOLE"]
 expected_num_extra_param = {
@@ -134,7 +137,8 @@ class Sensor:
         elif camera_name is None and camera_topic is not None:
             return self.cam_idx_new[self.camera_topics_labelled_reverse[camera_topic]] + 1
         else:
-            raise ValueError("Only one of camera_name or camera_topic should be specified")
+            logger.error("Only one of camera_name or camera_topic should be specified")
+            raise ValueError()
 
     def get_camera(self, camera_name):
         return self.cameras[self.cam_idx_new[camera_name]]
@@ -155,14 +159,14 @@ class Sensor:
 
     def get_params_for_depth(self, cam_name, depth_pose_format, colmap_json_path: Path = None):
         if depth_pose_format == "vilens_slam":
-            print("Depth Image: Using Frontier_config / Kalibr for Intrinsics")
+            logger.info("Depth Image: Using Frontier_config / Kalibr for Intrinsics")
             K = self.get_camera(cam_name).get_K()
             D = np.array(self.get_camera(cam_name).extra_params)
             h = self.get_camera(cam_name).image_height
             w = self.get_camera(cam_name).image_width
-            print(f"{cam_name} K: {K}, D: {D}, h: {h}, w: {w}")
+            logger.info(f"{cam_name} K: {K}, D: {D}, h: {h}, w: {w}")
         elif depth_pose_format == "nerf":
-            print("Depth Image: Using NeRF transforms.json 's Intrinsics (from colmap)")
+            logger.info("Depth Image: Using NeRF transforms.json 's Intrinsics (from colmap)")
             assert colmap_json_path is not None, "colmap_json_path must be provided for nerf format"
             colmap_traj = json.load(open(colmap_json_path, "r"))
             if len(self.camera_topics_labelled) > 1:
@@ -176,9 +180,11 @@ class Sensor:
                 assert colmap_traj["camera_model"] == self.camera_model
                 K, D, h, w = self.get_K_D_h_w_from_colmap_frame(colmap_traj)
             else:
-                raise RuntimeError("Invalid camera_topics_labelled")
-            print(f"{cam_name} {self.camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
+                logger.error(f"Invalid camera_topics_labelled: {self.camera_topics_labelled}")
+                raise RuntimeError()
+            logger.info(f"{cam_name} {self.camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
         else:
-            raise ValueError(f"Unsupported depth pose format: {depth_pose_format}")
+            logger.error(f"Unsupported depth pose format: {depth_pose_format}")
+            raise ValueError()
 
         return K, D, h, w, self.camera_fov, self.camera_model

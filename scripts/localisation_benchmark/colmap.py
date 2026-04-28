@@ -6,12 +6,15 @@ import sys
 sys.path.append("/home/mice85/oxford-lab/labrobotica/algorithms/oxford_spires_dataset")
 
 from oxspires_tools.bash_command import run_command
-from oxspires_tools.trajectory.file_interfaces import NeRFTrajReader, TUMTrajWriter
+from oxspires_tools.trajectory.file_interfaces.nerf import NeRFTrajReader
+from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 from oxspires_tools.trajectory.json_handler import JsonHandler
+
+logger = logging.getLogger(__name__)
 
 
 def convert_to_tum(path_to_output, path_to_sec):
-    print("Convert from JSON format to TUM!!")
+    logger.info("Convert from JSON format to TUM!!")
 
     # Remove other cameras
     input_json_path = path_to_output + "transforms_colmap_scaled.json"
@@ -22,9 +25,9 @@ def convert_to_tum(path_to_output, path_to_sec):
     escaled_colmap_traj = NeRFTrajReader(path_to_output + "transforms_colmap_single.json").read_file()
     TUMTrajWriter("{}/output/colmap-tum.txt".format(path_to_sec)).write_file(escaled_colmap_traj)
 
-    print("PROCESS FINISHED!!")
-    print("Output in: {}/output/colmap-tum.txt".format(path_to_sec))
-    print("*********************************************************")
+    logger.info("PROCESS FINISHED!!")
+    logger.info("Output in: {}/output/colmap-tum.txt".format(path_to_sec))
+    logger.info("*********************************************************")
 
 
 def get_sec_list(dataset_dir, flag_is_all=True):
@@ -54,7 +57,7 @@ def get_sec_list(dataset_dir, flag_is_all=True):
 
 
 def evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, method):
-    print("RUNNING VILENS EVALUATION ...")
+    logger.info("RUNNING VILENS EVALUATION ...")
 
     output = run_command(
         "evo_ape tum {} {} --align --t_max_diff 0.01".format(path_to_gt, path_traj), print_output=False
@@ -62,7 +65,7 @@ def evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, method):
 
     rmse = -1
     for line in output.stdout:
-        print(line, end="")
+        logger.info(line.rstrip())
         if "rmse" in line:
             numbers = re.findall("\d+\.\d+|\d+", line)
             rmse = numbers[0]
@@ -70,7 +73,7 @@ def evaluation_ape_rmse(path_to_gt, path_traj, dataset_dir, method):
     logging.basicConfig(filename=dataset_dir + "results.log", filemode="a", level=logging.INFO)
     logging.info(path_to_sec)
     logging.info("APE - RMSE result ({}): {}".format(method, rmse))
-    print("RMSE added to log: {}".format(rmse))
+    logger.info("RMSE added to log: {}".format(rmse))
 
     return rmse
 
@@ -92,7 +95,7 @@ if __name__ == "__main__":
 
     list_sec = get_sec_list(dataset_dir, flag_is_all)
 
-    print("Total sequence folders: " + str(len(list_sec)))
+    logger.info("Total sequence folders: " + str(len(list_sec)))
 
     # Print list of sequences
     for sec in list_sec:
