@@ -22,6 +22,7 @@ dependencies = [
     "pytransform3d>=3.5.0",
     "opencv-python>=4.6.0.66",
     "huggingface_hub>=0.25.1,<1.0",
+    "gtsam>=4.2",
 ]
 
 [project.optional-dependencies]
