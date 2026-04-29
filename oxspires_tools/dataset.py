@@ -115,6 +115,25 @@ class OxfordSpiresDataset:
                 continue
         return timestamps
 
+    def find_raw_cloud(self, ts_ns: int, tol_ns: int = 5_000_000):
+        """Find raw lidar PCD closest to ts_ns within tol_ns."""
+        raw_lidar_dir = self.get_filepath("raw_lidar")
+        ts = TimeStamp(sec=ts_ns // 10**9, nsec=ts_ns % 10**9)
+        p = raw_lidar_dir / f"{ts.t_string}.pcd"
+        if p.exists():
+            return p
+        best, best_diff = None, tol_ns + 1
+        for f in raw_lidar_dir.glob(f"{ts.sec}.*.pcd"):
+            try:
+                f_ts = TimeStamp(t_string=f.stem)
+            except (AssertionError, ValueError):
+                continue
+            f_ns = f_ts.sec * 10**9 + f_ts.nsec
+            diff = abs(f_ns - ts_ns)
+            if diff < best_diff:
+                best, best_diff = f, diff
+        return best
+
     def check_image_lidar_sync(self, cam_id: int = 0, tolerance_sec: float = 0.0) -> bool:
         """Check if undistorted cloud timestamps are synchronized with camera images."""
         image_timestamps = self.load_camera_timestamps(cam_id)
