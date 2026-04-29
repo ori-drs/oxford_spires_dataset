@@ -1,40 +1,26 @@
 """Undistort raw LiDAR scans for a Spires sequence using GTSAM-estimated velocity/bias from GT."""
 
 import argparse
-import sys
 from pathlib import Path
 
+import evo.core.trajectory
 import numpy as np
 import open3d as o3d
 import pandas as pd
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-import evo.core.trajectory
-from estiamte_velocity_bias import (
-    ACC_BIAS_RW,
-    ACC_NOISE,
-    GYR_BIAS_RW,
-    GYR_NOISE,
-    build_factor_graph,
-    build_preint_params,
-    extract_results,
-    optimize,
-)
-from nerf_data_pipeline.dataset.oxspires_dataset import OxfordSpiresDataset
-from nerf_data_pipeline.lidar_undistortion import (
-    PoseBuffer,
-    integrate_imu,
-    make_T,
-    read_imu,
-    read_pcd_binary,
-    undistort_cloud,
-)
-
+from oxspires_tools.dataset import OxfordSpiresDataset
+from oxspires_tools.lidar_undistortion.core import PoseBuffer, integrate_imu, make_T, undistort_cloud
+from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
 from oxspires_tools.point_cloud import modify_pcd_viewpoint
-from oxspires_tools.trajectory.file_interfaces import TimeStamp, TUMTrajWriter
+from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
+from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
+
+ACC_NOISE = 0.001799
+GYR_NOISE = 0.000257
+ACC_BIAS_RW = 2.69e-4
+GYR_BIAS_RW = 1.57e-5
 
 T_BL_DEFAULT = [0.0, 0.0, 0.124, 0.0, 0.0, 1.0, 0.0]
 T_BI_DEFAULT = [-0.018, 0.006, 0.058, 0.0, 0.0, 0.707, 0.707]
@@ -138,10 +124,10 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # ── 1. Load data ──────────────────────────────────────────────────────────
-    print(f"Loading IMU: {dataset.raw_imu_path}")
-    imu_df = read_imu(dataset.raw_imu_path)
+    print(f"Loading IMU: {dataset.get_filepath('raw_imu')}")
+    imu_df = read_imu(dataset.get_filepath("raw_imu"))
 
-    print(f"Loading GT poses: {dataset.gt_tum_path}")
+    print(f"Loading GT poses: {dataset.get_filepath('gt_tum')}")
     gt_traj = dataset.load_gt_poses()
     print(f"  {gt_traj.num_poses} GT poses")
 
@@ -151,11 +137,18 @@ def main():
         gt_traj.transform(T_world_GT)
 
     if args.mode == "slam":
-        print(f"Loading SLAM poses: {dataset.slam_poses_path}")
+        print(f"Loading SLAM poses: {dataset.get_filepath('slam_poses')}")
         slam_traj = dataset.load_slam_poses()
         print(f"  {slam_traj.num_poses} SLAM keyframes")
 
     # ── 2. GTSAM batch optimization ───────────────────────────────────────────
+    from estimate_velocity_bias import (  # noqa: PLC0415
+        build_factor_graph,
+        build_preint_params,
+        extract_results,
+        optimize,
+    )
+
     print("\nRunning GTSAM batch optimization ...")
     T_BI_mat = make_T(T_BI_DEFAULT)
     preint_params = build_preint_params(args.acc_noise, args.gyr_noise)
@@ -220,11 +213,12 @@ def main():
             slam_ts_ns = slam_ts.sec * 10**9 + slam_ts.nsec
             scan_items.append((slam_ts_ns, None, slam_traj.poses_se3[i]))
     elif args.mode == "raw":
-        if not dataset.raw_lidar_dir.exists():
-            print(f"WARNING: raw lidar dir does not exist: {dataset.raw_lidar_dir}")
-        raw_paths = sorted(dataset.raw_lidar_dir.glob("*.pcd")) if dataset.raw_lidar_dir.exists() else []
+        raw_lidar_dir = dataset.get_filepath("raw_lidar")
+        if not raw_lidar_dir.exists():
+            print(f"WARNING: raw lidar dir does not exist: {raw_lidar_dir}")
+        raw_paths = sorted(raw_lidar_dir.glob("*.pcd")) if raw_lidar_dir.exists() else []
         if not raw_paths:
-            print(f"WARNING: no PCD files found in {dataset.raw_lidar_dir}")
+            print(f"WARNING: no PCD files found in {raw_lidar_dir}")
         if args.n_scans >= 0:
             raw_paths = raw_paths[: args.n_scans]
         scan_items = []
