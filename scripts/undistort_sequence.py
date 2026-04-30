@@ -22,8 +22,7 @@ GYR_NOISE = 0.000257
 ACC_BIAS_RW = 2.69e-4
 GYR_BIAS_RW = 1.57e-5
 
-T_BL_DEFAULT = [0.0, 0.0, 0.124, 0.0, 0.0, 1.0, 0.0]
-T_BI_DEFAULT = [-0.018, 0.006, 0.058, 0.0, 0.0, 0.707, 0.707]
+_DEFAULT_SENSOR_YAML = Path(__file__).parent.parent / "configs" / "sensor.yaml"
 
 
 def build_dense_trajectory(gt_states: list, imu_df: pd.DataFrame, T_BI_mat: np.ndarray):
@@ -71,8 +70,15 @@ def get_args():
     parser.add_argument("--raw_cloud_tol_ms", type=float, default=None, help="Max time diff (ms) when matching raw clouds to timestamps (default: 5)")  # fmt: skip
     parser.add_argument("--image_dir", type=Path, default=None, help="Image folder for image mode (filenames are timestamps)")  # fmt: skip
     parser.add_argument("--max_img_lidar_diff_ms", type=float, default=25.0, help="Max time diff (ms) between image and nearest LiDAR cloud in image mode (default: 25)")  # fmt: skip
+    parser.add_argument("--sensor_yaml", type=Path, default=_DEFAULT_SENSOR_YAML, help="Path to sensor.yaml for T_BI and T_BL extrinsics")  # fmt: skip
     parser.add_argument("--gt_frame_offset", type=float, nargs=7, default=[0, 0, 0, 0, 0, 0, 1], metavar=("tx", "ty", "tz", "qx", "qy", "qz", "qw"), help="Pose of GT frame origin in world frame (default: identity)")  # fmt: skip
     return parser.parse_args()
+
+
+def filter_by_range(cloud: np.ndarray, min_m: float = 1.0, max_m: float = 60.0) -> np.ndarray:
+    """Filter structured PCD array to points with Euclidean range in [min_m, max_m]."""
+    dist = np.sqrt(cloud["x"] ** 2 + cloud["y"] ** 2 + cloud["z"] ** 2)
+    return cloud[(dist >= min_m) & (dist <= max_m)]
 
 
 def undistort_one_scan(
@@ -142,17 +148,19 @@ def main():
         print(f"  {slam_traj.num_poses} SLAM keyframes")
 
     # ── 2. GTSAM batch optimization ───────────────────────────────────────────
-    from estimate_velocity_bias import (  # noqa: PLC0415
+    from oxspires_tools.lidar_undistortion.gtsam_opt import (  # noqa: PLC0415
         build_factor_graph,
         build_preint_params,
         extract_results,
+        load_sensor_transforms,
         optimize,
     )
 
+    T_BI_mat, T_BI_list, T_BL_list = load_sensor_transforms(args.sensor_yaml)
+
     print("\nRunning GTSAM batch optimization ...")
-    T_BI_mat = make_T(T_BI_DEFAULT)
     preint_params = build_preint_params(args.acc_noise, args.gyr_noise)
-    graph, values = build_factor_graph(
+    graph, values, _imu_factors = build_factor_graph(
         gt_traj,
         imu_df,
         preint_params,
@@ -160,6 +168,7 @@ def main():
         T_BI=T_BI_mat,
         acc_bias_rw=args.acc_bias_rw,
         gyr_bias_rw=args.gyr_bias_rw,
+        T_BL=T_BL_list,
     )
     print(f"  Graph: {graph.size()} factors, {values.size()} variables")
     result = optimize(graph, values)
@@ -257,7 +266,7 @@ def main():
         print(f"  Saved image-lidar pairs: {pairs_txt_path}")
     # ── 4. Undistort ──────────────────────────────────────────────────────────
     buffer_ns = int(args.imu_buffer_ms * 1e6)
-    T_BL_mat = make_T(T_BL_DEFAULT)
+    T_BL_mat = make_T(T_BL_list)
     default_tol_ms = 5.0
     raw_cloud_tol_ns = int((args.raw_cloud_tol_ms if args.raw_cloud_tol_ms is not None else default_tol_ms) * 1e6)
     errors = []
@@ -284,6 +293,7 @@ def main():
             continue
 
         raw_cloud, _ = read_pcd_binary(raw_path)
+        raw_cloud = filter_by_range(raw_cloud)
         scan_start_ns = int(raw_cloud["timestamp"].min() * 1e9)
 
         idx = np.searchsorted(gt_ts_arr, scan_start_ns, side="right") - 1
@@ -303,8 +313,8 @@ def main():
                 vel,
                 bias_acc,
                 bias_gyr,
-                T_BL_DEFAULT,
-                T_BI_DEFAULT,
+                T_BL_list,
+                T_BI_list,
                 desired_ns=scan_ts_ns,
                 buffer_ns=buffer_ns,
             )
