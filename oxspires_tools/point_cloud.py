@@ -13,6 +13,12 @@ from oxspires_tools.se3 import is_se3_matrix, xyz_quat_xyzw_to_se3_matrix
 logger = logging.getLogger(__name__)
 
 
+def filter_by_range(cloud: np.ndarray, min_m: float = 1.0, max_m: float = 60.0) -> np.ndarray:
+    """Filter structured PCD array to points with Euclidean range in [min_m, max_m]."""
+    dist = np.sqrt(cloud["x"] ** 2 + cloud["y"] ** 2 + cloud["z"] ** 2)
+    return cloud[(dist >= min_m) & (dist <= max_m)]
+
+
 def transform_3d_cloud(cloud_np, transform_matrix):
     """Apply a transformation to the point cloud."""
     # Convert points to homogeneous coordinates

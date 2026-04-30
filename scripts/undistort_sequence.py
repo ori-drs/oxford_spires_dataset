@@ -14,7 +14,7 @@ from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.lidar_undistortion.core import PoseBuffer, integrate_imu, make_T, undistort_cloud
 from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory
 from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
-from oxspires_tools.point_cloud import modify_pcd_viewpoint
+from oxspires_tools.point_cloud import filter_by_range, modify_pcd_viewpoint
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
 from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 
@@ -43,12 +43,6 @@ def get_args():
     parser.add_argument("--sensor_yaml", type=Path, default=_DEFAULT_SENSOR_YAML, help="Path to sensor.yaml for T_BI and T_BL extrinsics")  # fmt: skip
     parser.add_argument("--gt_frame_offset", type=float, nargs=7, default=[0, 0, 0, 0, 0, 0, 1], metavar=("tx", "ty", "tz", "qx", "qy", "qz", "qw"), help="Pose of GT frame origin in world frame (default: identity)")  # fmt: skip
     return parser.parse_args()
-
-
-def filter_by_range(cloud: np.ndarray, min_m: float = 1.0, max_m: float = 60.0) -> np.ndarray:
-    """Filter structured PCD array to points with Euclidean range in [min_m, max_m]."""
-    dist = np.sqrt(cloud["x"] ** 2 + cloud["y"] ** 2 + cloud["z"] ** 2)
-    return cloud[(dist >= min_m) & (dist <= max_m)]
 
 
 def undistort_one_scan(
