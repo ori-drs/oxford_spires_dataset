@@ -42,6 +42,7 @@ def get_args():
     parser.add_argument("--max_img_lidar_diff_ms", type=float, default=25.0, help="Max time diff (ms) between image and nearest LiDAR cloud in image mode (default: 25)")  # fmt: skip
     parser.add_argument("--sensor_yaml", type=Path, default=_DEFAULT_SENSOR_YAML, help="Path to sensor.yaml for T_BI and T_BL extrinsics")  # fmt: skip
     parser.add_argument("--gt_frame_offset", type=float, nargs=7, default=[0, 0, 0, 0, 0, 0, 1], metavar=("tx", "ty", "tz", "qx", "qy", "qz", "qw"), help="Pose of GT frame origin in world frame (default: identity)")  # fmt: skip
+    parser.add_argument("--undistort_method", choices=["imu", "dense"], default="dense", help="imu: per-scan IMU re-integration from nearest GT state; dense: pre-built global dense trajectory (faster)")  # fmt: skip
     return parser.parse_args()
 
 
@@ -174,6 +175,12 @@ def main():
     print(f"  Saved dense trajectory: {tum_path}")
     print(f"  EVO viz: evo_traj tum {tum_path} --plot")
 
+    if args.undistort_method == "dense":
+        T_BL_mat = make_T(T_BL_list)
+        dense_poses_WL = [T @ T_BL_mat for T in dense_poses_WB]
+        pose_buffer_WL = PoseBuffer(dense_ts, dense_poses_WL)
+        print(f"  Built global PoseBuffer with {len(dense_ts)} poses")
+
     # ── 3. Build scan list ────────────────────────────────────────────────────
     # Each item: (scan_ts_ns, raw_path_or_None, T_WB_viewpoint_or_None)
     # raw_path=None → find by timestamp match; T_WB_viewpoint=None → use dense trajectory
@@ -258,30 +265,34 @@ def main():
 
         raw_cloud, _ = read_pcd_binary(raw_path)
         raw_cloud = filter_by_range(raw_cloud)
-        scan_start_ns = int(raw_cloud["timestamp"].min() * 1e9)
 
-        idx = np.searchsorted(gt_ts_arr, scan_start_ns, side="right") - 1
-        if idx < 0:
-            errors.append(f"No GT state before scan start ts={scan_ts_ns}")
-            skipped += 1
-            pbar.update(1)
-            continue
-        gt_ts_ns_state, T_WB_gt, vel, bias_acc, bias_gyr = gt_states[idx]
+        if args.undistort_method == "imu":
+            scan_start_ns = int(raw_cloud["timestamp"].min() * 1e9)
+            idx = np.searchsorted(gt_ts_arr, scan_start_ns, side="right") - 1
+            if idx < 0:
+                errors.append(f"No GT state before scan start ts={scan_ts_ns}")
+                skipped += 1
+                pbar.update(1)
+                continue
+            gt_ts_ns_state, T_WB_gt, vel, bias_acc, bias_gyr = gt_states[idx]
 
         try:
-            corrected_xyz = undistort_one_scan(
-                raw_cloud,
-                imu_df,
-                gt_ts_ns_state,
-                T_WB_gt,
-                vel,
-                bias_acc,
-                bias_gyr,
-                T_BL_list,
-                T_BI_list,
-                desired_ns=scan_ts_ns,
-                buffer_ns=buffer_ns,
-            )
+            if args.undistort_method == "imu":
+                corrected_xyz = undistort_one_scan(
+                    raw_cloud,
+                    imu_df,
+                    gt_ts_ns_state,
+                    T_WB_gt,
+                    vel,
+                    bias_acc,
+                    bias_gyr,
+                    T_BL_list,
+                    T_BI_list,
+                    desired_ns=scan_ts_ns,
+                    buffer_ns=buffer_ns,
+                )
+            else:
+                corrected_xyz = undistort_cloud(raw_cloud, pose_buffer_WL, scan_ts_ns)
         except Exception as e:
             errors.append(f"ts={scan_ts_ns}: {e}")
             skipped += 1
