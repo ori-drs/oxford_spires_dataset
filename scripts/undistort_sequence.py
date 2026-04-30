@@ -135,7 +135,7 @@ def main():
         imu_df,
         preint_params,
         state_df=None,
-        T_BI=T_BI_mat,
+        T_base_imu=T_BI_mat,
         acc_bias_rw=args.acc_bias_rw,
         gyr_bias_rw=args.gyr_bias_rw,
         T_BL=T_BL_list,
