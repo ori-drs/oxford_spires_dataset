@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.lidar_undistortion.core import PoseBuffer, integrate_imu, make_T, undistort_cloud
+from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory
 from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
 from oxspires_tools.point_cloud import modify_pcd_viewpoint
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
@@ -23,37 +24,6 @@ ACC_BIAS_RW = 2.69e-4
 GYR_BIAS_RW = 1.57e-5
 
 _DEFAULT_SENSOR_YAML = Path(__file__).parent.parent / "configs" / "sensor.yaml"
-
-
-def build_dense_trajectory(gt_states: list, imu_df: pd.DataFrame, T_BI_mat: np.ndarray):
-    """Integrate IMU segment-by-segment between GT keyframes to produce a dense T_WB trajectory."""
-    T_IB = np.linalg.inv(T_BI_mat)
-    dense_ts = []
-    dense_poses_WB = []
-    for i in range(len(gt_states) - 1):
-        ts_ns_i, T_WB_i, vel_i, bias_acc_i, bias_gyr_i = gt_states[i]
-        ts_ns_j = gt_states[i + 1][0]
-        imu_window = imu_df[(imu_df["timestamp_ns"] >= ts_ns_i) & (imu_df["timestamp_ns"] <= ts_ns_j)].reset_index(
-            drop=True
-        )
-        if len(imu_window) < 2:
-            continue
-        timestamps_ns, poses_WI = integrate_imu(
-            imu_window,
-            initial_velocity=vel_i,
-            initial_pose_WI=T_WB_i @ T_BI_mat,
-            bias_acc=bias_acc_i,
-            bias_gyr=bias_gyr_i,
-        )
-        for t, T_WI in zip(timestamps_ns, poses_WI):
-            if dense_ts and t == dense_ts[-1]:
-                print(
-                    f"Warning: {t} in dense trajectory is exactly on a GT keyframe timestamp; skipping to avoid duplicate"
-                )
-                continue  # skip when IMU sample coincides exactly with a GT keyframe timestamp
-            dense_ts.append(t)
-            dense_poses_WB.append(T_WI @ T_IB)
-    return dense_ts, dense_poses_WB
 
 
 def get_args():
