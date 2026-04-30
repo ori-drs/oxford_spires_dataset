@@ -33,12 +33,6 @@ def get_args():
     parser.add_argument("--gyr_noise", type=float, default=GYR_NOISE)  # fmt: skip
     parser.add_argument("--acc_bias_rw", type=float, default=ACC_BIAS_RW)  # fmt: skip
     parser.add_argument("--gyr_bias_rw", type=float, default=GYR_BIAS_RW)  # fmt: skip
-    parser.add_argument("--label", type=str, default="set1", help="Label for first calibration set")  # fmt: skip
-    parser.add_argument("--acc_noise_2", type=float, default=None)  # fmt: skip
-    parser.add_argument("--gyr_noise_2", type=float, default=None)  # fmt: skip
-    parser.add_argument("--acc_bias_rw_2", type=float, default=None)  # fmt: skip
-    parser.add_argument("--gyr_bias_rw_2", type=float, default=None)  # fmt: skip
-    parser.add_argument("--label_2", type=str, default="set2", help="Label for second calibration set")  # fmt: skip
     parser.add_argument("--n_scans", type=int, default=-1, help="Process only first N scans (-1 = all)")  # fmt: skip
     parser.add_argument("--mode", choices=["slam", "raw", "image"], default="slam", help="slam: undistort SLAM keyframe clouds; raw: undistort all raw lidar clouds; image: undistort to image timestamps")  # fmt: skip
     parser.add_argument("--raw_cloud_tol_ms", type=float, default=None, help="Max time diff (ms) when matching raw clouds to timestamps (default: 5)")  # fmt: skip
@@ -74,44 +68,16 @@ def main():
         print(f"  {slam_traj.num_poses} SLAM keyframes")
 
     # ── 2. GTSAM batch optimization ───────────────────────────────────────────
-    from oxspires_tools.lidar_undistortion.core import analyze_bias_random_walk  # noqa: PLC0415
-    from oxspires_tools.lidar_undistortion.gtsam_opt import (  # noqa: PLC0415
-        analyze_imu_chi2,
-        load_sensor_transforms,
-        print_calib_comparison,
-        run_optimization,
-    )
+    from oxspires_tools.lidar_undistortion.gtsam_opt import load_sensor_transforms, run_optimization  # noqa: PLC0415
 
     T_BI_mat, _T_BI_list, T_BL_list = load_sensor_transforms(args.sensor_yaml)
 
-    print(f"\nRunning GTSAM batch optimization ({args.label}) ...")
-    graph, result, result_df, imu_factors = run_optimization(
+    print("\nRunning GTSAM batch optimization ...")
+    _graph, _result, result_df, _imu_factors = run_optimization(
         gt_traj, imu_df, args.acc_noise, args.gyr_noise, args.acc_bias_rw, args.gyr_bias_rw, None, T_BI_mat, T_BL_list
     )
     print(f"  Optimization done. Sample bias_acc: {result_df[['ba_x', 'ba_y', 'ba_z']].mean().values}")
     print(f"  Sample bias_gyr: {result_df[['bg_x', 'bg_y', 'bg_z']].mean().values}")
-
-    has_second = all(v is not None for v in [args.acc_noise_2, args.gyr_noise_2, args.acc_bias_rw_2, args.gyr_bias_rw_2])  # fmt: skip
-    if has_second:
-        print(f"\nRunning GTSAM batch optimization ({args.label_2}) ...")
-        graph2, result2, result_df2, imu_factors2 = run_optimization(
-            gt_traj,
-            imu_df,
-            args.acc_noise_2,
-            args.gyr_noise_2,
-            args.acc_bias_rw_2,
-            args.gyr_bias_rw_2,
-            None,
-            T_BI_mat,
-            T_BL_list,
-        )
-        params_a = {"acc_noise": args.acc_noise, "gyr_noise": args.gyr_noise, "acc_bias_rw": args.acc_bias_rw, "gyr_bias_rw": args.gyr_bias_rw}  # fmt: skip
-        params_b = {"acc_noise": args.acc_noise_2, "gyr_noise": args.gyr_noise_2, "acc_bias_rw": args.acc_bias_rw_2, "gyr_bias_rw": args.gyr_bias_rw_2}  # fmt: skip
-        chi2_a = analyze_imu_chi2(imu_factors, result)
-        chi2_b = analyze_imu_chi2(imu_factors2, result2)
-        rw_a = analyze_bias_random_walk(result_df, args.acc_bias_rw, args.gyr_bias_rw)
-        rw_b = analyze_bias_random_walk(result_df2, args.acc_bias_rw_2, args.gyr_bias_rw_2)
-        print_calib_comparison(args.label, args.label_2, params_a, params_b, chi2_a, chi2_b, rw_a, rw_b)
 
     gt_states = []
     for i in range(gt_traj.num_poses):
