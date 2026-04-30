@@ -13,7 +13,7 @@ from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.lidar_undistortion.core import PoseBuffer, make_T, undistort_cloud
 from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory
 from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
-from oxspires_tools.point_cloud import modify_pcd_viewpoint
+from oxspires_tools.point_cloud import filter_by_range, modify_pcd_viewpoint
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
 from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 
@@ -197,6 +197,7 @@ def main():
 
         try:
             raw_cloud, _ = read_pcd_binary(raw_path)
+            raw_cloud = filter_by_range(raw_cloud)
             corrected_xyz = undistort_cloud(raw_cloud, pose_buffer_WL, scan_ts_ns)
         except Exception as e:
             errors.append(f"ts={scan_ts_ns}: {e}")
