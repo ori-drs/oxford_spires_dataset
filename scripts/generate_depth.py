@@ -22,6 +22,7 @@ def get_args():
     parser.add_argument("--cam_dirs", type=str, nargs="+", required=True)
     parser.add_argument("--clouds_path", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--config", type=str, default=None)  # fmt: skip
     parser.add_argument("--max_time_diff", type=float, default=None)
     parser.add_argument("--euclidean", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--depth_factor", type=float, default=256.0)
@@ -31,7 +32,7 @@ def get_args():
     return parser.parse_args()
 
 
-def process_cloud_to_depth(pair, *, T_cam_base, K, D, w, h, fov_deg, depth_factor, euclidean, skip_hpr, output_depth_dir, output_normal_dir, overlay_dir, cam_dir_name):  # fmt: skip
+def process_cloud_to_depth(pair, *, T_cam_base, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr, output_depth_dir, output_normal_dir, overlay_dir, cam_dir_name):  # fmt: skip
     """Process a single image-pcd pair."""
     image_path, pcd_path, _ = pair
     pcd = o3d.io.read_point_cloud(str(pcd_path))
@@ -39,7 +40,7 @@ def process_cloud_to_depth(pair, *, T_cam_base, K, D, w, h, fov_deg, depth_facto
         logger.warning(f"Skipping {pcd_path}: {'failed to read' if pcd is None else 'empty'}")
         return
     pcd.transform(T_cam_base)
-    depth, normal = get_depth_from_cloud(pcd, K, D, w, h, fov_deg, "OPENCV_FISHEYE", depth_factor, euclidean, skip_hpr)
+    depth, normal = get_depth_from_cloud(pcd, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr)
     save_projection_outputs(
         depth,
         normal,
@@ -54,7 +55,8 @@ if __name__ == "__main__":
     setup_logging()
     args = get_args()
 
-    config_yaml_path = Path(__file__).parent.parent / "configs" / "sensor.yaml"
+    default_config = Path(__file__).parent.parent / "configs" / "sensor.yaml"
+    config_yaml_path = Path(args.config) if args.config else default_config
     with open(config_yaml_path, "r") as f:
         yaml_data = yaml.safe_load(f)
     sensor = Sensor(**yaml_data["sensor"])
@@ -74,8 +76,8 @@ if __name__ == "__main__":
     for cam_name, cam_dir in zip(cam_names, args.cam_dirs):
         cam_dir = Path(cam_dir)
         logger.info(f"Processing {cam_name} ({cam_dir}) ...")
-        K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, "vilens_slam", None)
-        logger.info(f"Fov: {fov_deg}")
+        K, D, h, w, fov_deg, camera_model = sensor.get_params_for_depth(cam_name, "vilens_slam", None)
+        logger.info(f"Fov: {fov_deg}, camera_model: {camera_model}")
         T_cam_base = sensor.tf.get_transform("base", cam_name)
         image_pcd_pairs = list(get_image_pcd_sync_pair(cam_dir, Path(args.clouds_path), ".jpg", max_time_diff))
 
@@ -87,6 +89,7 @@ if __name__ == "__main__":
             w=w,
             h=h,
             fov_deg=fov_deg,
+            camera_model=camera_model,
             depth_factor=args.depth_factor,
             euclidean=args.euclidean,
             skip_hpr=args.skip_hpr,
