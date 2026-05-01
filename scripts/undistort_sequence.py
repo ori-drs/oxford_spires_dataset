@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.lidar_undistortion.core import PoseBuffer, integrate_imu, make_T, undistort_cloud
-from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory
+from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory, build_gt_anchored_trajectory
 from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
 from oxspires_tools.point_cloud import filter_by_range, modify_pcd_viewpoint
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
@@ -42,7 +42,7 @@ def get_args():
     parser.add_argument("--max_img_lidar_diff_ms", type=float, default=25.0, help="Max time diff (ms) between image and nearest LiDAR cloud in image mode (default: 25)")  # fmt: skip
     parser.add_argument("--sensor_yaml", type=Path, default=_DEFAULT_SENSOR_YAML, help="Path to sensor.yaml for T_BI and T_BL extrinsics")  # fmt: skip
     parser.add_argument("--gt_frame_offset", type=float, nargs=7, default=[0, 0, 0, 0, 0, 0, 1], metavar=("tx", "ty", "tz", "qx", "qy", "qz", "qw"), help="Pose of GT frame origin in world frame (default: identity)")  # fmt: skip
-    parser.add_argument("--undistort_method", choices=["imu", "dense"], default="dense", help="imu: per-scan IMU re-integration from nearest GT state; dense: pre-built global dense trajectory (faster)")  # fmt: skip
+    parser.add_argument("--undistort_method", choices=["imu", "dense", "gt_anchored"], default="dense", help="imu: per-scan IMU re-integration; dense: global IMU-integrated trajectory; gt_anchored: IMU-shaped trajectory re-anchored to each GT pose")  # fmt: skip
     return parser.parse_args()
 
 
@@ -163,19 +163,25 @@ def main():
     result_df.to_csv(bias_csv_path, index=False)
     print(f"  Saved bias/velocity CSV: {bias_csv_path}")
 
-    dense_ts, dense_poses_WB = build_dense_trajectory(gt_states, imu_df, T_BI_mat)
+    if args.undistort_method == "gt_anchored":
+        dense_ts, dense_poses_WB = build_gt_anchored_trajectory(gt_states, imu_df, T_BI_mat)
+        tum_name = "gt_anchored_trajectory_tum.txt"
+        print("  Built GT-anchored dense trajectory")
+    else:
+        dense_ts, dense_poses_WB = build_dense_trajectory(gt_states, imu_df, T_BI_mat)
+        tum_name = "dense_trajectory_tum.txt"
     dense_ts_arr = np.array(dense_ts, dtype=np.int64)
     positions = np.array([T[:3, 3] for T in dense_poses_WB])
     q_xyzw = Rotation.from_matrix(np.stack([T[:3, :3] for T in dense_poses_WB])).as_quat()
     q_wxyz = q_xyzw[:, [3, 0, 1, 2]]
     timestamps_float128 = np.array([TimeStamp(sec=int(t // 10**9), nsec=int(t % 10**9)).t_float128 for t in dense_ts])
     dense_traj = evo.core.trajectory.PoseTrajectory3D(positions, q_wxyz, timestamps=timestamps_float128)
-    tum_path = output_dir / "dense_trajectory_tum.txt"
+    tum_path = output_dir / tum_name
     TUMTrajWriter(str(tum_path)).write_file(dense_traj)
     print(f"  Saved dense trajectory: {tum_path}")
     print(f"  EVO viz: evo_traj tum {tum_path} --plot")
 
-    if args.undistort_method == "dense":
+    if args.undistort_method in ("dense", "gt_anchored"):
         T_BL_mat = make_T(T_BL_list)
         dense_poses_WL = [T @ T_BL_mat for T in dense_poses_WB]
         pose_buffer_WL = PoseBuffer(dense_ts, dense_poses_WL)
