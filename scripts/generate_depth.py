@@ -24,6 +24,7 @@ def get_args():
     parser.add_argument("--euclidean", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--depth_factor", type=float, default=256.0)
     parser.add_argument("--accum_number", type=int, default=0)
+    parser.add_argument("--skip_hpr", action="store_true", default=False)  # fmt: skip
     return parser.parse_args()
 
 
@@ -63,7 +64,7 @@ if __name__ == "__main__":
                 continue
             pcd.transform(T_cam_base)
             depth, normal = get_depth_from_cloud(
-                pcd, K, D, w, h, fov_deg, "OPENCV_FISHEYE", args.depth_factor, args.euclidean
+                pcd, K, D, w, h, fov_deg, "OPENCV_FISHEYE", args.depth_factor, args.euclidean, args.skip_hpr
             )
             save_projection_outputs(
                 depth,
