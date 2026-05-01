@@ -69,11 +69,14 @@ def save_projection_outputs(
     camera_image = cv2.imread(Path(image_path).as_posix()) if image_path else None
 
     if save_depth_path:
+        Path(save_depth_path).parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(save_depth_path), depthmap)
     if save_normal_path and normalmap is not None:
+        Path(save_normal_path).parent.mkdir(parents=True, exist_ok=True)
         normalmap = cv2.cvtColor(normalmap, cv2.COLOR_RGB2BGR)
         cv2.imwrite(str(save_normal_path), normalmap)
     if save_overlay_path:
         assert camera_image is not None
+        Path(save_overlay_path).parent.mkdir(parents=True, exist_ok=True)
         overlay = get_overlay(camera_image, depthmap)
         cv2.imwrite(str(save_overlay_path), overlay)

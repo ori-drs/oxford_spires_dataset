@@ -51,8 +51,12 @@ BUILD_CPP=1 pip install .
 <img src="docs/overlay.png" height="300" />
 
 The following scripts download synchronised images and lidar from a sequence in HuggingFace, and generates depth image, lidar overlaid on camera and surface normal images.
-```
-python scripts/generate_depth.py
+```bash
+python scripts/dataset_download.py --patterns "sequences/2024-03-18-christ-church-01/processed/colmap/images.zip" "sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds.zip"
+python scripts/generate_depth.py \
+  --image_folder_path data/sequences/2024-03-18-christ-church-01/processed/colmap \
+  --clouds_path data/sequences/2024-03-18-christ-church-01/processed/vilens-slam/undist-clouds \
+  --output_dir outputs/sequences/2024-03-18-christ-church-01/
 ```
 
 ## Localisation Benchmark
