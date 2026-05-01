@@ -207,11 +207,13 @@ def get_image_pcd_sync_pair(
         image_timestamps.append(timestamp)
         image_paths[timestamp] = it
     assert len(image_paths) > 0, f"No images are found in {image_dir}"
-    logger.info(f"Loaded {len(image_paths)} images")
+    pcd_paths = sorted(list(Path(pcd_dir).glob("*pcd")))
+    assert len(pcd_paths) > 0, f"No PCD files are found in {pcd_dir}"
+    logger.info(f"Loaded {len(image_paths)} images, {len(pcd_paths)} PCD files")
 
     # Collect all image and lidar pair which have timestamp close enough
     image_pcd_pairs = []
-    for it in sorted(list(Path(pcd_dir).glob("*pcd"))):
+    for it in pcd_paths:
         ret = re.findall(r"\d+", it.name)
         timestamp = float(".".join(ret))
         image_timestamp, diff, _ = find_closest_in_sorted(image_timestamps, timestamp)
