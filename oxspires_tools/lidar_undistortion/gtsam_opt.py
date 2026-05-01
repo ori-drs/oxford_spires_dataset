@@ -6,6 +6,7 @@ import gtsam
 import numpy as np
 import pandas as pd
 import yaml
+from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 
 from oxspires_tools.lidar_undistortion.core import derive_initial_state, integrate_imu
@@ -360,4 +361,74 @@ def build_dense_trajectory(gt_states: list, imu_df: pd.DataFrame, T_BI_mat: np.n
                 continue
             dense_ts.append(t)
             dense_poses_WB.append(T_WI @ T_IB)
+    return dense_ts, dense_poses_WB
+
+
+def _interpolate_left_correction(T_correction: np.ndarray, alpha: float) -> np.ndarray:
+    """Interpolate a world-frame correction transform from identity to T_correction."""
+    T_alpha = np.eye(4)
+    rotvec = Rotation.from_matrix(T_correction[:3, :3]).as_rotvec()
+    T_alpha[:3, :3] = Rotation.from_rotvec(alpha * rotvec).as_matrix()
+    T_alpha[:3, 3] = alpha * T_correction[:3, 3]
+    return T_alpha
+
+
+def build_gt_anchored_trajectory(gt_states: list, imu_df: pd.DataFrame, T_BI_mat: np.ndarray):
+    """Build dense T_WB poses with every IMU segment corrected to the next GT keyframe.
+
+    IMU integration provides the high-rate motion shape within each GT interval. The
+    endpoint error of that integrated segment is then distributed across the interval,
+    so every segment starts at GT_i and ends exactly at GT_{i+1}.
+    """
+    T_IB = np.linalg.inv(T_BI_mat)
+    dense_ts = []
+    dense_poses_WB = []
+
+    for i in range(len(gt_states) - 1):
+        ts_ns_i, T_WB_i, vel_i, bias_acc_i, bias_gyr_i = gt_states[i]
+        ts_ns_j, T_WB_j = gt_states[i + 1][0], gt_states[i + 1][1]
+        dt_ns = ts_ns_j - ts_ns_i
+        if dt_ns <= 0:
+            continue
+
+        imu_window = imu_df[(imu_df["timestamp_ns"] >= ts_ns_i) & (imu_df["timestamp_ns"] <= ts_ns_j)].reset_index(
+            drop=True
+        )
+
+        internal_ts = []
+        internal_raw_poses_WB = []
+        raw_endpoint_WB = T_WB_i
+        if len(imu_window) >= 2:
+            timestamps_ns, poses_WI = integrate_imu(
+                imu_window,
+                initial_velocity=vel_i,
+                initial_pose_WI=T_WB_i @ T_BI_mat,
+                bias_acc=bias_acc_i,
+                bias_gyr=bias_gyr_i,
+            )
+            raw_poses_WB = [T_WI @ T_IB for T_WI in poses_WI]
+            if raw_poses_WB:
+                raw_endpoint_WB = raw_poses_WB[-1]
+            for t, T_raw_WB in zip(timestamps_ns, raw_poses_WB):
+                if ts_ns_i < t < ts_ns_j:
+                    internal_ts.append(t)
+                    internal_raw_poses_WB.append(T_raw_WB)
+
+        T_endpoint_correction = T_WB_j @ np.linalg.inv(raw_endpoint_WB)
+        segment_ts = [ts_ns_i] + internal_ts + [ts_ns_j]
+        segment_raw_poses = [T_WB_i] + internal_raw_poses_WB + [raw_endpoint_WB]
+
+        for t, T_raw_WB in zip(segment_ts, segment_raw_poses):
+            if dense_ts and t <= dense_ts[-1]:
+                continue
+            alpha = (t - ts_ns_i) / dt_ns
+            if t == ts_ns_i:
+                T_WB = T_WB_i
+            elif t == ts_ns_j:
+                T_WB = T_WB_j
+            else:
+                T_WB = _interpolate_left_correction(T_endpoint_correction, alpha) @ T_raw_WB
+            dense_ts.append(t)
+            dense_poses_WB.append(T_WB)
+
     return dense_ts, dense_poses_WB
