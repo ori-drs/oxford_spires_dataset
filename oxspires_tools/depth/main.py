@@ -23,9 +23,14 @@ def get_depth_from_cloud(
     depth_factor: float = 256.0,  # depth encoding factor: (depth*depth_encode_factor).astype(np.uint16)"
     is_euclidean: bool = False,  # True: L2 distance between points and camera, False: z_value
     compute_cloud_mask=False,
+    skip_hpr: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
     # 1. Hidden Point Removal
-    visible_pcd, hpr_mask = apply_hidden_point_removal(point_cloud)
+    if skip_hpr:
+        visible_pcd = point_cloud
+        hpr_mask = np.arange(len(point_cloud.points))
+    else:
+        visible_pcd, hpr_mask = apply_hidden_point_removal(point_cloud)
     visible_cloud_np = np.asarray(visible_pcd.points)
     normals_np = np.asarray(visible_pcd.normals)
     # 2. FOV filtering
