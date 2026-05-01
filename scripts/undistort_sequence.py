@@ -38,7 +38,7 @@ def get_args():
     parser.add_argument("--n_scans", type=int, default=-1, help="Process only first N scans (-1 = all)")  # fmt: skip
     parser.add_argument("--mode", choices=["slam", "raw", "image"], default="slam", help="slam: undistort SLAM keyframe clouds; raw: undistort all raw lidar clouds; image: undistort to image timestamps")  # fmt: skip
     parser.add_argument("--raw_cloud_tol_ms", type=float, default=None, help="Max time diff (ms) when matching raw clouds to timestamps (default: 5)")  # fmt: skip
-    parser.add_argument("--image_dir", type=Path, default=None, help="Image folder for image mode (filenames are timestamps)")  # fmt: skip
+    parser.add_argument("--image_dirs", type=Path, nargs="+", default=None, help="Image folders for image mode (filenames are timestamps); union of timestamps across all dirs is used")  # fmt: skip
     parser.add_argument("--max_img_lidar_diff_ms", type=float, default=25.0, help="Max time diff (ms) between image and nearest LiDAR cloud in image mode (default: 25)")  # fmt: skip
     parser.add_argument("--sensor_yaml", type=Path, default=_DEFAULT_SENSOR_YAML, help="Path to sensor.yaml for T_BI and T_BL extrinsics")  # fmt: skip
     parser.add_argument("--gt_frame_offset", type=float, nargs=7, default=[0, 0, 0, 0, 0, 0, 1], metavar=("tx", "ty", "tz", "qx", "qy", "qz", "qw"), help="Pose of GT frame origin in world frame (default: identity)")  # fmt: skip
@@ -215,29 +215,35 @@ def main():
             except (AssertionError, ValueError):
                 continue
     elif args.mode == "image":
-        if args.image_dir is None:
-            raise ValueError("--image_dir is required for image mode")
+        if args.image_dirs is None:
+            raise ValueError("--image_dirs is required for image mode")
         img_tol_ns = int(args.max_img_lidar_diff_ms * 1e6)
-        img_paths = sorted(args.image_dir.glob("*.jpg")) + sorted(args.image_dir.glob("*.png"))
-        img_paths = sorted(img_paths, key=lambda p: p.stem)
+        # Collect unique timestamps across all image directories
+        ts_to_img: dict[int, Path] = {}
+        for image_dir in args.image_dirs:
+            all_imgs = sorted(image_dir.glob("*.jpg")) + sorted(image_dir.glob("*.png"))
+            for img_path in sorted(all_imgs, key=lambda p: p.stem):
+                try:
+                    ts = TimeStamp(t_string=img_path.stem)
+                    img_ts_ns = ts.sec * 10**9 + ts.nsec
+                except (AssertionError, ValueError):
+                    continue
+                if img_ts_ns not in ts_to_img:
+                    ts_to_img[img_ts_ns] = img_path
+        all_img_ts = sorted(ts_to_img)
         if args.n_scans >= 0:
-            img_paths = img_paths[: args.n_scans]
+            all_img_ts = all_img_ts[: args.n_scans]
         scan_items = []
         img_lidar_pairs = []
         skipped_img = 0
-        for img_path in img_paths:
-            try:
-                ts = TimeStamp(t_string=img_path.stem)
-                img_ts_ns = ts.sec * 10**9 + ts.nsec
-            except (AssertionError, ValueError):
-                continue
+        for img_ts_ns in all_img_ts:
             raw_path = dataset.find_raw_cloud(img_ts_ns, tol_ns=img_tol_ns)
             if raw_path is None:
                 skipped_img += 1
                 continue
             scan_items.append((img_ts_ns, raw_path, None))
-            img_lidar_pairs.append((img_path, raw_path))
-        print(f"  Image mode: {len(scan_items)} matched, {skipped_img} skipped (no LiDAR within {args.max_img_lidar_diff_ms} ms)")  # fmt: skip
+            img_lidar_pairs.append((ts_to_img[img_ts_ns], raw_path))
+        print(f"  Image mode: {len(args.image_dirs)} dirs, {len(ts_to_img)} unique timestamps, {len(scan_items)} matched, {skipped_img} skipped (no LiDAR within {args.max_img_lidar_diff_ms} ms)")  # fmt: skip
         pairs_txt_path = output_dir / "image_lidar_pairs.txt"
         pairs_txt_path.write_text("\n".join(f"{img.name}    {pcd.name}" for img, pcd in img_lidar_pairs))
         print(f"  Saved image-lidar pairs: {pairs_txt_path}")
