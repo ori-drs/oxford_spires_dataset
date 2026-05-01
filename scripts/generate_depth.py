@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def get_args():
     parser = argparse.ArgumentParser(description="Generate depth maps from LiDAR point clouds")
-    parser.add_argument("--image_folder_path", type=str, required=True)
+    parser.add_argument("--cam_dirs", type=str, nargs="+", required=True)
     parser.add_argument("--clouds_path", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--max_time_diff", type=float, default=None)
@@ -45,13 +45,16 @@ if __name__ == "__main__":
     for d in (output_depth_dir, output_normal_dir, overlay_dir):
         shutil.rmtree(d, ignore_errors=True)
 
+    cam_names = list(sensor.camera_topics_labelled.keys())
+    assert len(args.cam_dirs) == len(cam_names), f"Expected exactly {len(cam_names)} cam_dirs, got {len(args.cam_dirs)}"
     logger.info("Depth is euclidean: L2 distance between points and camera" if args.euclidean else "Depth is z-value")
-    for cam_name, subdir in sensor.camera_topics_labelled.items():
-        logger.info(f"Processing {cam_name} in {subdir} ...")
+    for cam_name, cam_dir in zip(cam_names, args.cam_dirs):
+        cam_dir = Path(cam_dir)
+        logger.info(f"Processing {cam_name} ({cam_dir}) ...")
         K, D, h, w, fov_deg, _ = sensor.get_params_for_depth(cam_name, "vilens_slam", None)
         logger.info(f"Fov: {fov_deg}")
         T_cam_base = sensor.tf.get_transform("base", cam_name)
-        image_pcd_pairs = get_image_pcd_sync_pair(Path(args.image_folder_path) / subdir, Path(args.clouds_path), ".jpg", max_time_diff)  # fmt: skip
+        image_pcd_pairs = get_image_pcd_sync_pair(cam_dir, Path(args.clouds_path), ".jpg", max_time_diff)  # fmt: skip
 
         for image_path, pcd_path, _ in tqdm(image_pcd_pairs):
             pcd = o3d.io.read_point_cloud(str(pcd_path))
@@ -66,7 +69,7 @@ if __name__ == "__main__":
                 depth,
                 normal,
                 image_path,
-                save_depth_path=output_depth_dir / subdir / (image_path.stem + ".png"),
-                save_normal_path=output_normal_dir / subdir / (image_path.stem + ".png"),
-                save_overlay_path=overlay_dir / subdir / (image_path.stem + ".jpg"),
+                save_depth_path=output_depth_dir / cam_dir.name / (image_path.stem + ".png"),
+                save_normal_path=output_normal_dir / cam_dir.name / (image_path.stem + ".png"),
+                save_overlay_path=overlay_dir / cam_dir.name / (image_path.stem + ".jpg"),
             )
