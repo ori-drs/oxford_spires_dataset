@@ -25,6 +25,12 @@ tasks:
     cmds:
       - "python scripts/dataset_download.py {{.CLI_ARGS}}"
 
+
+  eval_cloud:
+    desc: "Evaluate a single cloud against GT -- INPUT_CLOUD=... GT_CLOUD=... OUTPUT_JSON=..."
+    cmds:
+      - python scripts/eval_cloud.py --input_cloud {{.INPUT_CLOUD}} --gt_cloud {{.GT_CLOUD}} --output_json {{.OUTPUT_JSON}} {{.CLI_ARGS}}
+
   generate_depth:
     desc: Generate depth maps -- e.g. task generate_depth -- --sequence_dir data/sequences/2024-03-18-christ-church-01
     cmds:
