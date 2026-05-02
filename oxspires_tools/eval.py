@@ -1,3 +1,4 @@
+import csv
 import logging
 from pathlib import Path
 
@@ -10,31 +11,79 @@ from scipy.spatial import cKDTree as KDTree
 logger = logging.getLogger(__name__)
 
 
-def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray):
+def compute_p2p_distance(query_cloud: np.ndarray, reference_cloud: np.ndarray, max_distance=np.inf):
     ref_kd_tree = KDTree(reference_cloud)
-    distances, _ = ref_kd_tree.query(query_cloud, workers=-1)
+    distances, _ = ref_kd_tree.query(query_cloud, workers=-1, distance_upper_bound=max_distance)
     return distances
 
 
-def get_recon_metrics(
+def get_threshold_ratio(error_array, threshold):
+    assert isinstance(error_array, np.ndarray)
+    assert error_array.ndim == 1
+    assert error_array.shape[0] > 0
+    assert isinstance(threshold, (int, float))
+    assert threshold > 0
+
+    return np.sum(error_array < threshold) / len(error_array)
+
+
+def compute_f1_score(precision: float, recall: float):
+    assert precision >= 0 and precision <= 1
+    assert recall >= 0 and recall <= 1
+    if precision + recall == 0:
+        return 0
+    f1_score = 2 * (precision * recall) / (precision + recall)
+    return f1_score
+
+
+def get_distances(
     input_cloud: np.ndarray,
     gt_cloud: np.ndarray,
-    precision_threshold=0.05,
-    recall_threshold=0.05,
+    compute_precision=True,
+    compute_recall=True,
+    max_distance=np.inf,
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
-    logger.debug(f"Computing Accuracy and Precision ({precision_threshold}) ...")
-    distances = compute_p2p_distance(input_cloud, gt_cloud)
-    accuracy = np.mean(distances)
-    precision = np.sum(distances < precision_threshold) / len(distances)
+    if input_cloud.shape[0] == 0:
+        logger.warning("Input cloud is empty")
+        return None
+    if gt_cloud.shape[0] == 0:
+        logger.warning("GT cloud is empty")
+        return None
+    distance_precision = None
+    distance_recall = None
+    if compute_precision:
+        distance_precision = compute_p2p_distance(input_cloud, gt_cloud, max_distance=max_distance)
+    if compute_recall:
+        distance_recall = compute_p2p_distance(gt_cloud, input_cloud, max_distance=max_distance)
+    return distance_precision, distance_recall
 
-    logger.debug(f"Computing Completeness and Recall ({recall_threshold}) ...")
-    distances = compute_p2p_distance(gt_cloud, input_cloud)
-    completeness = np.mean(distances)
-    recall = np.sum(distances < recall_threshold) / len(distances)
-    f1_score = 2 * (precision * recall) / (precision + recall)
 
+def get_recon_metrics_from_dist(
+    distances_acc: np.ndarray,
+    distances_cmpl: np.ndarray,
+    precision_threshold=0.05,
+    recall_threshold=0.05,
+):
+    accuracy, precision, completeness, recall, f1_score = None, None, None, None, None
+    if distances_acc is not None:
+        assert isinstance(distances_acc, np.ndarray)
+        assert distances_acc.ndim == 1
+        assert distances_acc.shape[0] > 0
+        # assert distances_acc >= 0
+        assert np.all(distances_acc >= 0)
+        accuracy = np.mean(distances_acc)
+        precision = get_threshold_ratio(distances_acc, precision_threshold)
+    if distances_cmpl is not None:
+        assert isinstance(distances_cmpl, np.ndarray)
+        assert distances_cmpl.ndim == 1
+        assert distances_cmpl.shape[0] > 0
+        assert np.all(distances_cmpl >= 0)
+        completeness = np.mean(distances_cmpl)
+        recall = get_threshold_ratio(distances_cmpl, recall_threshold)
+    if distances_acc is not None and distances_cmpl is not None:
+        f1_score = compute_f1_score(precision, recall)
     results = {
         "accuracy": accuracy,
         "precision": precision,
@@ -45,58 +94,95 @@ def get_recon_metrics(
     return results
 
 
-def get_recon_metrics_multi_thresholds(
-    input_cloud: np.ndarray, gt_cloud: np.ndarray, thresholds: list = [0.02, 0.05, 0.1], max_distance=9999.0
+def get_recon_metrics(
+    input_cloud: np.ndarray,
+    gt_cloud: np.ndarray,
+    precision_threshold=0.05,
+    recall_threshold=0.05,
+    compute_precision=True,
+    compute_recall=True,
+    save_error_cloud_dir=None,
+    csv_path=None,
+    max_distance=np.inf,
 ):
     assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
-    results = []
+    if input_cloud.shape[0] == 0:
+        logger.warning("Input cloud is empty")
+        return None
 
-    logger.debug("Computing Accuracy and Precision ...")
-    input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
-    input_to_gt_dist = input_to_gt_dist[input_to_gt_dist <= max_distance]
-    accuracy = np.mean(input_to_gt_dist)
+    distance_precision, distance_recall = get_distances(
+        input_cloud,
+        gt_cloud,
+        compute_precision=compute_precision,
+        compute_recall=compute_recall,
+        max_distance=max_distance,
+    )
+    results = get_recon_metrics_from_dist(
+        distances_acc=distance_precision,
+        distances_cmpl=distance_recall,
+        precision_threshold=precision_threshold,
+        recall_threshold=recall_threshold,
+    )
 
-    logger.debug("Computing Completeness and Recall ...")
-    gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
-    gt_to_input_dist = gt_to_input_dist[gt_to_input_dist <= max_distance]
-    completeness = np.mean(gt_to_input_dist)
+    if save_error_cloud_dir:
+        if compute_precision:
+            save_error_cloud(
+                input_cloud,
+                Path(save_error_cloud_dir) / "input_error_cloud.ply",
+                distances=distance_precision,
+                max_distance=max_distance,
+            )
+        # if compute_recall:
+        #     save_error_cloud(gt_cloud, Path(save_error_cloud_dir) / f"gt_error_cloud.ply", distance_recall, max_distance)
+    if csv_path:
+        if Path(csv_path).exists():
+            Path(csv_path).unlink()
+        dict_to_csv({**results}, csv_path)
 
-    logger.info(f"Accuracy: {accuracy:.4f}, Completeness: {completeness:.4f}")
-    results.append({"accuracy": accuracy, "completeness": completeness})
-    for threshold in thresholds:
-        precision = np.sum(input_to_gt_dist < threshold) / len(input_to_gt_dist)
-        recall = np.sum(gt_to_input_dist < threshold) / len(gt_to_input_dist)
-        f1_score = 2 * (precision * recall) / (precision + recall)
-        results.append(
-            {
-                "threshold": threshold,
-                "precision": precision,
-                "recall": recall,
-                "f1_score": f1_score,
-            }
-        )
-        logger.info(f"threshold {threshold} m, precision: {precision:.4f}, recall: {recall:.4f}, f1: {f1_score:.4f}")
     return results
 
 
-def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_path, cmap="bgyr", max_distance=2.0):
-    def get_BGYR_colourmap():
-        colours = [
-            (0, 0, 255),  # Blue
-            (0, 255, 0),  # Green (as specified)
-            (255, 255, 0),  # Yellow (as specified)
-            (255, 0, 0),  # Red
-        ]
-        colours = [(r / 255, g / 255, b / 255) for r, g, b in colours]
+def dict_to_csv(dict_data, filename):
+    with open(filename, "a", newline="") as output_file:
+        dict_writer = csv.writer(output_file)
+        dict_writer.writerow(dict_data.keys())
+        dict_writer.writerow(dict_data.values())
 
-        # Create the custom colormap
-        n_bins = 100  # Number of color segments
-        cmap = LinearSegmentedColormap.from_list("custom_cmap", colours, N=n_bins)
-        return cmap
 
-    distances = compute_p2p_distance(input_cloud, reference_cloud)
-    input_cloud = input_cloud[distances <= max_distance]
+def get_BGYR_colourmap():
+    colours = [
+        (0, 0, 255),  # Blue
+        (0, 255, 0),  # Green (as specified)
+        (255, 255, 0),  # Yellow (as specified)
+        (255, 0, 0),  # Red
+    ]
+    colours = [(r / 255, g / 255, b / 255) for r, g, b in colours]
+
+    # Create the custom colormap
+    n_bins = 100  # Number of color segments
+    cmap = LinearSegmentedColormap.from_list("custom_cmap", colours, N=n_bins)
+    return cmap
+
+
+def save_error_cloud(
+    input_cloud_np: np.ndarray,
+    save_path,
+    reference_cloud_np: np.ndarray = None,
+    distances=None,
+    cmap="bgyr",
+    max_distance=np.inf,
+):
+    assert isinstance(input_cloud_np, np.ndarray)
+    assert (isinstance(distances, np.ndarray) and input_cloud_np.shape[0] == distances.shape[0]) or isinstance(
+        reference_cloud_np, np.ndarray
+    )
+    if input_cloud_np.shape[0] == 0:
+        logger.warning("Input cloud is empty")
+        return
+    if distances is None:
+        distances = compute_p2p_distance(input_cloud_np, reference_cloud_np)
+    input_cloud_np = input_cloud_np[distances <= max_distance]
     distances = distances[distances <= max_distance]
     distances = np.clip(distances, 0, 1)
     if cmap == "bgyr":
@@ -106,10 +192,10 @@ def save_error_cloud(input_cloud: np.ndarray, reference_cloud: np.ndarray, save_
         distances_cmap = plt.get_cmap(cmap)(distances / np.max(distances))
 
     test_cloud = o3d.geometry.PointCloud()
-    test_cloud.points = o3d.utility.Vector3dVector(input_cloud)
+    test_cloud.points = o3d.utility.Vector3dVector(input_cloud_np)
     test_cloud.colors = o3d.utility.Vector3dVector(distances_cmap[:, :3])
-    o3d.io.write_point_cloud(save_path, test_cloud)
-    logger.info(f"diff cloud saved to {save_path}")
+    o3d.io.write_point_cloud(str(save_path), test_cloud)
+    logger.debug(f"diff cloud saved to {save_path}")
 
 
 if __name__ == "__main__":
