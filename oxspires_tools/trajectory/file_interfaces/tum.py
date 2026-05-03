@@ -6,8 +6,9 @@ TUM format: https://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats
 import logging
 import os
 
-import evo
 import numpy as np
+from evo.core.trajectory import PoseTrajectory3D
+from evo.tools.file_interface import read_tum_trajectory_file
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
@@ -31,7 +32,7 @@ class TUMTrajReader(BasicTrajReader):
         """Read TUM trajectory file."""
         if self.reader_type == "evo":
             logger.info("Try to load TUM pose using evo; Assuming file name is timestamp")
-            tum_pose = evo.tools.file_interface.read_tum_trajectory_file(self.file_path)
+            tum_pose = read_tum_trajectory_file(self.file_path)
             assert tum_pose.check()[0] is True, tum_pose.check()[1]
         elif self.reader_type == "custom":
             logger.info("Try to load TUM pose using custom reader; Assuming file name is not timestamp")
@@ -88,7 +89,7 @@ class TUMTrajReader(BasicTrajReader):
         quat = np.array(quat)
         timestamps = np.array(time_stamp)
 
-        return evo.core.trajectory.PoseTrajectory3D(xyz, quat, timestamps=timestamps)
+        return PoseTrajectory3D(xyz, quat, timestamps=timestamps)
 
 
 class TUMTrajWriter(BasicTrajWriter):
@@ -104,7 +105,7 @@ class TUMTrajWriter(BasicTrajWriter):
         """Write custom TUM trajectory file with optional timestamp prefix/suffix."""
         if prefix != "" or suffix != "":
             logger.info(f'Assuming file name is timestamp in the format: "{prefix}<secs.nsecs>{suffix}"')
-        if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
+        if not isinstance(pose, PoseTrajectory3D):
             logger.error(f"pose should be PoseTrajectory3D from evo, got: {type(pose)}")
             raise ValueError()
         if not os.path.exists(os.path.dirname(file_path)):

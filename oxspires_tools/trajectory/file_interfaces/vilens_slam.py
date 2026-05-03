@@ -1,8 +1,8 @@
 import logging
 import os
 
-import evo
 import numpy as np
+from evo.core.trajectory import PoseTrajectory3D
 from evo.tools.file_interface import csv_read_matrix
 
 from .base import BasicTrajReader, BasicTrajWriter
@@ -28,7 +28,7 @@ class VilensSlamTrajReader(BasicTrajReader):
         xyz = mat[:, 3:6]
         quat_xyzw = mat[:, 6:10]
         quat_wxyz = np.roll(quat_xyzw, 1, axis=1)  # xyzw -> wxyz
-        return evo.core.trajectory.PoseTrajectory3D(xyz, quat_wxyz, timestamps=timestamps)
+        return PoseTrajectory3D(xyz, quat_wxyz, timestamps=timestamps)
 
 
 class VilensSlamTrajWriter(BasicTrajWriter):
@@ -40,7 +40,7 @@ class VilensSlamTrajWriter(BasicTrajWriter):
     def write_file(self, pose):
         """Write trajectory in CSV style VILENS SLAM format."""
 
-        if not isinstance(pose, evo.core.trajectory.PoseTrajectory3D):
+        if not isinstance(pose, PoseTrajectory3D):
             logger.error(f"pose should be PoseTrajectory3D from evo, got: {type(pose)}")
             raise ValueError()
         if not os.path.exists(os.path.dirname(self.file_path)):
