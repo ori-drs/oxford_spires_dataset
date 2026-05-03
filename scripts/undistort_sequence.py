@@ -18,10 +18,10 @@ from oxspires_tools.point_cloud import filter_by_range, modify_pcd_viewpoint
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
 from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 
-ACC_NOISE = 0.001799
-GYR_NOISE = 0.000257
-ACC_BIAS_RW = 2.69e-4
-GYR_BIAS_RW = 1.57e-5
+ACC_NOISE = 0.0011002607647952406
+GYR_NOISE = 0.00022632861789099884
+ACC_BIAS_RW = 3.390710627779767e-05
+GYR_BIAS_RW = 8.252445860125436e-06
 
 _DEFAULT_SENSOR_YAML = Path(__file__).parent.parent / "configs" / "sensor.yaml"
 
