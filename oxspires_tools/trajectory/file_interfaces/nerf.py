@@ -4,9 +4,8 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 
-import evo
 import numpy as np
-from evo.core.trajectory import PosePath3D
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 
 from .base import BasicTrajReader, BasicTrajWriter
 from .timestamp import TimeStamp
@@ -57,9 +56,9 @@ class NeRFTrajReader(BasicTrajReader):
                 sort_idx = np.argsort(timestamps)
                 timestamps = timestamps[sort_idx]
                 poses_se3 = poses_se3[sort_idx]
-            return evo.core.trajectory.PoseTrajectory3D(poses_se3=poses_se3, timestamps=timestamps)
+            return PoseTrajectory3D(poses_se3=poses_se3, timestamps=timestamps)
 
-        return evo.core.trajectory.PosePath3D(poses_se3=poses_se3)
+        return PosePath3D(poses_se3=poses_se3)
 
 
 class NeRFTrajWriter(BasicTrajWriter):
