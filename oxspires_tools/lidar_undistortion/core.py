@@ -154,7 +154,7 @@ class PoseBuffer:
 
 
 def undistort_cloud(cloud: np.ndarray, pose_buffer: PoseBuffer, t_desired_ns: int, t_start_ns=None) -> np.ndarray:
-    """Apply per-point motion compensation. Returns corrected xyz (N, 3).
+    """Apply per-point motion compensation. Returns structured array with corrected x, y, z.
 
     Supports two timestamp formats:
     - 'timestamp' field: absolute seconds (float)
@@ -176,4 +176,9 @@ def undistort_cloud(cloud: np.ndarray, pose_buffer: PoseBuffer, t_desired_ns: in
     T_rel = T_desired_inv @ T_points  # (N, 4, 4)
 
     xyz = np.stack([cloud["x"], cloud["y"], cloud["z"]], axis=-1)
-    return np.einsum("nij,nj->ni", T_rel[:, :3, :3], xyz) + T_rel[:, :3, 3]
+    corrected_xyz = np.einsum("nij,nj->ni", T_rel[:, :3, :3], xyz) + T_rel[:, :3, 3]
+    out = cloud.copy()
+    out["x"] = corrected_xyz[:, 0].astype(cloud["x"].dtype)
+    out["y"] = corrected_xyz[:, 1].astype(cloud["y"].dtype)
+    out["z"] = corrected_xyz[:, 2].astype(cloud["z"].dtype)
+    return out

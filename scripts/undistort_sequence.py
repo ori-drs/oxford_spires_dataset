@@ -3,18 +3,17 @@
 import argparse
 from pathlib import Path
 
-import evo.core.trajectory
 import numpy as np
-import open3d as o3d
 import pandas as pd
+from evo.core.trajectory import PoseTrajectory3D
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 
 from oxspires_tools.dataset import OxfordSpiresDataset
 from oxspires_tools.lidar_undistortion.core import PoseBuffer, integrate_imu, make_T, undistort_cloud
 from oxspires_tools.lidar_undistortion.gtsam_opt import build_dense_trajectory, build_gt_anchored_trajectory
-from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary
-from oxspires_tools.point_cloud import filter_by_range, modify_pcd_viewpoint
+from oxspires_tools.lidar_undistortion.io import read_imu, read_pcd_binary, save_pcd
+from oxspires_tools.point_cloud import filter_by_range
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
 from oxspires_tools.trajectory.file_interfaces.tum import TUMTrajWriter
 
@@ -175,7 +174,7 @@ def main():
     q_xyzw = Rotation.from_matrix(np.stack([T[:3, :3] for T in dense_poses_WB])).as_quat()
     q_wxyz = q_xyzw[:, [3, 0, 1, 2]]
     timestamps_float128 = np.array([TimeStamp(sec=int(t // 10**9), nsec=int(t % 10**9)).t_float128 for t in dense_ts])
-    dense_traj = evo.core.trajectory.PoseTrajectory3D(positions, q_wxyz, timestamps=timestamps_float128)
+    dense_traj = PoseTrajectory3D(positions, q_wxyz, timestamps=timestamps_float128)
     tum_path = output_dir / tum_name
     TUMTrajWriter(str(tum_path)).write_file(dense_traj)
     print(f"  Saved dense trajectory: {tum_path}")
@@ -275,7 +274,7 @@ def main():
             pbar.update(1)
             continue
 
-        raw_cloud, _ = read_pcd_binary(raw_path)
+        raw_cloud, raw_header = read_pcd_binary(raw_path)
         raw_cloud = filter_by_range(raw_cloud)
 
         if args.undistort_method == "imu":
@@ -290,7 +289,7 @@ def main():
 
         try:
             if args.undistort_method == "imu":
-                corrected_xyz = undistort_one_scan(
+                corrected_cloud = undistort_one_scan(
                     raw_cloud,
                     imu_df,
                     gt_ts_ns_state,
@@ -304,26 +303,27 @@ def main():
                     buffer_ns=buffer_ns,
                 )
             else:
-                corrected_xyz = undistort_cloud(raw_cloud, pose_buffer_WL, scan_ts_ns)
+                corrected_cloud = undistort_cloud(raw_cloud, pose_buffer_WL, scan_ts_ns)
         except Exception as e:
             errors.append(f"ts={scan_ts_ns}: {e}")
             skipped += 1
             pbar.update(1)
             continue
 
-        body_xyz = (T_BL_mat[:3, :3] @ corrected_xyz.T + T_BL_mat[:3, 3:4]).T
-
-        pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(body_xyz.astype(np.float64))
-        o3d.io.write_point_cloud(str(out_path), pcd, write_ascii=False, compressed=False)
+        lidar_xyz = np.stack([corrected_cloud["x"], corrected_cloud["y"], corrected_cloud["z"]], axis=-1)
+        body_xyz = (T_BL_mat[:3, :3] @ lidar_xyz.T + T_BL_mat[:3, 3:4]).T
+        corrected_cloud = corrected_cloud.copy()
+        corrected_cloud["x"] = body_xyz[:, 0].astype(corrected_cloud["x"].dtype)
+        corrected_cloud["y"] = body_xyz[:, 1].astype(corrected_cloud["y"].dtype)
+        corrected_cloud["z"] = body_xyz[:, 2].astype(corrected_cloud["z"].dtype)
 
         dense_idx = np.clip(np.searchsorted(dense_ts_arr, scan_ts_ns, side="right") - 1, 0, len(dense_poses_WB) - 1)
         if T_WB_viewpoint is None:
             T_WB_viewpoint = dense_poses_WB[dense_idx]
         t = T_WB_viewpoint[:3, 3]
         q_xyzw = Rotation.from_matrix(T_WB_viewpoint[:3, :3]).as_quat()
-        viewpoint = np.array([t[0], t[1], t[2], q_xyzw[3], q_xyzw[0], q_xyzw[1], q_xyzw[2]])
-        modify_pcd_viewpoint(str(out_path), str(out_path), viewpoint)
+        viewpoint = " ".join(str(v) for v in [t[0], t[1], t[2], q_xyzw[3], q_xyzw[0], q_xyzw[1], q_xyzw[2]])
+        save_pcd(out_path, corrected_cloud, raw_header, viewpoint)
 
         pbar.update(1)
 

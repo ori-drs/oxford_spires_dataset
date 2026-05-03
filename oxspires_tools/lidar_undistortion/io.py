@@ -75,13 +75,17 @@ def parse_scan_metadata(path: Path) -> dict:
     return meta
 
 
-def save_pcd(path: Path, xyz: np.ndarray) -> None:
-    """Save Nx3 float32 point cloud as binary PCD."""
-    n = len(xyz)
-    header = (
-        "VERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\n"
-        f"WIDTH {n}\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS {n}\nDATA binary\n"
+def save_pcd(path: Path, cloud: np.ndarray, header: dict, viewpoint: str = "0 0 0 1 0 0 0") -> None:
+    """Save structured numpy array as binary PCD, preserving all fields from the original header."""
+    n = len(cloud)
+    fields = " ".join(header["FIELDS"])
+    sizes = " ".join(header["SIZE"])
+    types = " ".join(header["TYPE"])
+    counts = " ".join(header["COUNT"])
+    header_str = (
+        f"VERSION 0.7\nFIELDS {fields}\nSIZE {sizes}\nTYPE {types}\nCOUNT {counts}\n"
+        f"WIDTH {n}\nHEIGHT 1\nVIEWPOINT {viewpoint}\nPOINTS {n}\nDATA binary\n"
     )
     with open(path, "wb") as f:
-        f.write(header.encode("ascii"))
-        f.write(xyz.astype(np.float32).tobytes())
+        f.write(header_str.encode("ascii"))
+        f.write(cloud.tobytes())
