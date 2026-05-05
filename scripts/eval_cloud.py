@@ -39,6 +39,8 @@ def main():
     results = get_recon_metrics(
         input_np,
         gt_np,
+        compute_precision=True,
+        compute_recall=False,
         save_error_cloud_dir=error_cloud_dir,
     )
     logging.info(f"Metrics for {args.input_cloud.stem}:\n{json.dumps(results, indent=2)}")
