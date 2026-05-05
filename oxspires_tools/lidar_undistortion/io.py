@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from pypcd4 import PointCloud
 
 
 def _parse_pcd_header(f):
@@ -75,17 +76,29 @@ def parse_scan_metadata(path: Path) -> dict:
     return meta
 
 
-def save_pcd(path: Path, cloud: np.ndarray, header: dict, viewpoint: str = "0 0 0 1 0 0 0") -> None:
-    """Save structured numpy array as binary PCD, preserving all fields from the original header."""
-    n = len(cloud)
-    fields = " ".join(header["FIELDS"])
-    sizes = " ".join(header["SIZE"])
-    types = " ".join(header["TYPE"])
-    counts = " ".join(header["COUNT"])
-    header_str = (
-        f"VERSION 0.7\nFIELDS {fields}\nSIZE {sizes}\nTYPE {types}\nCOUNT {counts}\n"
-        f"WIDTH {n}\nHEIGHT 1\nVIEWPOINT {viewpoint}\nPOINTS {n}\nDATA binary\n"
-    )
-    with open(path, "wb") as f:
-        f.write(header_str.encode("ascii"))
-        f.write(cloud.tobytes())
+_PCD_TYPE_MAP = {
+    ("F", 4): np.float32,
+    ("F", 8): np.float64,
+    ("U", 1): np.uint8,
+    ("U", 2): np.uint16,
+    ("U", 4): np.uint32,
+    ("I", 1): np.int8,
+    ("I", 2): np.int16,
+    ("I", 4): np.int32,
+}
+
+
+def save_pcd(path: Path, cloud: np.ndarray, header: dict, viewpoint=None) -> None:
+    """Save structured numpy array as binary PCD using pypcd4, dropping padding fields."""
+    arrays, fields, types = [], [], []
+    for name, size, typ in zip(header["FIELDS"], header["SIZE"], header["TYPE"]):
+        if name == "_":
+            continue
+        np_type = _PCD_TYPE_MAP[(typ, int(size))]
+        arrays.append(cloud[name].astype(np_type))
+        fields.append(name)
+        types.append(np_type)
+    pcd = PointCloud.from_points(arrays, tuple(fields), tuple(types))
+    if viewpoint is not None:
+        pcd.metadata.viewpoint = tuple(float(v) for v in viewpoint)
+    pcd.save(str(path))
