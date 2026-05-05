@@ -169,7 +169,7 @@ def main():
     else:
         dense_ts, dense_poses_WB = build_dense_trajectory(gt_states, imu_df, T_BI_mat)
         tum_name = "dense_trajectory_tum.txt"
-    dense_ts_arr = np.array(dense_ts, dtype=np.int64)
+    # dense_ts_arr = np.array(dense_ts, dtype=np.int64)
     positions = np.array([T[:3, 3] for T in dense_poses_WB])
     q_xyzw = Rotation.from_matrix(np.stack([T[:3, :3] for T in dense_poses_WB])).as_quat()
     q_wxyz = q_xyzw[:, [3, 0, 1, 2]]
@@ -310,21 +310,15 @@ def main():
             pbar.update(1)
             continue
 
-        lidar_xyz = np.stack([corrected_cloud["x"], corrected_cloud["y"], corrected_cloud["z"]], axis=-1)
-        body_xyz = (T_BL_mat[:3, :3] @ lidar_xyz.T + T_BL_mat[:3, 3:4]).T
-        corrected_cloud = corrected_cloud.copy()
-        corrected_cloud["x"] = body_xyz[:, 0].astype(corrected_cloud["x"].dtype)
-        corrected_cloud["y"] = body_xyz[:, 1].astype(corrected_cloud["y"].dtype)
-        corrected_cloud["z"] = body_xyz[:, 2].astype(corrected_cloud["z"].dtype)
-
-        dense_idx = np.clip(np.searchsorted(dense_ts_arr, scan_ts_ns, side="right") - 1, 0, len(dense_poses_WB) - 1)
-        if T_WB_viewpoint is None:
-            T_WB_viewpoint = dense_poses_WB[dense_idx]
-        t = T_WB_viewpoint[:3, 3]
-        q_xyzw = Rotation.from_matrix(T_WB_viewpoint[:3, :3]).as_quat()
-        viewpoint = " ".join(str(v) for v in [t[0], t[1], t[2], q_xyzw[3], q_xyzw[0], q_xyzw[1], q_xyzw[2]])
+        # dense_idx = np.clip(np.searchsorted(dense_ts_arr, scan_ts_ns, side="right") - 1, 0, len(dense_poses_WB) - 1)
+        # if T_WB_viewpoint is None:
+        #     T_WB_viewpoint = dense_poses_WB[dense_idx]
+        # T_WL_viewpoint = T_WB_viewpoint @ np.linalg.inv(T_BL_mat)
+        # t = T_WL_viewpoint[:3, 3]
+        # q_xyzw = Rotation.from_matrix(T_WL_viewpoint[:3, :3]).as_quat()
+        # viewpoint = [t[0], t[1], t[2], q_xyzw[3], q_xyzw[0], q_xyzw[1], q_xyzw[2]]
+        viewpoint = [0, 0, 0, 1, 0, 0, 0]
         save_pcd(out_path, corrected_cloud, raw_header, viewpoint)
-
         pbar.update(1)
 
     pbar.close()
