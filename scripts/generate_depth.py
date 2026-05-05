@@ -32,14 +32,14 @@ def get_args():
     return parser.parse_args()
 
 
-def process_cloud_to_depth(pair, *, T_cam_base, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr, output_depth_dir, output_normal_dir, overlay_dir, cam_dir_name):  # fmt: skip
+def process_cloud_to_depth(pair, *, T_cam_lidar, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr, output_depth_dir, output_normal_dir, overlay_dir, cam_dir_name):  # fmt: skip
     """Process a single image-pcd pair."""
     image_path, pcd_path, _ = pair
     pcd = o3d.io.read_point_cloud(str(pcd_path))
     if pcd is None or len(pcd.points) == 0:
         logger.warning(f"Skipping {pcd_path}: {'failed to read' if pcd is None else 'empty'}")
         return
-    pcd.transform(T_cam_base)
+    pcd.transform(T_cam_lidar)
     depth, normal = get_depth_from_cloud(pcd, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr)
     save_projection_outputs(
         depth,
@@ -78,12 +78,13 @@ if __name__ == "__main__":
         logger.info(f"Processing {cam_name} ({cam_dir}) ...")
         K, D, h, w, fov_deg, camera_model = sensor.get_params_for_depth(cam_name, "vilens_slam", None)
         logger.info(f"Fov: {fov_deg}, camera_model: {camera_model}")
-        T_cam_base = sensor.tf.get_transform("base", cam_name)
+        T_cam_lidar = sensor.tf.get_transform("lidar", cam_name)
+
         image_pcd_pairs = list(get_image_pcd_sync_pair(cam_dir, Path(args.clouds_path), ".jpg", max_time_diff))
 
         process = functools.partial(
             process_cloud_to_depth,
-            T_cam_base=T_cam_base,
+            T_cam_lidar=T_cam_lidar,
             K=K,
             D=D,
             w=w,
