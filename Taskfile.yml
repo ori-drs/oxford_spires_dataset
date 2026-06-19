@@ -51,6 +51,15 @@ tasks:
     cmds:
       - "python scripts/generate_depth.py {{.CLI_ARGS}}"
 
+  undistort:
+    desc: "Download and undistort a sequence -- SEQ=... e.g. task undistort SEQ=2024-03-18-christ-church-01"
+    vars:
+      SEQ: '{{.SEQ | default "2024-03-12-keble-college-02"}}'
+    cmds:
+      - python scripts/dataset_download.py --branch main --patterns "sequences/{{.SEQ}}/raw/lidar-clouds.zip" "sequences/{{.SEQ}}/raw/imu.csv" "sequences/{{.SEQ}}/processed/trajectory/gt-tum.txt" "sequences/{{.SEQ}}/raw/images.zip" --check false
+      - python scripts/undistort_sequence.py --seq_dir data/sequences/{{.SEQ}} --output_dir outputs/{{.SEQ}}/undist-clouds-image-synced --mode image --image_dirs data/sequences/{{.SEQ}}/raw/cam0 data/sequences/{{.SEQ}}/raw/cam1 data/sequences/{{.SEQ}}/raw/cam2 --max_img_lidar_diff_ms 50
+
+
   ##### Dev ####################################
 
   install:
