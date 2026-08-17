@@ -40,7 +40,18 @@ def process_cloud_to_depth(pair, *, T_cam_base, K, D, w, h, fov_deg, camera_mode
         logger.warning(f"Skipping {pcd_path}: {'failed to read' if pcd is None else 'empty'}")
         return
     pcd.transform(T_cam_base)
-    depth, normal = get_depth_from_cloud(pcd, K, D, w, h, fov_deg, camera_model, depth_factor, euclidean, skip_hpr)
+    depth, normal = get_depth_from_cloud(
+        pcd,
+        K,
+        D,
+        w,
+        h,
+        fov_deg,
+        camera_model,
+        depth_factor=depth_factor,
+        is_euclidean=euclidean,
+        skip_hpr=skip_hpr,
+    )
     save_projection_outputs(
         depth,
         normal,
