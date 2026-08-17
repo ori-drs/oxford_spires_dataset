@@ -122,16 +122,20 @@ class OxfordSpiresDataset:
         p = raw_lidar_dir / f"{ts.t_string}.pcd"
         if p.exists():
             return p
+
         best, best_diff = None, tol_ns + 1
-        for f in raw_lidar_dir.glob(f"{ts.sec}.*.pcd"):
-            try:
-                f_ts = TimeStamp(t_string=f.stem)
-            except (AssertionError, ValueError):
-                continue
-            f_ns = f_ts.sec * 10**9 + f_ts.nsec
-            diff = abs(f_ns - ts_ns)
-            if diff < best_diff:
-                best, best_diff = f, diff
+        first_sec = (ts_ns - tol_ns) // 10**9
+        last_sec = (ts_ns + tol_ns) // 10**9
+        for sec in range(first_sec, last_sec + 1):
+            for f in raw_lidar_dir.glob(f"{sec}.*.pcd"):
+                try:
+                    f_ts = TimeStamp(t_string=f.stem)
+                except (AssertionError, ValueError):
+                    continue
+                f_ns = f_ts.sec * 10**9 + f_ts.nsec
+                diff = abs(f_ns - ts_ns)
+                if diff < best_diff:
+                    best, best_diff = f, diff
         return best
 
     def check_image_lidar_sync(self, cam_id: int = 0, tolerance_sec: float = 0.0) -> bool:
