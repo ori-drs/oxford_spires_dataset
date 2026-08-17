@@ -58,6 +58,35 @@ def read_pcd_binary(path: Path):
     return data, header
 
 
+def point_timestamps_ns(cloud: np.ndarray, scan_start_ns: int = None) -> np.ndarray:
+    """Return per-point timestamps as int64 nanoseconds.
+
+    Oxford Spires raw clouds may store either an absolute ``timestamp`` field in
+    seconds or a relative ``t`` field in nanoseconds. Relative timestamps require
+    the scan start time, normally obtained from the PCD filename.
+    """
+    if cloud.dtype.names is None:
+        raise ValueError("Expected a structured point cloud with named fields")
+
+    if "timestamp" in cloud.dtype.names:
+        return np.rint(cloud["timestamp"].astype(np.float64) * 1e9).astype(np.int64)
+
+    if "t" in cloud.dtype.names:
+        if scan_start_ns is None:
+            raise ValueError("scan_start_ns is required for point clouds with relative 't' timestamps")
+        return np.int64(scan_start_ns) + cloud["t"].astype(np.int64)
+
+    raise ValueError(f"Cloud has no supported timestamp field; fields: {cloud.dtype.names}")
+
+
+def scan_time_bounds_ns(cloud: np.ndarray, scan_start_ns: int = None) -> tuple[int, int]:
+    """Return the earliest and latest per-point timestamps in a scan."""
+    if len(cloud) == 0:
+        raise ValueError("Cannot determine timestamp bounds for an empty point cloud")
+    timestamps_ns = point_timestamps_ns(cloud, scan_start_ns=scan_start_ns)
+    return int(np.min(timestamps_ns)), int(np.max(timestamps_ns))
+
+
 def read_imu(path: Path) -> pd.DataFrame:
     """Load IMU CSV and add a unified timestamp_ns column."""
     df = pd.read_csv(path)
