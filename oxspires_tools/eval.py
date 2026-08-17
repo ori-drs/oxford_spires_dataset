@@ -182,14 +182,21 @@ def save_error_cloud(
         return
     if distances is None:
         distances = compute_p2p_distance(input_cloud_np, reference_cloud_np)
-    input_cloud_np = input_cloud_np[distances <= max_distance]
-    distances = distances[distances <= max_distance]
+    within_range = distances <= max_distance
+    input_cloud_np = input_cloud_np[within_range]
+    distances = distances[within_range]
+    if distances.size == 0:
+        logger.warning("No error-cloud points remain within max_distance")
+        return
+
     distances = np.clip(distances, 0, 1)
+    max_error = np.max(distances)
+    normalised_distances = np.zeros_like(distances) if max_error == 0 else distances / max_error
     if cmap == "bgyr":
         cmap = get_BGYR_colourmap()
-        distances_cmap = cmap(distances / np.max(distances))
+        distances_cmap = cmap(normalised_distances)
     else:
-        distances_cmap = plt.get_cmap(cmap)(distances / np.max(distances))
+        distances_cmap = plt.get_cmap(cmap)(normalised_distances)
 
     test_cloud = o3d.geometry.PointCloud()
     test_cloud.points = o3d.utility.Vector3dVector(input_cloud_np)
