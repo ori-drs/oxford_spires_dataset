@@ -47,10 +47,10 @@ def get_distances(
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
     if input_cloud.shape[0] == 0:
         logger.warning("Input cloud is empty")
-        return None
+        return None, None
     if gt_cloud.shape[0] == 0:
         logger.warning("GT cloud is empty")
-        return None
+        return None, None
     distance_precision = None
     distance_recall = None
     if compute_precision:
@@ -109,6 +109,9 @@ def get_recon_metrics(
     assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
     if input_cloud.shape[0] == 0:
         logger.warning("Input cloud is empty")
+        return None
+    if gt_cloud.shape[0] == 0:
+        logger.warning("GT cloud is empty")
         return None
 
     distance_precision, distance_recall = get_distances(
