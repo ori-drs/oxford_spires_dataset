@@ -66,14 +66,21 @@ def read_pcd_with_viewpoint(file_path: str):
     assert file_path.endswith(".pcd")
     with open(file_path, mode="rb") as file:
         while True:
-            line = file.readline().decode("utf-8").strip()
+            raw_line = file.readline()
+            if not raw_line:
+                raise ValueError(f"PCD file has no VIEWPOINT header: {file_path}")
+            line = raw_line.decode("utf-8").strip()
             if line.startswith("VIEWPOINT"):
                 viewpoint = line.split()[1:]  # x y z qw qx qy qz
+                if len(viewpoint) != 7:
+                    raise ValueError(f"Invalid VIEWPOINT header in {file_path}: {line}")
                 xyz = viewpoint[:3]
                 quat_wxyz = viewpoint[3:]
                 quat_xyzw = quat_wxyz[1:] + [quat_wxyz[0]]
                 se3_matrix = xyz_quat_xyzw_to_se3_matrix(xyz, quat_xyzw)
                 break
+            if line.startswith("DATA"):
+                raise ValueError(f"PCD file has no VIEWPOINT header before DATA: {file_path}")
     cloud = o3d.io.read_point_cloud(file_path)
     cloud.transform(se3_matrix)
     return cloud
