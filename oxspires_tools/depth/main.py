@@ -48,7 +48,7 @@ def get_depth_from_cloud(
         valid_normals_np = normals_np[mask_fov][in_image_mask][z_mask]
         valid_normals_np = valid_normals_np[sorted_indices]
         assert valid_normals_np.shape[0] == points_on_img.shape[0]
-        normalmap = compute_normalmap(valid_normals_np, v, u, h, w, K, D)
+        normalmap = compute_normalmap(valid_normals_np, v, u, h, w, K, D, camera_model)
     if compute_cloud_mask:
         cloud_mask = np.zeros(len(point_cloud.points), dtype=bool)
         # proj_mask is for pcd.select_by_index(pt_map) points which are ordered as in hpr_mask, so sort hpr_mask
