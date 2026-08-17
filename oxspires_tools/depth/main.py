@@ -51,8 +51,9 @@ def get_depth_from_cloud(
         normalmap = compute_normalmap(valid_normals_np, v, u, h, w, K, D)
     if compute_cloud_mask:
         cloud_mask = np.zeros(len(point_cloud.points), dtype=bool)
-        # proj_mask is for pcd.select_by_index(pt_map) points which are ordered as in hpr_mask, so sort hpr_mask
-        hpr_mask = np.array(sorted(hpr_mask))
+        # Keep the HPR indices in exactly the same order used to construct
+        # visible_pcd. The FOV and projection masks are indexed in that order.
+        hpr_mask = np.asarray(hpr_mask)
 
         indices_fov_mask = np.where(mask_fov)[0]
         full_mask = np.zeros(len(mask_fov), dtype=bool)
