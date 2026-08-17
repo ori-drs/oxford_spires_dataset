@@ -117,6 +117,8 @@ def decode_points_from_depthmap(
     # Valid depth mask
     mask = depth > 0
     valid_depth = depth[mask]
+    if valid_depth.size == 0:
+        return o3d.geometry.PointCloud()
 
     # Get coordinates of valid depth
     grid_x, grid_y = np.meshgrid(np.arange(w), np.arange(h))
