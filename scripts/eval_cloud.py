@@ -18,6 +18,10 @@ def get_args():
     parser.add_argument("--gt_cloud", type=Path, required=True, help="GT cloud (.pcd or .ply)")  # fmt: skip
     parser.add_argument("--output_json", type=Path, default=None, help="Output JSON for metrics")  # fmt: skip
     parser.add_argument("--output_error_cloud_dir", type=Path, default=None, help="Directory to save error cloud; defaults to <output_json parent>/<stem>_error/ if --output_json is set")  # fmt: skip
+    parser.add_argument("--precision_threshold", type=float, default=0.05, help="Input-to-GT precision threshold in metres")  # fmt: skip
+    parser.add_argument("--recall_threshold", type=float, default=0.05, help="GT-to-input recall threshold in metres")  # fmt: skip
+    parser.add_argument("--max_distance", type=float, default=np.inf, help="Maximum KD-tree correspondence distance in metres")  # fmt: skip
+    parser.add_argument("--one_sided", action="store_true", help="Skip GT-to-input completeness/recall computation")  # fmt: skip
     return parser.parse_args()
 
 
@@ -39,9 +43,12 @@ def main():
     results = get_recon_metrics(
         input_np,
         gt_np,
+        precision_threshold=args.precision_threshold,
+        recall_threshold=args.recall_threshold,
         compute_precision=True,
-        compute_recall=False,
+        compute_recall=not args.one_sided,
         save_error_cloud_dir=error_cloud_dir,
+        max_distance=args.max_distance,
     )
     logging.info(f"Metrics for {args.input_cloud.stem}:\n{json.dumps(results, indent=2)}")
     if args.output_json is not None:
