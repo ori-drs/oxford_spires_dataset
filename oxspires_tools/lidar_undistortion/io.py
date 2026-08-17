@@ -11,9 +11,15 @@ def _parse_pcd_header(f):
     """Parse PCD header fields, return dict and byte offset where data starts."""
     header = {}
     while True:
-        line = f.readline().decode("ascii", errors="replace").strip()
+        raw_line = f.readline()
+        if not raw_line:
+            raise ValueError("PCD header ended before a DATA field was found")
+        line = raw_line.decode("ascii", errors="replace").strip()
         if line.startswith("DATA"):
-            header["DATA"] = line.split()[1]
+            parts = line.split()
+            if len(parts) != 2:
+                raise ValueError(f"Malformed PCD DATA header: {line}")
+            header["DATA"] = parts[1]
             break
         if line and not line.startswith("#"):
             key, *vals = line.split()
@@ -49,12 +55,20 @@ def _build_dtype(header):
 
 
 def read_pcd_binary(path: Path):
-    """Read a binary PCD file. Returns structured numpy array and parsed header."""
+    """Read an uncompressed binary PCD file. Returns structured numpy array and parsed header."""
     with open(path, "rb") as f:
         header, _ = _parse_pcd_header(f)
+        if header["DATA"] != "binary":
+            raise ValueError(f"Expected DATA binary in {path}, got DATA {header['DATA']}")
         n_points = int(header["POINTS"][0])
         dt = _build_dtype(header)
-        data = np.frombuffer(f.read(n_points * dt.itemsize), dtype=dt)
+        expected_bytes = n_points * dt.itemsize
+        payload = f.read(expected_bytes)
+        if len(payload) != expected_bytes:
+            raise ValueError(
+                f"Truncated binary PCD payload in {path}: expected {expected_bytes} bytes, got {len(payload)}"
+            )
+        data = np.frombuffer(payload, dtype=dt)
     return data, header
 
 
