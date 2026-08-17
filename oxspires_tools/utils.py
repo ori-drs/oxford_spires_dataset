@@ -122,19 +122,36 @@ def get_pcd(points, colors=None):
     return pcd
 
 
-def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time_diff_camera_and_pose=0.0):
-    def get_T_WB_from_timestamp(timestamp, transforms, max_time_diff_camera_and_pose=0.0):
-        closest_timestamp = min(transforms.keys(), key=lambda x: abs(float(x) - float(timestamp)))
-        diff = abs(float(closest_timestamp) - float(timestamp))
-        if diff > max_time_diff_camera_and_pose:
-            # print(f"WARNING: {timestamp}'S diff from transforms is {diff} > {max_time_diff_camera_and_pose} ")
-            return None
-        if max_time_diff_camera_and_pose == 0 and timestamp != closest_timestamp:
-            logger.warning(f"closest timestamp is {closest_timestamp} but current timestamp is {timestamp}")
-            input("Press Enter to continue...")
-        timestamp = closest_timestamp
-        return transforms[timestamp]
+def _timestamp_string_to_ns(timestamp) -> int:
+    """Convert a decimal-seconds timestamp to integer nanoseconds without binary64 rounding."""
+    timestamp = str(timestamp)
+    sec, separator, nsec = timestamp.partition(".")
+    if not separator:
+        nsec = "0"
+    if not sec or not sec.lstrip("-").isdigit() or not nsec.isdigit():
+        raise ValueError(f"Invalid timestamp: {timestamp}")
+    if len(nsec) > 9:
+        raise ValueError(f"Timestamp has sub-nanosecond precision: {timestamp}")
+    return int(sec) * 10**9 + int(nsec.ljust(9, "0"))
 
+
+def _get_transform_at_timestamp(timestamp, transforms, max_time_diff_camera_and_pose=0.0):
+    """Return the nearest transform using exact integer-nanosecond timestamp differences."""
+    if not transforms:
+        return None
+
+    timestamp_ns = _timestamp_string_to_ns(timestamp)
+    closest_timestamp = min(
+        transforms.keys(), key=lambda key: abs(_timestamp_string_to_ns(key) - timestamp_ns)
+    )
+    diff_ns = abs(_timestamp_string_to_ns(closest_timestamp) - timestamp_ns)
+    max_diff_ns = int(round(max_time_diff_camera_and_pose * 1e9))
+    if diff_ns > max_diff_ns:
+        return None
+    return transforms[closest_timestamp]
+
+
+def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time_diff_camera_and_pose=0.0):
     # Get pcd directory
     pcd_dir = current_pcd.parent
 
@@ -151,7 +168,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
     current_timestamp = current_pcd.stem[6:].replace("_", ".")
     # remove tailing zeros
     current_timestamp = re.sub(r"0+$", "", current_timestamp)
-    T_WB = get_T_WB_from_timestamp(current_timestamp, transforms, max_time_diff_camera_and_pose)
+    T_WB = _get_transform_at_timestamp(current_timestamp, transforms, max_time_diff_camera_and_pose)
     if T_WB is None:
         logger.warning(f"current_timestamp: {current_timestamp} not found")
         return None
@@ -164,7 +181,7 @@ def get_accumulated_pcd(current_pcd, transforms, accumulation_length=0, max_time
         that_timestamp = re.sub(r"0+$", "", that_timestamp)
         # Accumulate pcd if pose exists
 
-        T_WA = get_T_WB_from_timestamp(that_timestamp, transforms, max_time_diff_camera_and_pose)
+        T_WA = _get_transform_at_timestamp(that_timestamp, transforms, max_time_diff_camera_and_pose)
         if T_WA is None:
             # print(f"skipping {that_timestamp} for {current_timestamp}")
             continue
