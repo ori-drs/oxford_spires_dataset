@@ -47,7 +47,7 @@ class TimeStamp:
 
     @property
     def nsec(self):
-        """Nanoseconds as int (< 10^9)."""
+        """Nanoseconds as int in [0, 10^9)."""
         return self._nsec
 
     @nsec.setter
@@ -55,7 +55,9 @@ class TimeStamp:
         if isinstance(value, str):
             value = int(value)
         assert isinstance(value, int)
-        assert value < pow(10, NSECONDS_DIGITS), f"nsec {value} should be less than 10^{NSECONDS_DIGITS}"
+        assert 0 <= value < pow(10, NSECONDS_DIGITS), (
+            f"nsec {value} should be in [0, 10^{NSECONDS_DIGITS})"
+        )
 
         self._nsec = value
 
@@ -106,9 +108,10 @@ class TimeStamp:
 
     @staticmethod
     def check_nsec_str(nsec):
-        """Assert nsec string is valid (9 digits)."""
+        """Assert nsec string is a valid unsigned 9-digit field."""
         assert isinstance(nsec, str)
         assert len(nsec) == NSECONDS_DIGITS, f"nsec {nsec} should be {NSECONDS_DIGITS} digits"
+        assert nsec.isdigit(), f"nsec {nsec} should contain only decimal digits"
 
     @staticmethod
     def get_string_from_t_float128(t_float_128: np.float128):
