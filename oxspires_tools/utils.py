@@ -194,31 +194,58 @@ def find_closest_in_sorted(array: List, value: float):
         return array[idx], diff_right, idx
 
 
+def _timestamp_ns_from_path(path: Path) -> int:
+    """Parse the final seconds/nanoseconds fields in a timestamped filename."""
+    parts = re.findall(r"\d+", path.stem)
+    if len(parts) < 2:
+        raise ValueError(f"Cannot parse timestamp from {path.name}")
+    sec, nsec = parts[-2:]
+    if len(nsec) > 9:
+        raise ValueError(f"Nanosecond field has more than 9 digits in {path.name}")
+    return int(sec) * 10**9 + int(nsec.ljust(9, "0"))
+
+
 def get_image_pcd_sync_pair(
     image_dir: Path, pcd_dir: Path, image_ext: str, timestamp_threshold: float = 0.05
 ) -> List[Tuple[Path, Path, float]]:
     """Find synchronized image and point cloud pairs based on timestamps."""
-    # Load images and timestamps
-    image_timestamps = []
-    image_paths = {}
-    for it in sorted(list(image_dir.glob(f"*{image_ext}"))):
-        ret = re.findall(r"\d+", it.name)
-        timestamp = float(".".join(ret))
-        image_timestamps.append(timestamp)
-        image_paths[timestamp] = it
-    assert len(image_paths) > 0, f"No images are found in {image_dir}"
-    pcd_paths = sorted(list(Path(pcd_dir).glob("*pcd")))
-    assert len(pcd_paths) > 0, f"No PCD files are found in {pcd_dir}"
-    logger.info(f"Loaded {len(image_paths)} images, {len(pcd_paths)} PCD files")
+    image_entries = []
+    for image_path in sorted(image_dir.glob(f"*{image_ext}")):
+        try:
+            image_entries.append((_timestamp_ns_from_path(image_path), image_path))
+        except ValueError:
+            continue
+    image_entries.sort(key=lambda item: item[0])
+    assert image_entries, f"No images are found in {image_dir}"
 
-    # Collect all image and lidar pair which have timestamp close enough
+    image_timestamps_ns = [item[0] for item in image_entries]
+    image_paths = {timestamp_ns: path for timestamp_ns, path in image_entries}
+    pcd_paths = sorted(Path(pcd_dir).glob("*pcd"))
+    assert pcd_paths, f"No PCD files are found in {pcd_dir}"
+    logger.info(f"Loaded {len(image_entries)} images, {len(pcd_paths)} PCD files")
+
+    threshold_ns = int(round(timestamp_threshold * 1e9))
     image_pcd_pairs = []
-    for it in pcd_paths:
-        ret = re.findall(r"\d+", it.name)
-        timestamp = float(".".join(ret))
-        image_timestamp, diff, _ = find_closest_in_sorted(image_timestamps, timestamp)
-        if diff <= timestamp_threshold:
-            image_pcd_pairs.append((image_paths[image_timestamp], it, diff))
+    for pcd_path in pcd_paths:
+        try:
+            timestamp_ns = _timestamp_ns_from_path(pcd_path)
+        except ValueError:
+            continue
+
+        idx = bisect_left(image_timestamps_ns, timestamp_ns)
+        if idx == 0:
+            closest_idx = 0
+        elif idx == len(image_timestamps_ns):
+            closest_idx = len(image_timestamps_ns) - 1
+        else:
+            diff_left = timestamp_ns - image_timestamps_ns[idx - 1]
+            diff_right = image_timestamps_ns[idx] - timestamp_ns
+            closest_idx = idx - 1 if diff_left < diff_right else idx
+
+        image_timestamp_ns = image_timestamps_ns[closest_idx]
+        diff_ns = abs(image_timestamp_ns - timestamp_ns)
+        if diff_ns <= threshold_ns:
+            image_pcd_pairs.append((image_paths[image_timestamp_ns], pcd_path, diff_ns * 1e-9))
 
     logger.info(f"Found {len(image_pcd_pairs)} image-pcd pairs")
     return image_pcd_pairs
