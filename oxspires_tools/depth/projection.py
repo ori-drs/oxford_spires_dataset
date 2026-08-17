@@ -45,7 +45,7 @@ def project_points_on_image(
         logger.error(f"Unknown camera model: {camera_model}")
         raise ValueError()
     if points_on_img is None:
-        return np.zeros((0, 2)), np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(points_in_3d.shape[0], dtype=bool)
+        return np.zeros((0, 2)), np.zeros(points_in_3d.shape[0], dtype=bool)
     points_on_img = points_on_img.squeeze()
     if points_on_img.ndim == 1:
         points_on_img = points_on_img[np.newaxis]
