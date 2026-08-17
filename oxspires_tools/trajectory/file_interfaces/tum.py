@@ -58,33 +58,35 @@ class TUMTrajReader(BasicTrajReader):
                 "If no prefix/suffix provide, assuming fname is timestamp"  # ,\
                 # and you could use evo.tools.file_interface.read_tum_trajectory_file() instead"
             )
-        pose_file = open(file_path, "r")
 
         xyz = []
         quat = []
         time_stamp = []
-        for pose_line in pose_file:
-            if pose_line[0] == "#":
-                continue
-            splited = pose_line.rstrip().split(" ")
-            assert len(splited) == 8, "Each line should have 8 elements, but got {}".format(len(splited))
+        with open(file_path, "r") as pose_file:
+            for pose_line in pose_file:
+                pose_line = pose_line.strip()
+                if not pose_line or pose_line.startswith("#"):
+                    continue
+                split_line = pose_line.split()
+                assert len(split_line) == 8, "Each line should have 8 elements, but got {}".format(len(split_line))
 
-            fname = splited[0]
-            if fname[: len(prefix)] != prefix or fname[len(fname) - len(suffix) :] != suffix:
-                logger.warning("skipping lines with wrong prefix or suffix")
-                continue
-            t_float128 = TimeStamp(t_string=fname[len(prefix) : len(fname) - len(suffix)]).t_float128
-            assert TimeStamp.get_string_from_t_float128(t_float128) == fname[len(prefix) : len(fname) - len(suffix)], (
-                f"loss of precision in timestamp: before {fname[len(prefix) : len(fname) - len(suffix)]}; after {t_float}"
-            )
-            time_stamp.append(t_float128)
-            translation = splited[1:4]
-            quaternion_xyzw = splited[4:8]
-            quaternion_wxyz = [quaternion_xyzw[3], quaternion_xyzw[0], quaternion_xyzw[1], quaternion_xyzw[2]]
-            translation = [float(_) for _ in translation]
-            quaternion_wxyz = [float(_) for _ in quaternion_wxyz]
-            xyz.append(translation)
-            quat.append(quaternion_wxyz)
+                fname = split_line[0]
+                if fname[: len(prefix)] != prefix or fname[len(fname) - len(suffix) :] != suffix:
+                    logger.warning("skipping lines with wrong prefix or suffix")
+                    continue
+                timestamp_string = fname[len(prefix) : len(fname) - len(suffix)]
+                t_float128 = TimeStamp(t_string=timestamp_string).t_float128
+                assert TimeStamp.get_string_from_t_float128(t_float128) == timestamp_string, (
+                    f"loss of precision in timestamp: before {timestamp_string}; after {t_float128}"
+                )
+                time_stamp.append(t_float128)
+                translation = split_line[1:4]
+                quaternion_xyzw = split_line[4:8]
+                quaternion_wxyz = [quaternion_xyzw[3], quaternion_xyzw[0], quaternion_xyzw[1], quaternion_xyzw[2]]
+                translation = [float(_) for _ in translation]
+                quaternion_wxyz = [float(_) for _ in quaternion_wxyz]
+                xyz.append(translation)
+                quat.append(quaternion_wxyz)
         xyz = np.array(xyz)
         quat = np.array(quat)
         timestamps = np.array(time_stamp)
