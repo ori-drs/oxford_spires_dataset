@@ -128,14 +128,18 @@ class PoseBuffer:
     """SLERP/linear-interpolated pose buffer keyed by timestamp (ns)."""
 
     def __init__(self, timestamps_ns: list, poses: list):
-        self._ts = np.array(timestamps_ns, dtype=np.float64)
+        timestamps_ns = np.asarray(timestamps_ns, dtype=np.int64)
+        self._origin_ns = timestamps_ns[0]
+        self._ts = (timestamps_ns - self._origin_ns).astype(np.float64)
         self._trans = np.array([T[:3, 3] for T in poses])
         rot_mats = np.stack([T[:3, :3] for T in poses])
         self._slerp = Slerp(self._ts, Rotation.from_matrix(rot_mats))
 
     def interpolate_batch(self, query_ns: np.ndarray) -> np.ndarray:
         """Interpolate poses at N timestamps. Returns (N, 4, 4)."""
-        q = np.clip(query_ns.astype(np.float64), self._ts[0], self._ts[-1])
+        query_ns = np.asarray(query_ns, dtype=np.int64)
+        q = (query_ns - self._origin_ns).astype(np.float64)
+        q = np.clip(q, self._ts[0], self._ts[-1])
 
         idx = np.searchsorted(self._ts, q)
         idx = np.clip(idx, 1, len(self._ts) - 1)
