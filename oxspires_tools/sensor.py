@@ -144,7 +144,7 @@ class Sensor:
         return self.cameras[self.cam_idx_new[camera_name]]
 
     def get_K_D_h_w_from_colmap_frame(self, frame):
-        K = np.zeros((3, 3))
+        K = np.eye(3)
         K[0, 0] = frame["fl_x"]
         K[1, 1] = frame["fl_y"]
         K[0, 2] = frame["cx"]
