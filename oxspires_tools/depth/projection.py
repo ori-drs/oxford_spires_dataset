@@ -71,12 +71,14 @@ def encode_points_as_depthmap(
     else:
         # Depth is z value
         depth = points_in_3d[:, 2]
-    # Later depth is saved as 16 bit png (0 - 65,535)
-    # Remove outside 16 bit range
-    z_mask = (depth * depth_encode_factor) < np.iinfo(np.uint16).max
+
+    # Depth is stored as uint16, where zero is reserved for an invalid/missing pixel.
+    encoded_depth = depth * depth_encode_factor
+    max_uint16 = np.iinfo(np.uint16).max
+    z_mask = np.isfinite(encoded_depth) & (encoded_depth > 0) & (encoded_depth <= max_uint16)
 
     if not z_mask.all():
-        logger.warning("Depth values are too large to be encoded as 16-bit unsigned integers.")
+        logger.warning("Invalid or out-of-range depth values were excluded from uint16 depth encoding.")
 
     # Extract only valid value
     valid_points_on_img = points_on_img[z_mask]
