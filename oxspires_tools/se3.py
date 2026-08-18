@@ -47,12 +47,20 @@ def xyz_quat_wxyz_to_se3_matrix(xyz, quat_wxyz):
 
 
 def is_se3_matrix(se3_matrix):
-    valid_shape = se3_matrix.shape == (4, 4)
-    valid_last_row = np.allclose(se3_matrix[3], [0, 0, 0, 1])  # chec k the last row
+    valid_shape = isinstance(se3_matrix, np.ndarray) and se3_matrix.shape == (4, 4)
+    if not valid_shape:
+        return False, {
+            "valid_shape": False,
+            "valid_last_row": False,
+            "valid_rot_det": False,
+            "valid_orthogonality": False,
+        }
+
+    valid_last_row = np.allclose(se3_matrix[3], [0, 0, 0, 1])  # check the last row
     R = se3_matrix[:3, :3]
     valid_rot_det = np.isclose(np.linalg.det(R), 1.0, atol=1e-6)  # check the rotation matrix
     valid_orthogonality = np.allclose(R @ R.T, np.eye(3), atol=1e-5)  # check the orthogonality
-    is_valid = valid_shape and valid_last_row and valid_rot_det and valid_orthogonality
+    is_valid = valid_last_row and valid_rot_det and valid_orthogonality
     debug_info = {
         "valid_shape": valid_shape,
         "valid_last_row": valid_last_row,
