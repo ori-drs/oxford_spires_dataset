@@ -143,6 +143,58 @@ def get_recon_metrics(
     return results
 
 
+def get_recon_metrics_multi_thresholds(
+    input_cloud: np.ndarray,
+    gt_cloud: np.ndarray,
+    thresholds=(0.02, 0.05, 0.1),
+    max_distance=2.0,
+):
+    """Compute reconstruction metrics once and report precision/recall/F1 at multiple thresholds.
+
+    The first result contains threshold-independent accuracy and completeness. Each
+    following result contains one threshold together with precision, recall and F1.
+    This is the result layout consumed by the reconstruction benchmark CSV writer.
+    """
+    assert isinstance(input_cloud, np.ndarray) and isinstance(gt_cloud, np.ndarray)
+    assert input_cloud.ndim == 2 and gt_cloud.ndim == 2
+    assert input_cloud.shape[1] == 3 and gt_cloud.shape[1] == 3
+    assert input_cloud.shape[0] > 0 and gt_cloud.shape[0] > 0
+    assert max_distance > 0
+
+    thresholds = tuple(thresholds)
+    assert thresholds, "At least one reconstruction threshold is required"
+    assert all(isinstance(threshold, (int, float)) and threshold > 0 for threshold in thresholds)
+
+    input_to_gt_dist = compute_p2p_distance(input_cloud, gt_cloud)
+    gt_to_input_dist = compute_p2p_distance(gt_cloud, input_cloud)
+
+    # Preserve the historical benchmark's maximum-distance region of interest:
+    # accuracy/completeness and threshold ratios are computed over correspondences
+    # that are no farther than max_distance.
+    input_to_gt_dist = input_to_gt_dist[input_to_gt_dist <= max_distance]
+    gt_to_input_dist = gt_to_input_dist[gt_to_input_dist <= max_distance]
+    if input_to_gt_dist.size == 0 or gt_to_input_dist.size == 0:
+        raise ValueError(f"No reconstruction correspondences within max_distance={max_distance}")
+
+    accuracy = float(np.mean(input_to_gt_dist))
+    completeness = float(np.mean(gt_to_input_dist))
+    results = [{"accuracy": accuracy, "completeness": completeness}]
+
+    for threshold in thresholds:
+        precision = get_threshold_ratio(input_to_gt_dist, threshold)
+        recall = get_threshold_ratio(gt_to_input_dist, threshold)
+        results.append(
+            {
+                "threshold": threshold,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": compute_f1_score(precision, recall),
+            }
+        )
+
+    return results
+
+
 def dict_to_csv(dict_data, filename):
     with open(filename, "a", newline="") as output_file:
         dict_writer = csv.writer(output_file)
