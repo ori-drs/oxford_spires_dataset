@@ -30,7 +30,7 @@ def get_in_image_mask(points_on_img: np.ndarray, w: int, h: int) -> np.ndarray:
 def project_points_on_image(
     points_in_3d: np.ndarray,  # (N, 3) points in 3D space
     K: np.ndarray,  # (3, 3) intrinsic camera matrix
-    D: np.ndarray,  # (4,) distortion coefficients
+    D: np.ndarray,  # distortion coefficients; empty for PINHOLE
     w: int,
     h: int,
     camera_model: str = "OPENCV_FISHEYE",
@@ -41,6 +41,8 @@ def project_points_on_image(
         points_on_img, _ = cv2.fisheye.projectPoints(points_in_3d[np.newaxis], rvec, tvec, K, D)
     elif camera_model == "OPENCV":
         points_on_img, _ = cv2.projectPoints(points_in_3d[np.newaxis], rvec, tvec, K, D)
+    elif camera_model == "PINHOLE":
+        points_on_img, _ = cv2.projectPoints(points_in_3d[np.newaxis], rvec, tvec, K, None)
     else:
         logger.error(f"Unknown camera model: {camera_model}")
         raise ValueError()
@@ -104,7 +106,7 @@ def encode_points_as_depthmap(
 def decode_points_from_depthmap(
     depth: np.ndarray,  # (h, w)
     K: np.ndarray,  # (3, 3) intrinsic camera matrix
-    D: np.ndarray,  # (4,) distortion coefficients
+    D: np.ndarray,  # distortion coefficients; empty for PINHOLE
     is_euclidean: bool,  # If True, depth is L2 distance between point and camera, else z value
     depth_encode_factor: float,  # Scaling factor for UINT16 depth encoding.
     camera_model: str = "OPENCV_FISHEYE",
@@ -132,6 +134,8 @@ def decode_points_from_depthmap(
         points_in_3d = cv2.fisheye.undistortPoints(points_on_img, K, D, P=np.eye(3))
     elif camera_model == "OPENCV":
         points_in_3d = cv2.undistortPoints(points_on_img, K, D, P=np.eye(3))
+    elif camera_model == "PINHOLE":
+        points_in_3d = cv2.undistortPoints(points_on_img, K, None, P=np.eye(3))
     else:
         logger.error(f"Unknown camera model: {camera_model}")
         raise ValueError()
