@@ -172,10 +172,18 @@ class Sensor:
             if len(self.camera_topics_labelled) > 1:
                 assert list(colmap_traj.keys()) == ["camera_model", "frames"]
                 assert colmap_traj["camera_model"] == self.camera_model
-                for frame in colmap_traj["frames"]:
-                    if frame["file_path"].split("/")[1] == self.camera_topics_labelled[cam_name]:
-                        K, D, h, w = self.get_K_D_h_w_from_colmap_frame(frame)
-                        break
+                camera_folder = self.camera_topics_labelled[cam_name]
+                matching_frame = next(
+                    (
+                        frame
+                        for frame in colmap_traj["frames"]
+                        if Path(frame["file_path"]).parent.name == camera_folder
+                    ),
+                    None,
+                )
+                if matching_frame is None:
+                    raise ValueError(f"No NeRF frame found for camera {cam_name} in folder {camera_folder}")
+                K, D, h, w = self.get_K_D_h_w_from_colmap_frame(matching_frame)
             elif len(self.camera_topics_labelled) == 1:
                 assert colmap_traj["camera_model"] == self.camera_model
                 K, D, h, w = self.get_K_D_h_w_from_colmap_frame(colmap_traj)
