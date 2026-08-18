@@ -3,7 +3,7 @@ import logging
 import shutil
 from pathlib import Path
 
-from json_handler_submap_utils import get_xyz
+from oxspires_tools.trajectory.json_handler_submap_utils import get_xyz
 
 logger = logging.getLogger(__name__)
 
