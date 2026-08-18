@@ -31,12 +31,22 @@ def select_json_with_folder(json_file, img_folder, save_path):
 
 
 def split_json_every_n(json_file, n, save_path_removed, save_path_kept):
+    """Keep every n-th sorted frame and save the complementary frames separately."""
+    if not isinstance(n, int) or n <= 0:
+        raise ValueError("n must be a positive integer")
+
     nerf_json_handler = NeRFJsonHandler(json_file)
     nerf_json_handler.sort_frames()
-    train_json = deepcopy(nerf_json_handler)
-    removed_frames = nerf_json_handler.skip_frames(8, return_removed=True)
-    train_json.traj["frames"] = removed_frames
-    train_json.save_json(save_path_removed)
+    frames = nerf_json_handler.traj["frames"]
+
+    kept_frames = frames[::n]
+    removed_frames = [frame for index, frame in enumerate(frames) if index % n != 0]
+
+    removed_json = deepcopy(nerf_json_handler)
+    removed_json.traj["frames"] = removed_frames
+    removed_json.save_json(save_path_removed)
+
+    nerf_json_handler.traj["frames"] = kept_frames
     nerf_json_handler.save_json(save_path_kept)
 
 
