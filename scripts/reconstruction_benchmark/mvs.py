@@ -79,7 +79,7 @@ def run_openmvs(image_path, colmap_output_path, sparse_folder, mvs_dir, openmvs_
     run_command(" ".join(densify_cmd), print_command=True)
     output_ply_file = mvs_dir / "scene_dense.ply"
     if not output_ply_file.exists():
-        logger.error(f"Failed to generate dense point cloud at {output_ply_file}")
+        raise FileNotFoundError(f"OpenMVS did not generate the expected dense point cloud: {output_ply_file}")
     dense_ply = o3d.io.read_point_cloud(str(output_ply_file))
     dense_ply.transform(colmap_to_nerf_world_transform)
     output_file = output_ply_file.with_name("scene_dense_nerf_world.pcd")
