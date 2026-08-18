@@ -160,10 +160,12 @@ class Sensor:
     def get_params_for_depth(self, cam_name, depth_pose_format, colmap_json_path: Path = None):
         if depth_pose_format == "vilens_slam":
             logger.info("Depth Image: Using Frontier_config / Kalibr for Intrinsics")
-            K = self.get_camera(cam_name).get_K()
-            D = np.array(self.get_camera(cam_name).extra_params)
-            h = self.get_camera(cam_name).image_height
-            w = self.get_camera(cam_name).image_width
+            camera = self.get_camera(cam_name)
+            K = camera.get_K()
+            D = np.array(camera.extra_params)
+            h = camera.image_height
+            w = camera.image_width
+            camera_model = camera.camera_model
             logger.info(f"{cam_name} K: {K}, D: {D}, h: {h}, w: {w}")
         elif depth_pose_format == "nerf":
             logger.info("Depth Image: Using NeRF transforms.json 's Intrinsics (from colmap)")
@@ -182,9 +184,10 @@ class Sensor:
             else:
                 logger.error(f"Invalid camera_topics_labelled: {self.camera_topics_labelled}")
                 raise RuntimeError()
-            logger.info(f"{cam_name} {self.camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
+            camera_model = colmap_traj["camera_model"]
+            logger.info(f"{cam_name} {camera_model}\nK: {K}\nD: {D}\nh: {h}, w: {w}")
         else:
             logger.error(f"Unsupported depth pose format: {depth_pose_format}")
             raise ValueError()
 
-        return K, D, h, w, self.camera_fov, self.camera_model
+        return K, D, h, w, self.camera_fov, camera_model
