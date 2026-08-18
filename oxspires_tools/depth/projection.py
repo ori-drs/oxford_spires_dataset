@@ -154,6 +154,8 @@ def decode_points_from_depthmap(
     # Convert into point cloud
     if image is not None:
         colors = image[mask]
+        if np.issubdtype(colors.dtype, np.integer):
+            colors = colors.astype(np.float64) / np.iinfo(colors.dtype).max
     else:
         colors = None
     pcd = get_pcd(points=points_in_3d, colors=colors)
