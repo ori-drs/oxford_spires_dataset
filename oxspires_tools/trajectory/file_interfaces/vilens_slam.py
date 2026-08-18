@@ -52,11 +52,10 @@ class VilensSlamTrajWriter(BasicTrajWriter):
         with open(self.file_path, "w") as f:
             f.writelines("# counter, sec, nsec, x, y, z, qx, qy, qz, qw\n")
             for i in range(pose.num_poses):
+                timestamp = TimeStamp(t_float128=pose.timestamps[i])
                 f.write(str(i) + ", ")
-                timestamp_str = TimeStamp(t_float128=pose.timestamps[i]).t_string_sec
-                f.write(timestamp_str + ", ")
-                timestamp_str = TimeStamp(t_float128=pose.timestamps[i]).t_string_nsec
-                f.write(timestamp_str + ", ")
+                f.write(str(timestamp.sec) + ", ")
+                f.write(f"{timestamp.nsec:09d}, ")
                 f.write(str(pose.positions_xyz[i][0]) + ", ")
                 f.write(str(pose.positions_xyz[i][1]) + ", ")
                 f.write(str(pose.positions_xyz[i][2]) + ", ")
