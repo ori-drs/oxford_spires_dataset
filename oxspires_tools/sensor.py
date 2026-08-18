@@ -168,7 +168,8 @@ class Sensor:
         elif depth_pose_format == "nerf":
             logger.info("Depth Image: Using NeRF transforms.json 's Intrinsics (from colmap)")
             assert colmap_json_path is not None, "colmap_json_path must be provided for nerf format"
-            colmap_traj = json.load(open(colmap_json_path, "r"))
+            with open(colmap_json_path, "r") as f:
+                colmap_traj = json.load(f)
             if len(self.camera_topics_labelled) > 1:
                 assert list(colmap_traj.keys()) == ["camera_model", "frames"]
                 assert colmap_traj["camera_model"] == self.camera_model
@@ -178,7 +179,10 @@ class Sensor:
                         break
             elif len(self.camera_topics_labelled) == 1:
                 assert colmap_traj["camera_model"] == self.camera_model
-                K, D, h, w = self.get_K_D_h_w_from_colmap_frame(colmap_traj)
+                frames = colmap_traj.get("frames", [])
+                if not frames:
+                    raise ValueError("NeRF transforms JSON contains no frames")
+                K, D, h, w = self.get_K_D_h_w_from_colmap_frame(frames[0])
             else:
                 logger.error(f"Invalid camera_topics_labelled: {self.camera_topics_labelled}")
                 raise RuntimeError()
