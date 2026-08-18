@@ -32,5 +32,8 @@ def run_command(cmd, log_path=None, print_command=True, print_output=True):
                 assert isinstance(log_path, (Path, str))
                 with open(log_path, "a") as f:
                     f.write(line)
+        return_code = process.wait()
+        if return_code != 0:
+            raise subprocess.CalledProcessError(return_code, cmd)
     else:
         return process
