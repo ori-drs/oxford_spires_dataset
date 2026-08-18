@@ -1,11 +1,24 @@
 import logging
+from bisect import bisect_left
 from pathlib import Path
 from typing import List
 
 from oxspires_tools.trajectory.file_interfaces.timestamp import TimeStamp
-from oxspires_tools.utils import find_closest_in_sorted
 
 logger = logging.getLogger(__name__)
+
+
+def _timestamp_ns(timestamp: TimeStamp) -> int:
+    return timestamp.sec * 10**9 + timestamp.nsec
+
+
+def _nearest_diff_ns(sorted_timestamps_ns: list[int], value_ns: int) -> int:
+    idx = bisect_left(sorted_timestamps_ns, value_ns)
+    if idx == 0:
+        return sorted_timestamps_ns[0] - value_ns
+    if idx == len(sorted_timestamps_ns):
+        return value_ns - sorted_timestamps_ns[-1]
+    return min(value_ns - sorted_timestamps_ns[idx - 1], sorted_timestamps_ns[idx] - value_ns)
 
 
 class OxfordSpiresDataset:
@@ -156,11 +169,11 @@ class OxfordSpiresDataset:
                 if lidar_ts.t_string not in image_ts_set:
                     unmatched.append(lidar_ts)
         else:
-            image_floats = [float(ts.t_float128) for ts in image_timestamps]
+            tolerance_ns = int(round(tolerance_sec * 1e9))
+            image_ns = sorted(_timestamp_ns(ts) for ts in image_timestamps)
             for lidar_ts in lidar_timestamps:
-                lidar_float = float(lidar_ts.t_float128)
-                _, diff, _ = find_closest_in_sorted(image_floats, lidar_float)
-                if diff > tolerance_sec:
+                diff_ns = _nearest_diff_ns(image_ns, _timestamp_ns(lidar_ts))
+                if diff_ns > tolerance_ns:
                     unmatched.append(lidar_ts)
 
         matched_count = len(lidar_timestamps) - len(unmatched)
