@@ -39,9 +39,24 @@ def get_overlay(camera_image, depth_image, cmap="hsv", circle_radius=2, circle_t
 
 
 def apply_hidden_point_removal(pcd: o3d.geometry.PointCloud, visualise=False):
+    points = np.asarray(pcd.points)
+    if len(points) == 0:
+        return pcd, []
+
     diameter = np.linalg.norm(np.asarray(pcd.get_max_bound()) - np.asarray(pcd.get_min_bound()))
-    _, hpr_mask = pcd.hidden_point_removal([0, 0, 0], diameter * 200)
-    visible_pcd = pcd.select_by_index(hpr_mask)
+    if not np.isfinite(diameter):
+        raise ValueError("Point cloud bounds are non-finite; hidden point removal cannot be applied")
+
+    # Open3D HPR requires a positive radius. A cloud whose points all occupy
+    # the same location has zero diameter, so there is no meaningful
+    # occlusion ordering to resolve. Preserve all source indices in that case.
+    if diameter <= np.finfo(float).eps:
+        hpr_mask = list(range(len(points)))
+        visible_pcd = pcd.select_by_index(hpr_mask)
+    else:
+        _, hpr_mask = pcd.hidden_point_removal([0, 0, 0], diameter * 200)
+        visible_pcd = pcd.select_by_index(hpr_mask)
+
     if visualise:
         origin_axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=10, origin=[0, 0, 0])
         o3d.visualization.draw_geometries([visible_pcd, origin_axis])
